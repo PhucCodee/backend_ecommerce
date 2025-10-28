@@ -1,0 +1,5 @@
+/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.UnitTests/obj/Debug/net6.0/ECommerce.UnitTests.csproj.AssemblyReference.cache
+/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.UnitTests/obj/Debug/net6.0/ECommerce.UnitTests.GeneratedMSBuildEditorConfig.editorconfig
+/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.UnitTests/obj/Debug/net6.0/ECommerce.UnitTests.AssemblyInfoInputs.cache
+/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.UnitTests/obj/Debug/net6.0/ECommerce.UnitTests.AssemblyInfo.cs
+/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.UnitTests/obj/Debug/net6.0/ECommerce.UnitTests.csproj.CoreCompileInputs.cache
