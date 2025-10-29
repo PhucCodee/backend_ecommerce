@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # 1. Your .NET ECommerce API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" # Map host port 8080 to container port 8080
+    environment:
+      # Set the runtime URL to match the Dockerfile EXPOSE
+      - ASPNETCORE_URLS=http://+:8080
+      
+      # Connection string now points to the 'db' service name
+      - ConnectionStrings__DefaultConnection=User=postgres;Password=mysecretpassword;Host=db;Port=5432;Database=ecommerce_db
+      
+      # Service dependencies for Redis and RabbitMQ
+      - Redis__Host=cache
+      - RabbitMQ__Host=message_broker
+    depends_on:
+      - db
+      - cache
+      - message_broker
+
+  # 2. PostgreSQL Database (from your tech stack [cite: 879])
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=ecommerce_db
+    ports:
+      - "5432:5432" # Expose to host for local tools (DBeaver, pgAdmin)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist data
+
+  # 3. Redis Cache (from your tech stack [cite: 880])
+  cache:
+    image: redis:7
+    ports:
+      - "6379:6379" # Expose to host for local debugging
+    volumes:
+      - redis_data:/data # Persist data
+
+  # 4. RabbitMQ Message Broker (from your tech stack [cite: 895])
+  message_broker:
+    image: rabbitmq:3-management # Use management image for the UI
+    ports:
+      - "5672:5672"  # AMQP protocol
+      - "15672:15672" # Management UI (access at http://localhost:15672)
+
+# Define named volumes for data persistence
+volumes:
+  postgres_data:
+  redis_data:

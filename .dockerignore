@@ -1,0 +1,24 @@
+# Exclude bin and obj directories, which are build artifacts
+**/bin/
+**/obj/
+
+# Exclude IDE/editor-specific files
+.vscode/
+.vs/
+*.sln.DotSettings.user
+*.user
+
+# Exclude local user secrets
+secrets.json
+
+# Exclude test results
+**/TestResults/
+
+# Exclude Git files
+.git/
+.gitignore
+
+# Exclude Docker files from the build context itself
+Dockerfile
+docker-compose.yml
+.dockerignore
