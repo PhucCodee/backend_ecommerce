@@ -18,12 +18,13 @@ services:
       # Service dependencies for Redis and RabbitMQ
       - Redis__Host=cache
       - RabbitMQ__Host=message_broker
+
     depends_on:
       - db
       - cache
       - message_broker
 
-  # 2. PostgreSQL Database (from your tech stack [cite: 879])
+  # 2. PostgreSQL Database 
   db:
     image: postgres:15
     environment:
@@ -35,7 +36,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data # Persist data
 
-  # 3. Redis Cache (from your tech stack [cite: 880])
+  # 3. Redis Cache 
   cache:
     image: redis:7
     ports:
@@ -43,7 +44,7 @@ services:
     volumes:
       - redis_data:/data # Persist data
 
-  # 4. RabbitMQ Message Broker (from your tech stack [cite: 895])
+  # 4. RabbitMQ Message Broker 
   message_broker:
     image: rabbitmq:3-management # Use management image for the UI
     ports:
