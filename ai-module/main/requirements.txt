@@ -3,3 +3,5 @@ langgraph
 langchain-google-genai
 pydantic
 python-dotenv
+flask
+flasgger

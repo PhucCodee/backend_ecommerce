@@ -18,7 +18,6 @@ services:
             # Service dependencies for Redis and RabbitMQ
             - Redis__Host=cache
             - RabbitMQ__Host=message_broker
-
         depends_on:
             - db
             - cache
@@ -37,6 +36,7 @@ services:
             - postgres_data:/var/lib/postgresql/data # Persist data
             - ./01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
             - ./02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+    
     # 3. Redis Cache
     cache:
         image: redis:7
@@ -51,6 +51,28 @@ services:
         ports:
             - "5672:5672" # AMQP protocol
             - "15672:15672" # Management UI (access at http://localhost:15672)
+
+    # 5. NEW: Python AI Service (Flask)
+    ai_service:
+        build:
+            # Path to the directory containing the AI's Dockerfile
+            context: ./ai-module/main
+        ports:
+            # Map host port 8001 to container port 5000 (Flask default)
+            - "8001:5000"
+        env_file:
+            # Load secrets from the .env file
+            - ./ai-module/main/.env
+        environment:
+            # Provide database connection details to Flask
+            - DB_USER=postgres
+            - DB_PASSWORD=123
+            - DB_HOST=db # Connect to the 'db' service name
+            - DB_PORT=5432
+            - DB_NAME=database
+        depends_on:
+            - db # Wait for the database to be ready
+        restart: on-failure
 
 # Define named volumes for data persistence
 volumes:
