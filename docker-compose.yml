@@ -35,8 +35,8 @@ services:
             - "5432:5432" # Expose to host for local tools (DBeaver, pgAdmin)
         volumes:
             - postgres_data:/var/lib/postgresql/data # Persist data
-            - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-
+            - ./01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+            - ./02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
     # 3. Redis Cache
     cache:
         image: redis:7
