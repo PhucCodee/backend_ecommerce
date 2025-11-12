@@ -16,7 +16,7 @@ if not os.environ.get("GOOGLE_API_KEY"):
 
 # 1. FIXED: Explicitly define the model_provider
 llm = init_chat_model(
-    "gemini-2.5-flash", model_provider="google_genai" 
+    "gemini-2.5-flash", model_provider="google_genai" , temperature = 0
 )
 
 
