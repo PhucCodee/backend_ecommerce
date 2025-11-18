@@ -29,13 +29,85 @@ VALUES
 -- 3. USER PROFILES
 -- ====================================
 INSERT INTO
-    user_profiles (user_id, first_name, last_name)
+    user_profiles (
+        user_id,
+        first_name,
+        last_name,
+        phone,
+        date_of_birth,
+        gender,
+        avatar_url,
+        bio,
+        language,
+        timezone,
+        currency
+    )
 VALUES
-    (1, 'Cristiano', 'Ronaldo'),
-    (2, 'Lionel', 'Messi'),
-    (3, 'LeBron', 'James'),
-    (4, 'Stephen', 'Curry'),
-    (5, 'Kanye', 'West');
+    (
+        1,
+        'Cristiano',
+        'Ronaldo',
+        '+351123456789',
+        '1985-02-05',
+        'male',
+        'https://example.com/avatars/ronaldo.jpg',
+        'Football legend and entrepreneur. The GOAT.',
+        'en',
+        'Europe/Lisbon',
+        'EUR'
+    ),
+    (
+        2,
+        'Lionel',
+        'Messi',
+        '+5491123456789',
+        '1987-06-24',
+        'male',
+        'https://example.com/avatars/messi.jpg',
+        '2nd GOAT. Loves mate and family.',
+        'en',
+        'America/Argentina/Buenos_Aires',
+        'USD'
+    ),
+    (
+        3,
+        'LeBron',
+        'James',
+        '+12135551234',
+        '1984-12-30',
+        'male',
+        'https://example.com/avatars/lebron.jpg',
+        'King of the court. Lakers.',
+        'en',
+        'America/Los_Angeles',
+        'USD'
+    ),
+    (
+        4,
+        'Stephen',
+        'Curry',
+        '+19255551234',
+        '1988-03-14',
+        'male',
+        'https://example.com/avatars/stephen.jpg',
+        'Chef Curry with the shot.',
+        'en',
+        'America/Los_Angeles',
+        'USD'
+    ),
+    (
+        5,
+        'Kanye',
+        'West',
+        '+13105551234',
+        '1977-06-08',
+        'male',
+        'https://example.com/avatars/ye.jpg',
+        'Producer, rapper, designer. Like children.',
+        'en',
+        'America/Chicago',
+        'USD'
+    );
 
 -- ====================================
 -- 4. USER ROLES

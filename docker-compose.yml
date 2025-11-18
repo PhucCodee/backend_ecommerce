@@ -1,30 +1,22 @@
 version: "3.8"
 
 services:
-    # 1. Your .NET ECommerce API
     api:
         build:
             context: .
             dockerfile: Dockerfile
         ports:
-            - "8080:8080" # Map host port 8080 to container port 8080
+            - "8080:8080"
         environment:
-            # Set the runtime URL to match the Dockerfile EXPOSE
             - ASPNETCORE_URLS=http://+:8080
-
-            # Connection string now points to the 'db' service name
             - ConnectionStrings__DefaultConnection=User=postgres;Password=123;Host=db;Port=5432;Database=database
-
-            # Service dependencies for Redis and RabbitMQ
             - Redis__Host=cache
             - RabbitMQ__Host=message_broker
-
         depends_on:
             - db
             - cache
             - message_broker
 
-    # 2. PostgreSQL Database
     db:
         image: postgres:15
         environment:
@@ -32,27 +24,25 @@ services:
             - POSTGRES_PASSWORD=123
             - POSTGRES_DB=database
         ports:
-            - "5432:5432" # Expose to host for local tools (DBeaver, pgAdmin)
+            - "5432:5432"
         volumes:
-            - postgres_data:/var/lib/postgresql/data # Persist data
-            - ./01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-            - ./02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
-    # 3. Redis Cache
+            - postgres_data:/var/lib/postgresql/data
+            - ./database/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+            - ./database/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+
     cache:
         image: redis:7
         ports:
-            - "6379:6379" # Expose to host for local debugging
+            - "6379:6379"
         volumes:
-            - redis_data:/data # Persist data
+            - redis_data:/data
 
-    # 4. RabbitMQ Message Broker
     message_broker:
-        image: rabbitmq:3-management # Use management image for the UI
+        image: rabbitmq:3-management
         ports:
-            - "5672:5672" # AMQP protocol
-            - "15672:15672" # Management UI (access at http://localhost:15672)
+            - "5672:5672"
+            - "15672:15672"
 
-# Define named volumes for data persistence
 volumes:
     postgres_data:
     redis_data:
