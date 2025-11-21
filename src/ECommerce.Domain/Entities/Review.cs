@@ -15,9 +15,9 @@ public partial class Review
 
     public int Rating { get; set; }
 
-    public string Title { get; set; }
+    public required string Title { get; set; }
 
-    public string Comment { get; set; }
+    public required string Comment { get; set; }
 
     public bool IsVerifiedPurchase { get; set; }
 
@@ -27,7 +27,7 @@ public partial class Review
 
     public int UnhelpfulCount { get; set; }
 
-    public string ModerationNotes { get; set; }
+    public string? ModerationNotes { get; set; }
 
     public DateTime? ModeratedAt { get; set; }
 
@@ -37,13 +37,13 @@ public partial class Review
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual User ModeratedByNavigation { get; set; }
+    public virtual User? ModeratedByNavigation { get; set; }
 
-    public virtual Order Order { get; set; }
+    public virtual ICollection<ReviewImage> ReviewImages { get; set; } = [];
 
-    public virtual Product Product { get; set; }
+    public required virtual Order Order { get; set; }
 
-    public virtual ICollection<ReviewImage> ReviewImages { get; set; } = new List<ReviewImage>();
+    public required virtual Product Product { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

@@ -7,25 +7,25 @@ public partial class SystemLog
 {
     public int LogId { get; set; }
 
-    public string LogLevel { get; set; }
+    public required string LogLevel { get; set; } = string.Empty;
 
-    public string LogType { get; set; }
+    public required string LogType { get; set; } = string.Empty;
 
-    public string Source { get; set; }
+    public required string Source { get; set; } = string.Empty;
 
-    public string Message { get; set; }
+    public required string Message { get; set; } = string.Empty;
 
-    public string Details { get; set; }
+    public string? Details { get; set; }
 
     public int? UserId { get; set; }
 
     public Guid? RequestId { get; set; }
 
-    public string IpAddress { get; set; }
+    public required string IpAddress { get; set; } = string.Empty;
 
-    public string StackTrace { get; set; }
+    public string? StackTrace { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

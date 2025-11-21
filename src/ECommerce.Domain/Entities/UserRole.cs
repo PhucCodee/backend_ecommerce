@@ -18,7 +18,7 @@ public partial class UserRole
 
     public DateTime? RevokedAt { get; set; }
 
-    public virtual User GrantedByNavigation { get; set; }
+    public required virtual User GrantedByNavigation { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

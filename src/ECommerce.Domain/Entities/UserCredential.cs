@@ -9,13 +9,13 @@ public partial class UserCredential
 
     public int UserId { get; set; }
 
-    public string PasswordHash { get; set; }
+    public required string PasswordHash { get; set; } = string.Empty;
 
-    public string PasswordSalt { get; set; }
+    public required string PasswordSalt { get; set; } = string.Empty;
 
     public DateTime PasswordUpdatedAt { get; set; }
 
-    public int FailedLoginAttempts { get; set; }
+    public int FailedLoginAttempts { get; set; } = 0;
 
     public DateTime? LastFailedAttemptAt { get; set; }
 
@@ -23,9 +23,9 @@ public partial class UserCredential
 
     public DateTime? LastLoginAt { get; set; }
 
-    public string LastLoginIp { get; set; }
+    public required string LastLoginIp { get; set; } = string.Empty;
 
-    public string ResetTokenHash { get; set; }
+    public required string ResetTokenHash { get; set; } = string.Empty;
 
     public DateTime? ResetTokenExpiresAt { get; set; }
 
@@ -33,5 +33,5 @@ public partial class UserCredential
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

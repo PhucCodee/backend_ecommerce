@@ -11,17 +11,17 @@ public partial class UserItemInteraction
 
     public int ProductId { get; set; }
 
-    public string InteractionType { get; set; }
+    public required string InteractionType { get; set; } = string.Empty;
 
     public int Weight { get; set; }
 
-    public string SessionId { get; set; }
+    public required string SessionId { get; set; } = string.Empty;
 
-    public string ReferrerUrl { get; set; }
+    public required string ReferrerUrl { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual Product Product { get; set; }
+    public required virtual Product Product { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

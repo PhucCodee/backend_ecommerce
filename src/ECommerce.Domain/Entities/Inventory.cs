@@ -25,7 +25,7 @@ public partial class Inventory
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual ICollection<InventoryHistory> InventoryHistories { get; set; } = new List<InventoryHistory>();
+    public virtual ICollection<InventoryHistory> InventoryHistories { get; set; } = [];
 
-    public virtual ProductSku Sku { get; set; }
+    public required virtual ProductSku Sku { get; set; }
 }

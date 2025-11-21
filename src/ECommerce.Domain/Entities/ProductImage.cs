@@ -11,11 +11,11 @@ public partial class ProductImage
 
     public int? SkuId { get; set; }
 
-    public string ImageUrl { get; set; }
+    public required string ImageUrl { get; set; }
 
-    public string ThumbnailUrl { get; set; }
+    public string? ThumbnailUrl { get; set; }
 
-    public string AltText { get; set; }
+    public required string AltText { get; set; }
 
     public int DisplayOrder { get; set; }
 
@@ -25,7 +25,7 @@ public partial class ProductImage
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual Product Product { get; set; }
+    public required virtual Product Product { get; set; }
 
-    public virtual ProductSku Sku { get; set; }
+    public required virtual ProductSku Sku { get; set; }
 }

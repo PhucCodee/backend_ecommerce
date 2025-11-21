@@ -19,7 +19,7 @@ public partial class CartItem
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual ProductSku Sku { get; set; }
+    public required virtual ProductSku Sku { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

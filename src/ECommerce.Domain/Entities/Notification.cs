@@ -10,15 +10,15 @@ public partial class Notification
 
     public int UserId { get; set; }
 
-    public string NotificationType { get; set; }
+    public required string NotificationType { get; set; }
 
     public NotificationChannel Channel { get; set; }
 
     public NotificationPriority Priority { get; set; }
 
-    public string Subject { get; set; }
+    public string? Subject { get; set; }
 
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     public NotificationStatus Status { get; set; }
 
@@ -36,5 +36,5 @@ public partial class Notification
 
     public DateTime? LastRetryAt { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

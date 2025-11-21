@@ -8,11 +8,11 @@ public partial class Order
 {
     public int OrderId { get; set; }
 
-    public string OrderNumber { get; set; }
+    public required string OrderNumber { get; set; } = string.Empty;
 
     public int UserId { get; set; }
 
-    public OrderStatus Status { get; set; }
+    public OrderStatus Status { get; set; } = OrderStatus.Created;
 
     public decimal Subtotal { get; set; }
 
@@ -24,11 +24,11 @@ public partial class Order
 
     public decimal TotalAmount { get; set; }
 
-    public Currency PrefferedCurrency { get; set; }
+    public Currency PreferredCurrency { get; set; } = Currency.VND;
 
-    public string CustomerNotes { get; set; }
+    public string? CustomerNotes { get; set; }
 
-    public string AdminNotes { get; set; }
+    public string? AdminNotes { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -36,19 +36,19 @@ public partial class Order
 
     public DateTime? CancelledAt { get; set; }
 
-    public virtual ICollection<EventLog> EventLogs { get; set; } = new List<EventLog>();
+    public virtual ICollection<EventLog> EventLogs { get; set; } = [];
 
-    public virtual OrderFulfillment OrderFulfillment { get; set; }
+    public virtual ICollection<OrderItem> OrderItems { get; set; } = [];
 
-    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public virtual ICollection<OrderPayment> OrderPayments { get; set; } = [];
 
-    public virtual ICollection<OrderPayment> OrderPayments { get; set; } = new List<OrderPayment>();
+    public virtual ICollection<OrderStatusHistory> OrderStatusHistories { get; set; } = [];
 
-    public virtual OrderShipping OrderShipping { get; set; }
+    public virtual ICollection<Review> Reviews { get; set; } = [];
 
-    public virtual ICollection<OrderStatusHistory> OrderStatusHistories { get; set; } = new List<OrderStatusHistory>();
+    public virtual OrderFulfillment? OrderFulfillment { get; set; }
 
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual OrderShipping? OrderShipping { get; set; }
 
-    public virtual User User { get; set; }
+    public required virtual User User { get; set; }
 }

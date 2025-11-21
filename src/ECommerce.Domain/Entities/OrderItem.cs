@@ -11,11 +11,11 @@ public partial class OrderItem
 
     public int SkuId { get; set; }
 
-    public string ProductName { get; set; }
+    public required string ProductName { get; set; }
 
-    public string Sku { get; set; }
+    public required string Sku { get; set; }
 
-    public string VariantDescription { get; set; }
+    public string? VariantDescription { get; set; }
 
     public int SellerId { get; set; }
 
@@ -27,9 +27,9 @@ public partial class OrderItem
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual Order Order { get; set; }
+    public required virtual Order Order { get; set; }
 
-    public virtual User Seller { get; set; }
+    public required virtual User Seller { get; set; }
 
-    public virtual ProductSku SkuNavigation { get; set; }
+    public required virtual ProductSku SkuNavigation { get; set; }
 }

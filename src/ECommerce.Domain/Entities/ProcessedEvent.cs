@@ -7,9 +7,9 @@ public partial class ProcessedEvent
 {
     public Guid EventId { get; set; }
 
-    public string EventType { get; set; }
+    public required string EventType { get; set; } = string.Empty;
 
     public DateTime ProcessedAt { get; set; }
 
-    public string ProcessedBy { get; set; }
+    public required string ProcessedBy { get; set; } = string.Empty;
 }

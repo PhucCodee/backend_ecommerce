@@ -7,15 +7,15 @@ public partial class Category
 {
     public int CategoryId { get; set; }
 
-    public string CategoryName { get; set; }
+    public required string CategoryName { get; set; }
 
-    public string Slug { get; set; }
+    public required string Slug { get; set; }
 
     public int? ParentCategoryId { get; set; }
 
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
-    public string ImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
 
     public int DisplayOrder { get; set; }
 
@@ -25,9 +25,9 @@ public partial class Category
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual ICollection<Category> InverseParentCategory { get; set; } = new List<Category>();
+    public virtual ICollection<Category> InverseParentCategory { get; set; } = [];
 
-    public virtual Category ParentCategory { get; set; }
+    public virtual Category? ParentCategory { get; set; }
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    public virtual ICollection<Product> Products { get; set; } = [];
 }

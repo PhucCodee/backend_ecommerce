@@ -9,9 +9,9 @@ public partial class ProductSku
 
     public int ProductId { get; set; }
 
-    public string Sku { get; set; }
+    public required string Sku { get; set; } = string.Empty;
 
-    public string VariantAttributes { get; set; }
+    public required string VariantAttributes { get; set; } = string.Empty;
 
     public decimal Price { get; set; }
 
@@ -19,25 +19,25 @@ public partial class ProductSku
 
     public decimal? CompareAtPrice { get; set; }
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 
-    public bool IsDefault { get; set; }
+    public bool IsDefault { get; set; } = false;
 
     public decimal? WeightKg { get; set; }
 
-    public string DimensionsCm { get; set; }
+    public string? DimensionsCm { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+    public virtual ICollection<CartItem> CartItems { get; set; } = [];
 
-    public virtual Inventory Inventory { get; set; }
+    public virtual ICollection<OrderItem> OrderItems { get; set; } = [];
 
-    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public virtual ICollection<ProductImage> ProductImages { get; set; } = [];
 
-    public virtual Product Product { get; set; }
+    public virtual Inventory? Inventory { get; set; }
 
-    public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+    public required virtual Product Product { get; set; }
 }

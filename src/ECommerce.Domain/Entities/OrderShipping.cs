@@ -10,25 +10,25 @@ public partial class OrderShipping
 
     public int OrderId { get; set; }
 
-    public string RecipientName { get; set; }
+    public required string RecipientName { get; set; }
 
-    public string Phone { get; set; }
+    public required string Phone { get; set; }
 
-    public string AddressLine1 { get; set; }
+    public required string AddressLine1 { get; set; }
 
-    public string AddressLine2 { get; set; }
+    public string? AddressLine2 { get; set; }
 
-    public string City { get; set; }
+    public required string City { get; set; }
 
-    public string StateProvince { get; set; }
+    public required string StateProvince { get; set; }
 
-    public string PostalCode { get; set; }
+    public required string PostalCode { get; set; }
 
-    public string Country { get; set; }
+    public required string Country { get; set; }
 
     public ShippingMethod Method { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual Order Order { get; set; }
+    public required virtual Order Order { get; set; }
 }

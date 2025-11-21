@@ -12,35 +12,35 @@ public partial class Product
 
     public int CategoryId { get; set; }
 
-    public string ProductName { get; set; }
+    public required string ProductName { get; set; } = string.Empty;
 
-    public string Slug { get; set; }
+    public required string Slug { get; set; } = string.Empty;
 
-    public string BaseSku { get; set; }
+    public required string BaseSku { get; set; } = string.Empty;
 
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
-    public string ShortDescription { get; set; }
+    public string? ShortDescription { get; set; }
 
-    public bool HasVariants { get; set; }
+    public bool HasVariants { get; set; } = false;
 
-    public string Brand { get; set; }
+    public string? Brand { get; set; }
 
     public decimal? WeightKg { get; set; }
 
-    public string DimensionsCm { get; set; }
+    public string? DimensionsCm { get; set; }
 
-    public ProductStatus Status { get; set; }
+    public ProductStatus Status { get; set; } = ProductStatus.Draft;
 
-    public ModerationStatus Moderation { get; set; }
+    public ModerationStatus Moderation { get; set; } = ModerationStatus.Pending;
 
-    public string MetaTitle { get; set; }
+    public string? MetaTitle { get; set; }
 
-    public string MetaDescription { get; set; }
+    public string? MetaDescription { get; set; }
 
-    public string Tags { get; set; }
+    public string? Tags { get; set; }
 
-    public int ViewCount { get; set; }
+    public int ViewCount { get; set; } = 0;
 
     public DateTime CreatedAt { get; set; }
 
@@ -50,17 +50,17 @@ public partial class Product
 
     public DateTime? RemovedAt { get; set; }
 
-    public virtual Category Category { get; set; }
+    public virtual ICollection<ProductImage> ProductImages { get; set; } = [];
 
-    public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+    public virtual ICollection<ProductMetric> ProductMetrics { get; set; } = [];
 
-    public virtual ICollection<ProductMetric> ProductMetrics { get; set; } = new List<ProductMetric>();
+    public virtual ICollection<ProductSku> ProductSkus { get; set; } = [];
 
-    public virtual ICollection<ProductSku> ProductSkus { get; set; } = new List<ProductSku>();
+    public virtual ICollection<Review> Reviews { get; set; } = [];
 
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<UserItemInteraction> UserItemInteractions { get; set; } = [];
 
-    public virtual User Seller { get; set; }
+    public required virtual Category Category { get; set; }
 
-    public virtual ICollection<UserItemInteraction> UserItemInteractions { get; set; } = new List<UserItemInteraction>();
+    public required virtual User Seller { get; set; }
 }
