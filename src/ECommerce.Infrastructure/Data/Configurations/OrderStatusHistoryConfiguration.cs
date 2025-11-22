@@ -19,12 +19,12 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(osh => osh.OrderId).HasColumnName("order_id");
 
             builder.Property(osh => osh.OldStatus)
-                .HasConversion<string>()
-                .HasColumnName("old_status");
+                .HasColumnName("old_status")
+                .HasColumnType("order_status_enum");
 
             builder.Property(osh => osh.NewStatus)
-                .HasConversion<string>()
-                .HasColumnName("new_status");
+                .HasColumnName("new_status")
+                .HasColumnType("order_status_enum");
 
             builder.Property(osh => osh.Notes)
                 .HasColumnName("notes");

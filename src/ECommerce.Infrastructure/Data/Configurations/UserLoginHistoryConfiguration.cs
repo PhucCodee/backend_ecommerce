@@ -24,8 +24,8 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("email");
 
             builder.Property(ulh => ulh.Status)
-                .HasConversion<string>()
-                .HasColumnName("status");
+                .HasColumnName("login_status")
+                .HasColumnType("login_status_enum");
 
             builder.Property(ulh => ulh.FailureReason)
                 .HasMaxLength(500)

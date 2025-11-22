@@ -28,9 +28,8 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasDefaultValue(1);
 
             builder.Property(e => e.Status)
-                .HasConversion<string>()
                 .HasColumnName("status")
-                .HasDefaultValue(EventStatus.Pending);
+                .HasColumnType("event_status_enum");
 
             builder.Property(e => e.WorkerName)
                 .IsRequired()

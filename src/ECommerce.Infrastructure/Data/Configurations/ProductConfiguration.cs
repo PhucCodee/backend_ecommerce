@@ -71,14 +71,12 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasDefaultValue(0);
 
             builder.Property(p => p.Status)
-                .HasConversion<string>()
                 .HasColumnName("status")
-                .HasDefaultValue(ProductStatus.Draft);
+                .HasColumnType("product_status_enum");
 
             builder.Property(p => p.Moderation)
-                .HasConversion<string>()
-                .HasColumnName("moderation")
-                .HasDefaultValue(ModerationStatus.Pending);
+                .HasColumnName("moderation_status")
+                .HasColumnType("moderation_status_enum");
 
             builder.Property(p => p.CreatedAt)
                 .HasColumnName("created_at")

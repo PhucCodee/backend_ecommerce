@@ -23,14 +23,12 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("user_id");
 
             builder.Property(o => o.Status)
-                .HasConversion<string>()
                 .HasColumnName("status")
-                .HasDefaultValue(OrderStatus.Created);
+                .HasColumnType("order_status_enum");
 
             builder.Property(o => o.PreferredCurrency)
-                .HasConversion<string>()
-                .HasColumnName("preferred_currency")
-                .HasDefaultValue(Currency.VND);
+                .HasColumnName("currency")
+                .HasColumnType("currency_enum");
 
             builder.Property(o => o.Subtotal)
                 .IsRequired()

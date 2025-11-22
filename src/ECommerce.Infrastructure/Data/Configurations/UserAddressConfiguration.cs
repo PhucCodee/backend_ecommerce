@@ -19,8 +19,8 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(ua => ua.UserId).HasColumnName("user_id");
 
             builder.Property(ua => ua.Type)
-                .HasConversion<string>()
-                .HasColumnName("type");
+                .HasColumnName("address_type")
+                .HasColumnType("address_type_enum");
 
             builder.Property(ua => ua.IsDefaultShipping)
                 .HasColumnName("is_default_shipping")

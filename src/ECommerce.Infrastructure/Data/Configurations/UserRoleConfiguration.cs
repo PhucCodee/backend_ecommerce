@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 
 namespace ECommerce.Infrastructure.Data.Configurations
 {
@@ -17,7 +18,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(ur => ur.GrantedBy).HasColumnName("granted_by");
 
             builder.Property(ur => ur.Role)
-                .HasConversion<string>()
                 .HasColumnName("role");
 
             builder.Property(ur => ur.GrantedAt)

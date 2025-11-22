@@ -37,8 +37,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("date_of_birth");
 
             builder.Property(up => up.Gender)
-                .HasConversion<string>()
-                .HasColumnName("gender");
+                .HasColumnName("gender").HasColumnType("user_gender_enum");
 
             builder.Property(up => up.AvatarUrl)
                 .HasMaxLength(500)
@@ -49,12 +48,12 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("bio");
 
             builder.Property(up => up.PreferredLanguage)
-                .HasConversion<string>()
-                .HasColumnName("preferred_language");
+                .HasColumnName("language")
+                .HasColumnType("language_enum");
 
             builder.Property(up => up.PreferredCurrency)
-                .HasConversion<string>()
-                .HasColumnName("preferred_currency");
+                .HasColumnName("currency")
+                .HasColumnType("currency_enum");
 
             builder.Property(up => up.Timezone)
                 .HasMaxLength(100)

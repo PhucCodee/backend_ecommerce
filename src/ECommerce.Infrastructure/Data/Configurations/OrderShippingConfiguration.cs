@@ -58,8 +58,8 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("country");
 
             builder.Property(os => os.Method)
-                .HasConversion<string>()
-                .HasColumnName("method");
+                .HasColumnName("shipping_method")
+                .HasColumnType("shipping_method_enum");
 
             builder.Property(os => os.CreatedAt)
                 .HasColumnName("created_at")

@@ -35,9 +35,8 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("deleted_at");
 
             builder.Property(u => u.Status)
-                .HasConversion<string>()
                 .HasColumnName("status")
-                .HasDefaultValue(UserStatus.Active);
+                .HasColumnType("user_status_enum");
 
             builder.Property(u => u.CreatedAt)
                 .HasColumnName("created_at")
@@ -51,9 +50,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.HasIndex(u => u.Email).IsUnique();
             builder.HasIndex(u => u.Username).IsUnique();
 
-            // Soft delete filter
-            builder.HasQueryFilter(u => u.DeletedAt == null);
-
+            // Relationships
             builder.HasOne(u => u.UserCredential)
                 .WithOne(uc => uc.User)
                 .HasForeignKey<UserCredential>(uc => uc.UserId)

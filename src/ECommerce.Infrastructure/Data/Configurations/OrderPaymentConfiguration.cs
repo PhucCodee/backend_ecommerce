@@ -19,13 +19,12 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(op => op.OrderId).HasColumnName("order_id");
 
             builder.Property(op => op.Method)
-                .HasConversion<string>()
-                .HasColumnName("method");
+                .HasColumnName("payment_method")
+                .HasColumnType("payment_method_enum");
 
             builder.Property(op => op.Status)
-                .HasConversion<string>()
-                .HasColumnName("status")
-                .HasDefaultValue(PaymentStatus.Pending);
+                .HasColumnName("payment_status")
+                .HasColumnType("payment_status_enum");
 
             builder.Property(op => op.Amount)
                 .IsRequired()

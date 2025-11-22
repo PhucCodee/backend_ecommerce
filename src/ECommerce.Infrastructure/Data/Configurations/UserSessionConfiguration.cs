@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 
 namespace ECommerce.Infrastructure.Data.Configurations
 {
@@ -28,9 +29,9 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("refresh_token_hash");
 
             builder.Property(us => us.IpAddress)
-                .IsRequired()
-                .HasMaxLength(45)
-                .HasColumnName("ip_address");
+                    .IsRequired()
+                    .HasMaxLength(45)
+                    .HasColumnName("ip_address");
 
             builder.Property(us => us.UserAgent)
                 .IsRequired()
@@ -38,8 +39,8 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("user_agent");
 
             builder.Property(us => us.Type)
-                .HasConversion<string>()
-                .HasColumnName("type");
+                .HasColumnName("device_type")
+                .HasColumnType("device_type_enum");
 
             builder.Property(us => us.DeviceName)
                 .IsRequired()
