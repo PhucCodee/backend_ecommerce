@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
     api:
         build:
@@ -9,7 +7,7 @@ services:
             - "8080:8080"
         environment:
             - ASPNETCORE_URLS=http://+:8080
-            - ConnectionStrings__DefaultConnection=User=postgres;Password=123;Host=db;Port=5432;Database=database
+            - ConnectionStrings__DefaultConnection=Username=postgres;Password=123;Host=db;Port=5432;Database=database
             - Redis__Host=cache
             - RabbitMQ__Host=message_broker
         depends_on:
