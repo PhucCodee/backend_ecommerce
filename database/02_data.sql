@@ -54,7 +54,7 @@ VALUES
         'Football legend and entrepreneur. The GOAT.',
         'en',
         'Europe/Lisbon',
-        'EUR'
+        'eur'
     ),
     (
         2,
@@ -67,7 +67,7 @@ VALUES
         '2nd GOAT. Loves mate and family.',
         'en',
         'America/Argentina/Buenos_Aires',
-        'USD'
+        'usd'
     ),
     (
         3,
@@ -80,7 +80,7 @@ VALUES
         'King of the court. Lakers.',
         'en',
         'America/Los_Angeles',
-        'USD'
+        'usd'
     ),
     (
         4,
@@ -93,7 +93,7 @@ VALUES
         'Chef Curry with the shot.',
         'en',
         'America/Los_Angeles',
-        'USD'
+        'usd'
     ),
     (
         5,
@@ -106,7 +106,7 @@ VALUES
         'Producer, rapper, designer. Like children.',
         'en',
         'America/Chicago',
-        'USD'
+        'usd'
     );
 
 -- ====================================
@@ -433,7 +433,7 @@ VALUES
         'delivered',
         100.00,
         100.00,
-        'VND'
+        'vnd'
     );
 
 -- ====================================

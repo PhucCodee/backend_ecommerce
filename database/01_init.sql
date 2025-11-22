@@ -10,7 +10,7 @@ CREATE TYPE user_gender_enum AS ENUM ('male', 'female', 'other', 'prefer_not_to_
 
 CREATE TYPE language_enum AS ENUM ('en', 'vi');
 
-CREATE TYPE currency_enum AS ENUM ('VND', 'USD', 'EUR');
+CREATE TYPE currency_enum AS ENUM ('vnd', 'usd', 'eur');
 
 CREATE TYPE user_role_enum AS ENUM ('buyer', 'seller', 'admin');
 
@@ -124,12 +124,12 @@ CREATE TABLE
         last_name VARCHAR(100),
         phone VARCHAR(20),
         date_of_birth DATE,
-        gender user_gender_enum,
+        gender user_gender_enum NOT NULL,
         avatar_url VARCHAR(500),
         bio TEXT,
         language language_enum DEFAULT 'en',
         timezone VARCHAR(50) DEFAULT 'Asia/Ho_Chi_Minh',
-        currency currency_enum DEFAULT 'VND',
+        currency currency_enum DEFAULT 'vnd',
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -435,7 +435,7 @@ CREATE TABLE
         tax_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
         discount_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
         total_amount DECIMAL(10, 2) NOT NULL,
-        currency currency_enum NOT NULL DEFAULT 'VND',
+        currency currency_enum NOT NULL DEFAULT 'vnd',
         customer_notes TEXT,
         admin_notes TEXT,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
