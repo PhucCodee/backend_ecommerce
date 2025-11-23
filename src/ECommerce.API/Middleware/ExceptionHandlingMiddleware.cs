@@ -3,25 +3,18 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using ECommerce.Application.DTOs.common;
+using System.Collections.Generic;
 
 namespace ECommerce.API.Middleware
 {
-    public class ExceptionHandlingMiddleware
+    public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
-        {
-            _next = next;
-            _logger = logger;
-        }
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
             {
-                await _next(context);
+                await next(context);
             }
             catch (Exception ex)
             {
@@ -31,18 +24,22 @@ namespace ECommerce.API.Middleware
 
         private Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception has occurred while processing the request.");
+            logger.LogError(ex, "An unhandled exception has occurred: {Message}", ex.Message);
 
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-            var result = new
+            var (statusCode, message) = ex switch
             {
-                statusCode = context.Response.StatusCode,
-                message = "An unexpected error occurred. Please try again later."
+                UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Access denied"),
+                ArgumentException => (HttpStatusCode.BadRequest, ex.Message),
+                InvalidOperationException => (HttpStatusCode.BadRequest, ex.Message),
+                KeyNotFoundException => (HttpStatusCode.NotFound, "Resource not found"),
+                _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred")
             };
 
-            return context.Response.WriteAsJsonAsync(result);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+
+            var response = ApiResponse<object>.Failure(message, (int)statusCode);
+            return context.Response.WriteAsJsonAsync(response);
         }
     }
 }

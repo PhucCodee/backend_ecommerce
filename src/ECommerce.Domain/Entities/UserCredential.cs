@@ -34,4 +34,20 @@ public partial class UserCredential
     public DateTime UpdatedAt { get; set; }
 
     public required virtual User User { get; set; }
+
+    public static UserCredential CreateDefault(User user, string passwordHash, string passwordSalt)
+    {
+        return new UserCredential
+        {
+            User = user,
+            PasswordHash = passwordHash,
+            PasswordSalt = passwordSalt,
+            PasswordUpdatedAt = DateTime.UtcNow,
+            FailedLoginAttempts = 0,
+            LastLoginIp = string.Empty,
+            ResetTokenHash = string.Empty,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 }

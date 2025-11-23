@@ -2,8 +2,8 @@ namespace ECommerce.Domain.Enums;
 
 public enum PaymentMethod
 {
-    CreditCard,
-    BankTransfer,
-    EWallet,
-    Cod
+    credit_card,
+    bank_transfer,
+    e_wallet,
+    cod
 }

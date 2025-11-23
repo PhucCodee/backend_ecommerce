@@ -26,7 +26,7 @@ namespace ECommerce.API.Controllers
             {
                 new ProductDto
                 {
-                    Id = Guid.NewGuid(),
+                    Id = 0,
                     Name = "Test Product",
                     Description = "A placeholder product",
                     Price = 9.99m,
@@ -39,14 +39,14 @@ namespace ECommerce.API.Controllers
 
         // GET: api/products/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProductDto>> GetProduct(Guid id)
+        public async Task<ActionResult<ProductDto>> GetProduct(int id)
         {
-            if (id == Guid.Empty)
+            if (id == 0)
                 return NotFound();
 
             var product = await Task.FromResult(new ProductDto
             {
-                Id = id,
+                Id = 0,
                 Name = "Test Product",
                 Description = "A placeholder product",
                 Price = 9.99m,
@@ -60,14 +60,14 @@ namespace ECommerce.API.Controllers
         [HttpPost]
         public async Task<ActionResult<ProductDto>> CreateProduct(ProductDto productDto)
         {
-            productDto.Id = Guid.NewGuid();
+            productDto.Id = 0;
             var createdProduct = await Task.FromResult(productDto);
             return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.Id }, createdProduct);
         }
 
         // PUT: api/products/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(Guid id, ProductDto productDto)
+        public async Task<IActionResult> UpdateProduct(int id, ProductDto productDto)
         {
             if (id != productDto.Id)
                 return BadRequest();
@@ -78,7 +78,7 @@ namespace ECommerce.API.Controllers
 
         // DELETE: api/products/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(Guid id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             await Task.CompletedTask; // Placeholder
             return NoContent();

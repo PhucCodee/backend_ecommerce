@@ -12,7 +12,7 @@ public partial class Order
 
     public int UserId { get; set; }
 
-    public OrderStatus Status { get; set; } = OrderStatus.Created;
+    public OrderStatus Status { get; set; } = OrderStatus.created;
 
     public decimal Subtotal { get; set; }
 
@@ -24,7 +24,7 @@ public partial class Order
 
     public decimal TotalAmount { get; set; }
 
-    public Currency PreferredCurrency { get; set; } = Currency.VND;
+    public Currency PreferredCurrency { get; set; } = Currency.vnd;
 
     public string? CustomerNotes { get; set; }
 

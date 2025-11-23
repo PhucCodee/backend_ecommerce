@@ -8,7 +8,6 @@ namespace ECommerce.Infrastructure.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
-
         private IUserRepository? _users;
         private IProductRepository? _products;
         private IOrderRepository? _orders;

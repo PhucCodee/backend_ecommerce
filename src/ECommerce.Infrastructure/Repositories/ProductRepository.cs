@@ -13,17 +13,30 @@ namespace ECommerce.Infrastructure.Repositories
         {
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category)
+        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
         {
             return await _context.Products
-                .Where(p => p.Category == category)
+                .Include(p => p.Category)
+                .Where(p => p.CategoryId == categoryId)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm)
         {
             return await _context.Products
-                .Where(p => p.Name.Contains(searchTerm) || p.Description.Contains(searchTerm))
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
+                .Where(p => p.ProductName.Contains(searchTerm) ||
+                           (p.Description != null && p.Description.Contains(searchTerm)))
+                .ToListAsync();
+        }
+
+        // Optional: Search by category name instead of ID
+        public async Task<IEnumerable<Product>> GetProductsByCategoryNameAsync(string categoryName)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.Category.CategoryName == categoryName)
                 .ToListAsync();
         }
     }

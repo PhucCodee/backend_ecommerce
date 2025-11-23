@@ -35,4 +35,20 @@ public partial class UserProfile
     public DateTime UpdatedAt { get; set; }
 
     public required virtual User User { get; set; }
+
+    public static UserProfile CreateDefault(User user, string firstName, string lastName)
+    {
+        return new UserProfile
+        {
+            User = user,
+            FirstName = firstName,
+            LastName = lastName,
+            Phone = "",
+            Gender = UserGender.male,
+            PreferredLanguage = Language.vi,
+            PreferredCurrency = Currency.vnd,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 }

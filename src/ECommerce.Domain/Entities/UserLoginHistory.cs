@@ -8,7 +8,7 @@ public partial class UserLoginHistory
 {
     public int LoginId { get; set; }
 
-    public int? UserId { get; set; }
+    public int UserId { get; set; }
 
     public required string Email { get; set; }
 

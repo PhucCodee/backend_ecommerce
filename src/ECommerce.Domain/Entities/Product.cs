@@ -30,9 +30,9 @@ public partial class Product
 
     public string? DimensionsCm { get; set; }
 
-    public ProductStatus Status { get; set; } = ProductStatus.Draft;
+    public ProductStatus Status { get; set; } = ProductStatus.draft;
 
-    public ModerationStatus Moderation { get; set; } = ModerationStatus.Pending;
+    public ModerationStatus Moderation { get; set; } = ModerationStatus.pending;
 
     public string? MetaTitle { get; set; }
 

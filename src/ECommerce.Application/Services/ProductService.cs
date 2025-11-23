@@ -26,7 +26,15 @@ namespace ECommerce.Application.Services
         public async Task<ProductDto> GetProductByIdAsync(Guid productId)
         {
             // Placeholder implementation
-            return await Task.FromResult(new ProductDto());
+            return await Task.FromResult(new ProductDto
+            {
+                Id = 0,
+                Name = string.Empty, // required
+                Description = null,
+                Price = 0,
+                Stock = 0,
+                ImageUrl = null
+            });
         }
 
         public async Task<ProductDto> CreateProductAsync(ProductDto productDto)

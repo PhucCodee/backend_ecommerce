@@ -9,14 +9,9 @@ namespace ECommerce.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class OrdersController(IOrderService orderService) : ControllerBase
     {
-        private readonly IOrderService _orderService;
-
-        public OrdersController(IOrderService orderService)
-        {
-            _orderService = orderService;
-        }
+        private readonly IOrderService _orderService = orderService;
 
         // GET: api/orders
         [HttpGet]
@@ -27,12 +22,12 @@ namespace ECommerce.API.Controllers
             {
                 new OrderDto
                 {
-                    Id = Guid.NewGuid(),
-                    UserId = Guid.NewGuid(),
+                    Id = 0,
+                    UserId = 0,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = 100,
-                    Status = "Pending",
-                    OrderItems = new List<OrderItemDto>()
+                    Status = Domain.Enums.OrderStatus.created,
+                    OrderItems = []
                 }
             });
             return Ok(orders);
@@ -48,12 +43,12 @@ namespace ECommerce.API.Controllers
 
             var order = await Task.FromResult(new OrderDto
             {
-                Id = id,
-                UserId = Guid.NewGuid(),
+                Id = 0,
+                UserId = 0,
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = 100,
-                Status = "Pending",
-                OrderItems = new List<OrderItemDto>()
+                Status = Domain.Enums.OrderStatus.created,
+                OrderItems = []
             });
             return Ok(order);
         }
@@ -63,7 +58,7 @@ namespace ECommerce.API.Controllers
         public async Task<ActionResult<OrderDto>> CreateOrder(OrderDto orderDto)
         {
             // Placeholder: echo back the posted order with a new Id
-            orderDto.Id = Guid.NewGuid();
+            orderDto.Id = 0;
             var createdOrder = await Task.FromResult(orderDto);
             return CreatedAtAction(nameof(GetOrder), new { id = createdOrder.Id }, createdOrder);
         }

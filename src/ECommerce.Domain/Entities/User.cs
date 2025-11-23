@@ -20,7 +20,7 @@ public partial class User
 
     public DateTime? EmailVerifiedAt { get; set; }
 
-    public UserStatus Status { get; set; } = UserStatus.Active;
+    public UserStatus Status { get; set; } = UserStatus.active;
 
     public DateTime? DeletedAt { get; set; }
 
@@ -61,4 +61,17 @@ public partial class User
     public virtual UserCredential? UserCredential { get; set; }
 
     public virtual UserProfile? UserProfile { get; set; }
+
+    public static User CreateDefault(string email, string username)
+    {
+        return new User
+        {
+            Email = email,
+            Username = username,
+            Status = UserStatus.active,
+            EmailVerified = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 }

@@ -2,8 +2,8 @@ namespace ECommerce.Domain.Enums;
 
 public enum UserGender
 {
-    Male,
-    Female,
-    Other,
-    PreferNotToSay
+    male,
+    female,
+    other,
+    prefer_not_to_say
 }

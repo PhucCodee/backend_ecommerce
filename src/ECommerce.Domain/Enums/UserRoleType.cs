@@ -2,7 +2,7 @@ namespace ECommerce.Domain.Enums;
 
 public enum UserRoleType
 {
-    Buyer,
-    Seller,
-    Admin
+    buyer,
+    seller,
+    admin
 }

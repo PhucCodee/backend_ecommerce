@@ -2,7 +2,7 @@ namespace ECommerce.Domain.Enums;
 
 public enum ShippingMethod
 {
-    Standard,
-    Express,
-    SameDay
+    standard,
+    express,
+    same_day
 }

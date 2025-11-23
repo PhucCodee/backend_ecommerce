@@ -2,8 +2,8 @@ namespace ECommerce.Domain.Enums;
 
 public enum AddressType
 {
-    House,
-    Apartment,
-    Office,
-    Other
+    house,
+    apartment,
+    office,
+    other
 }
