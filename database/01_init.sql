@@ -2,67 +2,6 @@
 -- E-COMMERCE SYSTEM
 -- ====================================
 -- ====================================
--- ENUM TYPE DEFINITIONS
--- ====================================
-CREATE TYPE user_status_enum AS ENUM ('active', 'suspended', 'deleted');
-
-CREATE TYPE user_gender_enum AS ENUM ('male', 'female', 'other', 'prefer_not_to_say');
-
-CREATE TYPE language_enum AS ENUM ('en', 'vi');
-
-CREATE TYPE currency_enum AS ENUM ('vnd', 'usd', 'eur');
-
-CREATE TYPE user_role_enum AS ENUM ('buyer', 'seller', 'admin');
-
-CREATE TYPE address_type_enum AS ENUM ('house', 'apartment', 'office', 'other');
-
-CREATE TYPE device_type_enum AS ENUM ('mobile', 'desktop', 'tablet');
-
-CREATE TYPE login_status_enum AS ENUM ('success', 'failed', 'locked', 'mfa_required');
-
-CREATE TYPE product_status_enum AS ENUM (
-    'draft',
-    'active',
-    'inactive',
-    'removed',
-    'archived'
-);
-
-CREATE TYPE moderation_status_enum AS ENUM ('pending', 'approved', 'rejected');
-
-CREATE TYPE order_status_enum AS ENUM (
-    'created',
-    'confirmed',
-    'processing',
-    'shipped',
-    'delivered',
-    'cancelled',
-    'failed'
-);
-
-CREATE TYPE shipping_method_enum AS ENUM ('standard', 'express', 'same_day');
-
-CREATE TYPE payment_method_enum AS ENUM ('credit_card', 'bank_transfer', 'e_wallet', 'cod');
-
-CREATE TYPE payment_status_enum AS ENUM (
-    'pending',
-    'processing',
-    'completed',
-    'failed',
-    'refunded'
-);
-
-CREATE TYPE event_status_enum AS ENUM ('processing', 'success', 'failed', 'retrying');
-
-CREATE TYPE notification_channel_enum AS ENUM ('email', 'sms', 'in_app', 'push');
-
-CREATE TYPE notification_priority_enum AS ENUM ('low', 'normal', 'high', 'urgent');
-
-CREATE TYPE notification_status_enum AS ENUM ('pending', 'sent', 'failed', 'read');
-
-CREATE TYPE entity_type_enum AS ENUM ('order', 'product', 'review', 'user', 'payment');
-
--- ====================================
 -- 1. USER MANAGEMENT TABLES
 -- ====================================
 -- Core user identity table
@@ -77,7 +16,7 @@ CREATE TABLE
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         email_verified BOOLEAN NOT NULL DEFAULT FALSE,
         email_verified_at TIMESTAMP,
-        status user_status_enum NOT NULL DEFAULT 'active',
+        status SMALLINT NOT NULL DEFAULT 0,
         deleted_at TIMESTAMP -- Soft delete timestamp
     );
 
@@ -124,12 +63,12 @@ CREATE TABLE
         last_name VARCHAR(100),
         phone VARCHAR(20),
         date_of_birth DATE,
-        gender user_gender_enum NOT NULL,
+        gender SMALLINT NOT NULL DEFAULT 0,
         avatar_url VARCHAR(500),
         bio TEXT,
-        language language_enum DEFAULT 'en',
+        language SMALLINT DEFAULT 0,
         timezone VARCHAR(50) DEFAULT 'Asia/Ho_Chi_Minh',
-        currency currency_enum DEFAULT 'vnd',
+        currency SMALLINT DEFAULT 0,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -148,7 +87,7 @@ CREATE TABLE
     user_roles (
         user_role_id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-        role user_role_enum NOT NULL,
+        role SMALLINT NOT NULL DEFAULT 0,
         granted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         granted_by INTEGER REFERENCES users (user_id),
         revoked_at TIMESTAMP,
@@ -167,7 +106,7 @@ CREATE TABLE
     user_addresses (
         address_id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-        address_type address_type_enum NOT NULL,
+        address_type SMALLINT NOT NULL DEFAULT 0,
         is_default_shipping BOOLEAN NOT NULL DEFAULT FALSE,
         is_default_billing BOOLEAN NOT NULL DEFAULT FALSE,
         label VARCHAR(50),
@@ -207,7 +146,7 @@ CREATE TABLE
         refresh_token_hash VARCHAR(255),
         ip_address VARCHAR(45),
         user_agent TEXT,
-        device_type device_type_enum,
+        device_type SMALLINT,
         device_name VARCHAR(100),
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         last_activity_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -230,7 +169,7 @@ CREATE TABLE
         login_id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users (user_id) ON DELETE SET NULL,
         email VARCHAR(255) NOT NULL,
-        login_status login_status_enum NOT NULL,
+        login_status SMALLINT NOT NULL DEFAULT 0,
         failure_reason VARCHAR(100),
         ip_address VARCHAR(45),
         user_agent TEXT,
@@ -287,8 +226,8 @@ CREATE TABLE
         brand VARCHAR(100),
         weight_kg DECIMAL(8, 2),
         dimensions_cm VARCHAR(50),
-        status product_status_enum NOT NULL DEFAULT 'draft',
-        moderation_status moderation_status_enum NOT NULL DEFAULT 'pending',
+        status SMALLINT NOT NULL DEFAULT 0,
+        moderation_status SMALLINT NOT NULL DEFAULT 0,
         meta_title VARCHAR(200),
         meta_description VARCHAR(500),
         tags TEXT,
@@ -429,13 +368,13 @@ CREATE TABLE
         order_id SERIAL PRIMARY KEY,
         order_number VARCHAR(50) UNIQUE NOT NULL,
         user_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE RESTRICT,
-        status order_status_enum NOT NULL DEFAULT 'created',
+        status SMALLINT NOT NULL DEFAULT 0,
         subtotal DECIMAL(10, 2) NOT NULL,
         shipping_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
         tax_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
         discount_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
         total_amount DECIMAL(10, 2) NOT NULL,
-        currency currency_enum NOT NULL DEFAULT 'vnd',
+        currency SMALLINT NOT NULL DEFAULT 0,
         customer_notes TEXT,
         admin_notes TEXT,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -464,7 +403,7 @@ CREATE TABLE
         seller_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE RESTRICT,
         quantity INTEGER NOT NULL,
         unit_price DECIMAL(10, 2) NOT NULL,
-        subtotal DECIMAL(10, 2) NOT NULL, -- Auto-calculated: quantity * unit_price
+        subtotal DECIMAL(10, 2) NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -486,7 +425,7 @@ CREATE TABLE
         state_province VARCHAR(100),
         postal_code VARCHAR(20),
         country VARCHAR(100) NOT NULL DEFAULT 'Vietnam',
-        shipping_method shipping_method_enum,
+        shipping_method SMALLINT,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -500,8 +439,8 @@ CREATE TABLE
     order_payments (
         payment_id SERIAL PRIMARY KEY,
         order_id INTEGER NOT NULL REFERENCES orders (order_id) ON DELETE CASCADE,
-        payment_method payment_method_enum NOT NULL,
-        payment_status payment_status_enum NOT NULL DEFAULT 'pending',
+        payment_method SMALLINT NOT NULL,
+        payment_status SMALLINT NOT NULL DEFAULT 0,
         amount DECIMAL(10, 2) NOT NULL,
         payment_gateway VARCHAR(50), -- stripe, paypal, vnpay, momo -- enum?
         transaction_id VARCHAR(255),
@@ -550,8 +489,8 @@ CREATE TABLE
     order_status_history (
         history_id SERIAL PRIMARY KEY,
         order_id INTEGER NOT NULL REFERENCES orders (order_id) ON DELETE CASCADE,
-        old_status order_status_enum,
-        new_status order_status_enum NOT NULL,
+        old_status SMALLINT,
+        new_status SMALLINT NOT NULL,
         notes TEXT,
         changed_by INTEGER REFERENCES users (user_id) ON DELETE SET NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -591,7 +530,7 @@ CREATE TABLE
         event_id UUID NOT NULL,
         event_type VARCHAR(100) NOT NULL, -- enum?
         attempt_number INTEGER NOT NULL DEFAULT 1,
-        status event_status_enum NOT NULL,
+        status SMALLINT NOT NULL,
         worker_name VARCHAR(100), -- enum?
         order_id INTEGER REFERENCES orders (order_id) ON DELETE SET NULL,
         payload JSONB,
@@ -710,12 +649,12 @@ CREATE TABLE
         notification_id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
         notification_type VARCHAR(50) NOT NULL,
-        channel notification_channel_enum NOT NULL,
-        priority notification_priority_enum NOT NULL DEFAULT 'normal',
+        channel SMALLINT NOT NULL,
+        priority SMALLINT NOT NULL DEFAULT 0,
         subject VARCHAR(200),
         message TEXT NOT NULL,
-        status notification_status_enum NOT NULL DEFAULT 'pending',
-        related_entity_type entity_type_enum,
+        status SMALLINT NOT NULL DEFAULT 0,
+        related_entity_type SMALLINT,
         related_entity_id INTEGER,
         email_sent_at TIMESTAMP,
         read_at TIMESTAMP,

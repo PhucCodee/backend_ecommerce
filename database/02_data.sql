@@ -7,11 +7,11 @@
 INSERT INTO
     users (email, username, status)
 VALUES
-    ('ronaldo@example.com', 'goat', 'active'),
-    ('messi@example.com', 'messi', 'active'),
-    ('lebron@example.com', 'king', 'active'),
-    ('stephen@example.com', 'curry', 'active'),
-    ('ye@example.com', 'west', 'active');
+    ('ronaldo@example.com', 'goat', 0),
+    ('messi@example.com', 'messi', 0),
+    ('lebron@example.com', 'king', 0),
+    ('stephen@example.com', 'curry', 0),
+    ('ye@example.com', 'west', 0);
 
 -- ====================================
 -- 2. USER CREDENTIALS
@@ -49,12 +49,12 @@ VALUES
         'Ronaldo',
         '+351123456789',
         '1985-02-05',
-        'male',
+        0,
         'https://example.com/avatars/ronaldo.jpg',
         'Football legend and entrepreneur. The GOAT.',
-        'en',
+        0,
         'Europe/Lisbon',
-        'eur'
+        0
     ),
     (
         2,
@@ -62,12 +62,12 @@ VALUES
         'Messi',
         '+5491123456789',
         '1987-06-24',
-        'male',
+        0,
         'https://example.com/avatars/messi.jpg',
         '2nd GOAT. Loves mate and family.',
-        'en',
+        0,
         'America/Argentina/Buenos_Aires',
-        'usd'
+        0
     ),
     (
         3,
@@ -75,12 +75,12 @@ VALUES
         'James',
         '+12135551234',
         '1984-12-30',
-        'male',
+        0,
         'https://example.com/avatars/lebron.jpg',
         'King of the court. Lakers.',
-        'en',
+        0,
         'America/Los_Angeles',
-        'usd'
+        0
     ),
     (
         4,
@@ -88,12 +88,12 @@ VALUES
         'Curry',
         '+19255551234',
         '1988-03-14',
-        'male',
+        0,
         'https://example.com/avatars/stephen.jpg',
         'Chef Curry with the shot.',
-        'en',
+        0,
         'America/Los_Angeles',
-        'usd'
+        0
     ),
     (
         5,
@@ -101,12 +101,12 @@ VALUES
         'West',
         '+13105551234',
         '1977-06-08',
-        'male',
+        0,
         'https://example.com/avatars/ye.jpg',
         'Producer, rapper, designer. Like children.',
-        'en',
+        0,
         'America/Chicago',
-        'usd'
+        0
     );
 
 -- ====================================
@@ -115,13 +115,13 @@ VALUES
 INSERT INTO
     user_roles (user_id, role)
 VALUES
-    (1, 'buyer'),
-    (2, 'buyer'),
-    (3, 'seller'),
-    (3, 'buyer'), -- Seller can also buy
-    (4, 'seller'),
-    (4, 'buyer'), -- Seller can also buy
-    (5, 'admin');
+    (1, 0),
+    (2, 0),
+    (3, 1),
+    (3, 0), -- Seller can also buy
+    (4, 1),
+    (4, 0), -- Seller can also buy
+    (5, 2);
 
 -- ====================================
 -- 5. CATEGORIES
@@ -162,8 +162,8 @@ VALUES
         'wireless-mouse',
         'ELEC-001',
         'Comfortable wireless mouse',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -172,8 +172,8 @@ VALUES
         'usb-keyboard',
         'ELEC-002',
         'Mechanical keyboard',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -182,8 +182,8 @@ VALUES
         'laptop-stand',
         'ELEC-003',
         'Adjustable laptop stand',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -192,8 +192,8 @@ VALUES
         'phone-charger',
         'ELEC-004',
         'Fast charging cable',
-        'active',
-        'approved'
+        1,
+        1
     ),
     -- Clothing
     (
@@ -203,8 +203,8 @@ VALUES
         't-shirt',
         'CLOTH-001',
         'Cotton t-shirt',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         4,
@@ -213,8 +213,8 @@ VALUES
         'jeans',
         'CLOTH-002',
         'Blue denim jeans',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         4,
@@ -223,8 +223,8 @@ VALUES
         'sneakers',
         'CLOTH-003',
         'Running shoes',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         4,
@@ -233,8 +233,8 @@ VALUES
         'hat',
         'CLOTH-004',
         'Baseball cap',
-        'active',
-        'approved'
+        1,
+        1
     ),
     -- Books
     (
@@ -244,8 +244,8 @@ VALUES
         'novel',
         'BOOK-001',
         'Fiction book',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -254,8 +254,8 @@ VALUES
         'cookbook',
         'BOOK-002',
         'Recipe collection',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -264,8 +264,8 @@ VALUES
         'programming-guide',
         'BOOK-003',
         'Learn to code',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -274,8 +274,8 @@ VALUES
         'magazine',
         'BOOK-004',
         'Monthly magazine',
-        'active',
-        'approved'
+        1,
+        1
     ),
     -- Home
     (
@@ -285,8 +285,8 @@ VALUES
         'coffee-mug',
         'HOME-001',
         'Ceramic mug',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         4,
@@ -295,8 +295,8 @@ VALUES
         'pillow',
         'HOME-002',
         'Soft pillow',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         4,
@@ -305,8 +305,8 @@ VALUES
         'lamp',
         'HOME-003',
         'Desk lamp',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         4,
@@ -315,8 +315,8 @@ VALUES
         'plant-pot',
         'HOME-004',
         'Decorative pot',
-        'active',
-        'approved'
+        1,
+        1
     ),
     -- Sports
     (
@@ -326,8 +326,8 @@ VALUES
         'yoga-mat',
         'SPORT-001',
         'Exercise mat',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -336,8 +336,8 @@ VALUES
         'water-bottle',
         'SPORT-002',
         'Sports bottle',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -346,8 +346,8 @@ VALUES
         'dumbbells',
         'SPORT-003',
         'Weight training',
-        'active',
-        'approved'
+        1,
+        1
     ),
     (
         3,
@@ -356,8 +356,8 @@ VALUES
         'jump-rope',
         'SPORT-004',
         'Cardio equipment',
-        'active',
-        'approved'
+        1,
+        1
     );
 
 -- ====================================
@@ -427,14 +427,7 @@ INSERT INTO
         currency
     )
 VALUES
-    (
-        'ORD-2025-001',
-        1,
-        'delivered',
-        100.00,
-        100.00,
-        'vnd'
-    );
+    ('ORD-2025-001', 1, 4, 100.00, 100.00, 0);
 
 -- ====================================
 -- 10. ORDER SHIPPING
@@ -457,7 +450,7 @@ VALUES
         '1 Nguyen Hue',
         'Ho Chi Minh',
         'Vietnam',
-        'standard'
+        0
     );
 
 -- ====================================
@@ -472,7 +465,7 @@ INSERT INTO
         paid_at
     )
 VALUES
-    (1, 'cod', 'completed', 100.00, CURRENT_TIMESTAMP);
+    (1, 3, 2, 100.00, CURRENT_TIMESTAMP);
 
 -- ====================================
 -- 12. ORDER ITEMS
