@@ -1,30 +1,28 @@
 using Microsoft.AspNetCore.Http;
+using ECommerce.Infrastructure.Services;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace ECommerce.API.Middleware
 {
-    public class AuthenticationMiddleware
+    public class AuthenticationMiddleware(RequestDelegate next, IJwtService jwtService)
     {
-        private readonly RequestDelegate _next;
-
-        public AuthenticationMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
         public async Task InvokeAsync(HttpContext context)
         {
-            // Check for authentication token in the request headers
-            var token = context.Request.Headers["Authorization"].ToString();
+            var token = context.Request.Headers.Authorization.ToString();
 
-            if (!string.IsNullOrEmpty(token))
+            if (!string.IsNullOrEmpty(token) && token.StartsWith("Bearer "))
             {
-                // Validate the token and set the user principal if valid
-                // This is where you would add your token validation logic
+                var jwtToken = token.Substring(7);
+                var principal = jwtService.ValidateToken(jwtToken);
+
+                if (principal != null)
+                {
+                    context.User = principal;
+                }
             }
 
-            // Call the next middleware in the pipeline
-            await _next(context);
+            await next(context);
         }
     }
 }

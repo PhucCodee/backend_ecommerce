@@ -1,15 +1,14 @@
-using System;
-using System.Threading.Tasks;
 using ECommerce.Application.DTOs;
+using ECommerce.Application.DTOs.auth;
+using ECommerce.Application.DTOs.user;
+using System.Threading.Tasks;
 
 namespace ECommerce.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<UserDto> RegisterAsync(UserDto userDto);
-        Task<UserDto> LoginAsync(string email, string password);
-        Task<UserDto> GetUserByIdAsync(Guid userId);
-        Task<UserDto> UpdateUserAsync(UserDto userDto);
-        Task<bool> DeleteUserAsync(Guid userId);
+        Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
+        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
+        Task<UserProfileDto> GetProfileAsync(int userId);
     }
 }

@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace ECommerce.Domain.Entities;
+
+public partial class ProductSku
+{
+    public int SkuId { get; set; }
+
+    public int ProductId { get; set; }
+
+    public required string Sku { get; set; } = string.Empty;
+
+    public required string VariantAttributes { get; set; } = string.Empty;
+
+    public decimal Price { get; set; }
+
+    public decimal? CostPrice { get; set; }
+
+    public decimal? CompareAtPrice { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public bool IsDefault { get; set; } = false;
+
+    public decimal? WeightKg { get; set; }
+
+    public string? DimensionsCm { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+
+    public virtual ICollection<CartItem> CartItems { get; set; } = [];
+
+    public virtual ICollection<OrderItem> OrderItems { get; set; } = [];
+
+    public virtual ICollection<ProductImage> ProductImages { get; set; } = [];
+
+    public virtual Inventory? Inventory { get; set; }
+
+    public required virtual Product Product { get; set; }
+}

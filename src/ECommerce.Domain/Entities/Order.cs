@@ -1,23 +1,54 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using ECommerce.Domain.Common;
 using ECommerce.Domain.Enums;
 
-namespace ECommerce.Domain.Entities
+namespace ECommerce.Domain.Entities;
+
+public partial class Order
 {
-    public class Order : BaseEntity
-    {
-        public Guid UserId { get; set; } // Foreign key to the User entity
-        public DateTime OrderDate { get; set; } // Date when the order was placed
-        public OrderStatus Status { get; set; } // Current status of the order
-        public decimal TotalAmount { get; set; } // Total amount for the order
+    public int OrderId { get; set; }
 
-        public virtual User User { get; set; } // Navigation property to the User entity
-        public virtual ICollection<OrderItem> OrderItems { get; set; } // Collection of order items
+    public required string OrderNumber { get; set; } = string.Empty;
 
-        public Order()
-        {
-            OrderItems = new List<OrderItem>(); // Initialize the order items collection
-        }
-    }
+    public int UserId { get; set; }
+
+    public OrderStatus Status { get; set; } = OrderStatus.created;
+
+    public decimal Subtotal { get; set; }
+
+    public decimal ShippingFee { get; set; }
+
+    public decimal TaxAmount { get; set; }
+
+    public decimal DiscountAmount { get; set; }
+
+    public decimal TotalAmount { get; set; }
+
+    public Currency PreferredCurrency { get; set; } = Currency.vnd;
+
+    public string? CustomerNotes { get; set; }
+
+    public string? AdminNotes { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+
+    public DateTime? CancelledAt { get; set; }
+
+    public virtual ICollection<EventLog> EventLogs { get; set; } = [];
+
+    public virtual ICollection<OrderItem> OrderItems { get; set; } = [];
+
+    public virtual ICollection<OrderPayment> OrderPayments { get; set; } = [];
+
+    public virtual ICollection<OrderStatusHistory> OrderStatusHistories { get; set; } = [];
+
+    public virtual ICollection<Review> Reviews { get; set; } = [];
+
+    public virtual OrderFulfillment? OrderFulfillment { get; set; }
+
+    public virtual OrderShipping? OrderShipping { get; set; }
+
+    public required virtual User User { get; set; }
 }
