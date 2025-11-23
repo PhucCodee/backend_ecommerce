@@ -1,15 +1,66 @@
-using System;
-using ECommerce.Domain.Common;
+﻿using System;
+using System.Collections.Generic;
+using ECommerce.Domain.Enums;
 
-namespace ECommerce.Domain.Entities
+namespace ECommerce.Domain.Entities;
+
+public partial class Product
 {
-    public class Product : BaseEntity
-    {
-        public string Name { get; set; } // The name of the product
-        public string Description { get; set; } // A brief description of the product
-        public decimal Price { get; set; } // The price of the product
-        public int Stock { get; set; } // The available stock quantity of the product
-        public string ImageUrl { get; set; } // The URL of the product image
-        public string Category { get; set; } // The category of the product
-    }
+    public int ProductId { get; set; }
+
+    public int SellerId { get; set; }
+
+    public int CategoryId { get; set; }
+
+    public required string ProductName { get; set; } = string.Empty;
+
+    public required string Slug { get; set; } = string.Empty;
+
+    public required string BaseSku { get; set; } = string.Empty;
+
+    public string? Description { get; set; }
+
+    public string? ShortDescription { get; set; }
+
+    public bool HasVariants { get; set; } = false;
+
+    public string? Brand { get; set; }
+
+    public decimal? WeightKg { get; set; }
+
+    public string? DimensionsCm { get; set; }
+
+    public ProductStatus Status { get; set; } = ProductStatus.draft;
+
+    public ModerationStatus Moderation { get; set; } = ModerationStatus.pending;
+
+    public string? MetaTitle { get; set; }
+
+    public string? MetaDescription { get; set; }
+
+    public string? Tags { get; set; }
+
+    public int ViewCount { get; set; } = 0;
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+
+    public DateTime? PublishedAt { get; set; }
+
+    public DateTime? RemovedAt { get; set; }
+
+    public virtual ICollection<ProductImage> ProductImages { get; set; } = [];
+
+    public virtual ICollection<ProductMetric> ProductMetrics { get; set; } = [];
+
+    public virtual ICollection<ProductSku> ProductSkus { get; set; } = [];
+
+    public virtual ICollection<Review> Reviews { get; set; } = [];
+
+    public virtual ICollection<UserItemInteraction> UserItemInteractions { get; set; } = [];
+
+    public required virtual Category Category { get; set; }
+
+    public required virtual User Seller { get; set; }
 }

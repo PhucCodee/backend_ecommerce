@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
 {
     public interface IRepository<T> where T : class
     {
+        Task<T?> GetByIdAsync(int id);
         Task<IEnumerable<T>> GetAllAsync();
-        Task<T> GetByIdAsync(Guid id);
-        Task AddAsync(T entity);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<T> AddAsync(T entity);
         Task UpdateAsync(T entity);
-        Task DeleteAsync(Guid id);
+        Task DeleteAsync(int id);
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
     }
 }

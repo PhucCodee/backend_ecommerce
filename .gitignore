@@ -1,0 +1,50 @@
+# Build outputs
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Project-specific
+*.log
+appsettings.Development.json
+appsettings.Local.json
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Docker
+docker-compose.override.yml

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ECommerce.Application.DTOs;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 using ECommerce.Infrastructure.Repositories;
 
 namespace ECommerce.Application.Services
@@ -26,7 +27,15 @@ namespace ECommerce.Application.Services
         public async Task<OrderDto> GetOrderByIdAsync(Guid orderId)
         {
             // Placeholder implementation
-            return await Task.FromResult(new OrderDto());
+            return await Task.FromResult(new OrderDto
+            {
+                Id = 0,
+                UserId = 0,
+                OrderDate = DateTime.UtcNow,
+                TotalAmount = 0,
+                Status = OrderStatus.created,
+                OrderItems = []
+            });
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(Guid userId)

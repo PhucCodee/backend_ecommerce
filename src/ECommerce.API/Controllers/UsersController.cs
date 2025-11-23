@@ -1,55 +1,42 @@
 using Microsoft.AspNetCore.Mvc;
-using ECommerce.Application.DTOs;
+using ECommerce.Application.DTOs.common;
 using ECommerce.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using ECommerce.Application.DTOs.user;
 
 namespace ECommerce.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    [Authorize]
+    public class UsersController(IUserService userService) : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IUserService _userService = userService;
 
-        public UsersController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
-        // POST: api/users/register
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(UserDto userDto)
-        {
-            // Placeholder: always succeed
-            userDto.Id = Guid.NewGuid();
-            return Ok(userDto);
-        }
-
-        // POST: api/users/login
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(UserDto userDto)
-        {
-            // Placeholder: always succeed
-            return Ok(new { Message = "Login successful", User = userDto });
-        }
-
-        // GET: api/users/profile
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
-            // Placeholder: return a dummy user
-            var user = new UserDto
+            try
             {
-                Id = Guid.NewGuid(),
-                Username = "testuser",
-                Email = "test@example.com",
-                FirstName = "Test",
-                LastName = "User",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            return Ok(user);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!int.TryParse(userIdClaim, out int userId))
+                {
+                    var errorResponse = ApiResponse<UserProfileDto>.Failure("Invalid user token", 401);
+                    return Unauthorized(errorResponse);
+                }
+
+                var result = await _userService.GetProfileAsync(userId);
+                var response = ApiResponse<UserProfileDto>.SuccessResponse(result);
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var response = ApiResponse<UserProfileDto>.Failure(ex.Message, 404);
+                return NotFound(response);
+            }
         }
     }
 }

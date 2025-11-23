@@ -5,6 +5,7 @@
     <RootNamespace>ECommerce.Application</RootNamespace>
     <AssemblyName>ECommerce.Application</AssemblyName>
     <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

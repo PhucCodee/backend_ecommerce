@@ -7,7 +7,7 @@ namespace ECommerce.Infrastructure.Repositories
 {
     public interface IOrderRepository : IRepository<Order>
     {
-        Task<Order> GetOrderWithDetailsAsync(Guid orderId);
-        Task<IEnumerable<Order>> GetOrdersByUserIdAsync(Guid userId);
+        Task<Order?> GetOrderWithDetailsAsync(int orderId);
+        Task<IEnumerable<Order>> GetOrdersByUserIdAsync(int userId);
     }
 }
