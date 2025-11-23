@@ -23,7 +23,7 @@ embeddings = GoogleGenerativeAIEmbeddings(
 )
 
 llm = init_chat_model(
-    "gemini-2.5-flash", model_provider="google_genai" , temperature = 0
+    "gemini-2.5-flash", model_provider="google_genai" , temperature = 0, 
 )
 
 
