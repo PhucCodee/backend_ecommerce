@@ -2,6 +2,14 @@
 -- E-COMMERCE SYSTEM
 -- ====================================
 -- ====================================
+-- ====================================
+-- 0. GLOBAL EXTENSIONS
+-- ====================================
+-- Enables fuzzy matching and similarity calculations (e.g. 'USA' <-> 'USB')
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+
+
 -- 1. USER MANAGEMENT TABLES
 -- ====================================
 -- Core user identity table
@@ -245,6 +253,16 @@ COMMENT ON COLUMN products.has_variants IS 'If TRUE, product has multiple varian
 COMMENT ON COLUMN products.status IS 'Product lifecycle: draft, active, inactive, removed, archived';
 
 COMMENT ON COLUMN products.moderation_status IS 'Admin moderation status: pending, approved, rejected';
+
+CREATE INDEX trgm_idx_products_name 
+ON products 
+USING gin (product_name gin_trgm_ops);
+
+-- (Optional) Add this if you want to fuzzy search descriptions too
+CREATE INDEX trgm_idx_products_desc 
+ON products 
+USING gin (description gin_trgm_ops);
+
 
 -- Product SKUs table (actual sellable items)
 -- Represents individual sellable variations of a product

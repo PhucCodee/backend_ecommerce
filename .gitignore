@@ -48,3 +48,6 @@ appsettings.Local.json
 
 # Docker
 docker-compose.override.yml
+
+# Environment
+chatbot.env

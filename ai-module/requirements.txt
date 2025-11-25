@@ -8,3 +8,5 @@ flasgger
 pdfplumber
 fitz
 tdqm
+spacy
+fastapi

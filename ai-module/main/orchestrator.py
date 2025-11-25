@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 from sql_agent import sql_graph
 from rag_agent import rag_agent as rag_graph 
 
+from langgraph.checkpoint.memory import MemorySaver
+
 load_dotenv()
 
 # --- 1. Init Router LLM (Independent Instance) ---
@@ -119,6 +121,7 @@ workflow.add_edge("sql_branch", END)
 workflow.add_edge("rag_branch", END)
 workflow.add_edge("general_branch", END)
 
+checkpointer = MemorySaver()
 app = workflow.compile()
 
 # --- 6. Main Execution Loop ---
