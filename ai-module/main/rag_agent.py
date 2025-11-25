@@ -8,7 +8,7 @@ from langchain_chroma import Chroma
 from langchain_core.tools import tool
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.chat_models import init_chat_model
-
+from pathlib import Path
 
 load_dotenv()
 
@@ -27,13 +27,17 @@ llm = init_chat_model(
 )
 
 
-persist_directory = r"H:\Study\Capstone project\backend_ecommerce\ai-module"
+
+current_dir = Path(__file__).resolve().parent
+persist_directory = str(current_dir)
+
+
 collection_name = "stock_market"
 
 vectorstore = Chroma(
     persist_directory=persist_directory,
     collection_name=collection_name,
-    embedding_function=embeddings  # <-- This is the missing line
+    embedding_function=embeddings  
 )
 
 retriever = vectorstore.as_retriever(
@@ -165,4 +169,6 @@ def running_agent():
         print(result['messages'][-1].content)
 
 
-running_agent()
+# At the bottom of rag_agent.py
+if __name__ == "__main__":
+    running_agent()

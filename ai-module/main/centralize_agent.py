@@ -133,6 +133,4 @@ def run_chatbot():
         print(f"Assistant ({current_state['message_type']}): {current_state['messages'][-1].content}")
 
 
-
-if __name__ == "__main__":
-    run_chatbot()
+run_chatbot()

@@ -90,9 +90,18 @@ def generate_query_node(state: SqlState):
     Rules:
     1. Only generate SELECT statements. Never generate INSERT, UPDATE, or DELETE.
     2. Use 'ILIKE' for text matching instead of '=' for case-insensitivity.
-    3. To get product price, join 'products' with 'product_skus'.
-    4. To get stock, join 'product_skus' with 'inventory'.
-    5. Always limit results to 5 unless asked otherwise.
+    
+    3. **HANDLE TYPOS & FUZZY SEARCH:** - If the user searches for a specific product name (e.g., 'USA KeyBoard'), do NOT rely on a single strict 'ILIKE'.
+       - Instead, try to match ANY of the key terms or use SIMILARITY sorting.
+       - **Preferred Pattern:** SELECT product_name, price, description 
+         FROM products 
+         WHERE product_name ILIKE '%KeyBoard%' 
+         ORDER BY SIMILARITY(product_name, 'USA KeyBoard') DESC 
+         LIMIT 5;
+         
+    4. To get product price, join 'products' with 'product_skus'.
+    5. To get stock, join 'product_skus' with 'inventory'.
+    6. Always limit results to 5 unless asked otherwise.
     """
     
     result = structured_llm.invoke([
@@ -195,5 +204,6 @@ def run_sql_agent():
         except Exception as e:
             print(f"Error running graph: {e}")
 
+# At the bottom of sql_agent.py
 if __name__ == "__main__":
     run_sql_agent()
