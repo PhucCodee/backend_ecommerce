@@ -40,6 +40,21 @@ services:
         ports:
             - "5672:5672"
             - "15672:15672"
+    chatbot_api:
+        build:
+            context: .
+            dockerfile: ai-module/main/Dockerfile.api
+        ports:
+        - "8000:8000"
+        env_file:
+        - chatbot.env
+        environment:
+        - DB_HOST=db
+        - DB_NAME=database
+        - DB_USER=postgres
+        - DB_PASSWORD=123
+        depends_on:
+        - db
 
 volumes:
     postgres_data:
