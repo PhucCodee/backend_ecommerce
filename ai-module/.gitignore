@@ -1,0 +1,16 @@
+# Virtual Environment folders
+venv/
+env/
+
+# Environment variable file (in case you meant .env)
+.env
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# ChromaDB / Vector Store data
+chroma_db_data/
+*.sqlite3
+# Ignore the UUID folders (wildcard match)
+[0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*/
