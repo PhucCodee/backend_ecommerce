@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace ECommerce.Application.DTOs.common
+namespace ECommerce.Application.Common.Responses
 {
-    public class ApiResponse<T>
+    public class ApiResponse<T> : IApiResponse<T>, IApiError
     {
         public bool Success { get; set; }
         public T? Data { get; set; }
@@ -53,7 +53,8 @@ namespace ECommerce.Application.DTOs.common
             {
                 Success = false,
                 Errors = errors,
-                StatusCode = statusCode
+                StatusCode = statusCode,
+                Message = "Validation failed"
             };
         }
 

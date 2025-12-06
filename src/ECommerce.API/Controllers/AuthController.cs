@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ECommerce.Application.DTOs.auth;
-using ECommerce.Application.DTOs.common;
 using ECommerce.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
+using ECommerce.Application.Common.Responses;
 
 namespace ECommerce.API.Controllers
 {
