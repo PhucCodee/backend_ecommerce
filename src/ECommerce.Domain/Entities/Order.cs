@@ -20,7 +20,11 @@ public partial class Order
 
     public decimal TaxAmount { get; set; }
 
-    public decimal DiscountAmount { get; set; }
+    public int? CouponId { get; set; }
+
+    public string? CouponCode { get; set; }
+
+    public decimal CouponDiscount { get; set; }
 
     public decimal TotalAmount { get; set; }
 
@@ -51,4 +55,6 @@ public partial class Order
     public virtual OrderShipping? OrderShipping { get; set; }
 
     public required virtual User User { get; set; }
+
+    public virtual Coupon? Coupon { get; set; }
 }

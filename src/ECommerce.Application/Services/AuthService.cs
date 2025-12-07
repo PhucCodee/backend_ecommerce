@@ -146,10 +146,11 @@ namespace ECommerce.Application.Services
             };
         }
 
-        public Task<bool> RefreshTokenAsync(string refreshToken) => throw new NotImplementedException();
-        public Task<bool> LogoutAsync(string accessToken) => throw new NotImplementedException();
-        public Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword) => throw new NotImplementedException();
-        public Task<bool> ResetPasswordAsync(string email) => throw new NotImplementedException();
-        public Task<bool> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
+        public Task<AuthResponseDto> RefreshTokenAsync(string refreshToken) => throw new NotImplementedException();
+        public Task<AuthOperationResultDto> LogoutAsync(string accessToken) => throw new NotImplementedException();
+        public Task<AuthOperationResultDto> ChangePasswordAsync(int userId, string currentPassword, string newPassword) => throw new NotImplementedException();
+        public Task<AuthOperationResultDto> ResetPasswordAsync(string email) => throw new NotImplementedException();
+        public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
+
     }
 }

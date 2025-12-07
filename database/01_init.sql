@@ -8,8 +8,6 @@
 -- Enables fuzzy matching and similarity calculations (e.g. 'USA' <-> 'USB')
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
-
-
 -- 1. USER MANAGEMENT TABLES
 -- ====================================
 -- Core user identity table
@@ -254,15 +252,10 @@ COMMENT ON COLUMN products.status IS 'Product lifecycle: draft, active, inactive
 
 COMMENT ON COLUMN products.moderation_status IS 'Admin moderation status: pending, approved, rejected';
 
-CREATE INDEX trgm_idx_products_name 
-ON products 
-USING gin (product_name gin_trgm_ops);
+CREATE INDEX trgm_idx_products_name ON products USING gin (product_name gin_trgm_ops);
 
 -- (Optional) Add this if you want to fuzzy search descriptions too
-CREATE INDEX trgm_idx_products_desc 
-ON products 
-USING gin (description gin_trgm_ops);
-
+CREATE INDEX trgm_idx_products_desc ON products USING gin (description gin_trgm_ops);
 
 -- Product SKUs table (actual sellable items)
 -- Represents individual sellable variations of a product
@@ -382,6 +375,26 @@ COMMENT ON COLUMN cart_items.price_snapshot IS 'Price at time of adding to cart 
 -- Orders table (core order information)
 -- Related data (shipping, payment, fulfillment) separated per SRP
 CREATE TABLE
+    coupons (
+        coupon_id SERIAL PRIMARY KEY,
+        code VARCHAR(50) UNIQUE NOT NULL,
+        description TEXT,
+        discount_type SMALLINT NOT NULL,
+        discount_value DECIMAL(10, 2) NOT NULL,
+        min_order_amount DECIMAL(10, 2),
+        usage_limit INTEGER,
+        valid_from TIMESTAMP,
+        valid_until TIMESTAMP,
+        is_active BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+COMMENT ON TABLE coupons IS 'Coupon/discount codes for promotional campaigns. Tracks global usage limit only.';
+
+COMMENT ON COLUMN coupons.discount_type IS '0=percentage, 1=fixed_amount, 2=free_shipping';
+
+CREATE TABLE
     orders (
         order_id SERIAL PRIMARY KEY,
         order_number VARCHAR(50) UNIQUE NOT NULL,
@@ -390,7 +403,9 @@ CREATE TABLE
         subtotal DECIMAL(10, 2) NOT NULL,
         shipping_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
         tax_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
-        discount_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
+        coupon_id INTEGER REFERENCES coupons (coupon_id) ON DELETE SET NULL,
+        coupon_code VARCHAR(50),
+        coupon_discount DECIMAL(10, 2) DEFAULT 0,
         total_amount DECIMAL(10, 2) NOT NULL,
         currency SMALLINT NOT NULL DEFAULT 0,
         customer_notes TEXT,

@@ -45,9 +45,16 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("tax_amount")
                 .HasDefaultValue(0);
 
-            builder.Property(o => o.DiscountAmount)
-                .HasColumnType("decimal(18,2)")
-                .HasColumnName("discount_amount")
+            builder.Property(o => o.CouponId)
+                .HasColumnName("coupon_id");
+
+            builder.Property(o => o.CouponCode)
+                .HasMaxLength(50)
+                .HasColumnName("coupon_code");
+
+            builder.Property(o => o.CouponDiscount)
+                .HasColumnType("decimal(10,2)")
+                .HasColumnName("coupon_discount")
                 .HasDefaultValue(0);
 
             builder.Property(o => o.TotalAmount)
@@ -76,12 +83,18 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.HasIndex(o => o.OrderNumber).IsUnique();
             builder.HasIndex(o => o.UserId);
             builder.HasIndex(o => o.Status);
+            builder.HasIndex(o => o.CouponId);
 
             // Relationships
             builder.HasOne(o => o.User)
                 .WithMany(u => u.Orders)
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(o => o.Coupon)
+                .WithMany(c => c.Orders)
+                .HasForeignKey(o => o.CouponId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(o => o.OrderItems)
                 .WithOne(oi => oi.Order)

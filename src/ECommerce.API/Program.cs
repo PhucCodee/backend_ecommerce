@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ECommerce.Application.DTOs.common;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Services;
 using ECommerce.Infrastructure.Data;
@@ -16,6 +15,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using System.Text.Json;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using ECommerce.Application.Common.Responses;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,13 +74,17 @@ app.UseExceptionHandler(errorApp =>
         var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
         if (exceptionHandlerPathFeature?.Error is JsonException)
         {
+            var malformedJsonErrors = new[] { "Malformed JSON or missing required properties." };
             context.Response.StatusCode = 400;
             context.Response.ContentType = "application/json";
+            var errors = new Dictionary<string, string[]>
+            {
+                { "body", malformedJsonErrors }
+            };
             var apiResponse = ApiResponse<object>.ValidationFailure(
                 "Invalid request body or missing required fields.",
-                new Dictionary<string, string[]> {
-                    { "body", new[] { "Malformed JSON or missing required properties." } }
-                }
+                errors,
+                400
             );
             await context.Response.WriteAsJsonAsync(apiResponse);
         }
