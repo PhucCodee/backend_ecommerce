@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using ECommerce.Application.DTOs.common;
 using System.Collections.Generic;
+using ECommerce.Application.Common.Responses;
 
 namespace ECommerce.API.Middleware
 {
