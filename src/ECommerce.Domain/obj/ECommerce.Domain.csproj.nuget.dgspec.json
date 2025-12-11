@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/tranhoangphuc/Downloads/backend/src/ECommerce.Domain/ECommerce.Domain.csproj": {}
+    "D:\\Project\\Đồ Án\\backend_ecommerce\\src\\ECommerce.Domain\\ECommerce.Domain.csproj": {}
   },
   "projects": {
-    "/Users/tranhoangphuc/Downloads/backend/src/ECommerce.Domain/ECommerce.Domain.csproj": {
+    "D:\\Project\\Đồ Án\\backend_ecommerce\\src\\ECommerce.Domain\\ECommerce.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/tranhoangphuc/Downloads/backend/src/ECommerce.Domain/ECommerce.Domain.csproj",
+        "projectUniqueName": "D:\\Project\\Đồ Án\\backend_ecommerce\\src\\ECommerce.Domain\\ECommerce.Domain.csproj",
         "projectName": "ECommerce.Domain",
-        "projectPath": "/Users/tranhoangphuc/Downloads/backend/src/ECommerce.Domain/ECommerce.Domain.csproj",
-        "packagesPath": "/Users/tranhoangphuc/.nuget/packages/",
-        "outputPath": "/Users/tranhoangphuc/Downloads/backend/src/ECommerce.Domain/obj/",
+        "projectPath": "D:\\Project\\Đồ Án\\backend_ecommerce\\src\\ECommerce.Domain\\ECommerce.Domain.csproj",
+        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+        "outputPath": "D:\\Project\\Đồ Án\\backend_ecommerce\\src\\ECommerce.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/tranhoangphuc/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -37,12 +37,35 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.14.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -54,22 +77,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.17, 8.0.17]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.17, 8.0.17]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

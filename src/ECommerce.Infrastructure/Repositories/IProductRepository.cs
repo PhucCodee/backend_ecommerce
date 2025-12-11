@@ -9,5 +9,7 @@ namespace ECommerce.Infrastructure.Repositories
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
         Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm);
         Task<IEnumerable<Product>> GetProductsByCategoryNameAsync(string categoryName);
+        Task<List<Product>> GetAllWithDetailsAsync();
+        Task<Product?> GetByIdWithDetailsAsync(int id);
     }
 }

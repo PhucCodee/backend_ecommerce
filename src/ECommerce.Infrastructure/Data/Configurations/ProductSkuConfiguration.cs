@@ -24,7 +24,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
 
             builder.Property(ps => ps.VariantAttributes)
                 .IsRequired()
-                .HasMaxLength(500)
+                .HasColumnType("jsonb")
                 .HasColumnName("variant_attributes");
 
             builder.Property(ps => ps.Price)
