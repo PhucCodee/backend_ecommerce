@@ -1,6 +1,7 @@
 using ECommerce.Domain.Entities;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
@@ -43,6 +44,21 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context.Users
                 .AnyAsync(u => u.Username == username);
+        }
+
+        public async Task<List<User>> GetAllWithProfileAsync()
+        {
+            return await _context.Users
+                .Include(u => u.UserProfile)
+                .ToListAsync();
+        }
+
+        public async Task<User?> GetWithProfileAsync(int userId)
+        {
+            return await _context.Users
+                .Include(u => u.UserProfile)
+                .Include(u => u.UserCredential)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
         }
     }
 }

@@ -1,4 +1,5 @@
 using ECommerce.Domain.Entities;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
@@ -11,5 +12,7 @@ namespace ECommerce.Infrastructure.Repositories
         Task<User?> GetUserWithProfileAsync(int userId);
         Task<bool> EmailExistsAsync(string email);
         Task<bool> UsernameExistsAsync(string username);
+        Task<List<User>> GetAllWithProfileAsync();
+        Task<User?> GetWithProfileAsync(int userId);
     }
 }

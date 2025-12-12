@@ -39,5 +39,23 @@ namespace ECommerce.Infrastructure.Repositories
                 .Where(p => p.Category.CategoryName == categoryName)
                 .ToListAsync();
         }
+
+        public async Task<List<Product>> GetAllWithDetailsAsync()
+        {
+            return await _context.Products
+                .Include(p => p.ProductSkus)
+                    .ThenInclude(sku => sku.Inventory!)
+                .Include(p => p.ProductImages)
+                .ToListAsync();
+        }
+
+        public async Task<Product?> GetByIdWithDetailsAsync(int id)
+        {
+            return await _context.Products
+                .Include(p => p.ProductSkus)
+                    .ThenInclude(sku => sku.Inventory!)
+                .Include(p => p.ProductImages)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+        }
     }
 }

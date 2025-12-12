@@ -16,8 +16,21 @@ using System.Text.Json;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using ECommerce.Application.Common.Responses;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -103,6 +116,20 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<AuthenticationMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseCors();
+
+// Serve uploaded files as static files
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 
 app.UseAuthentication();
 
