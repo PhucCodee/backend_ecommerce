@@ -6,20 +6,15 @@ using ECommerce.Application.DTOs;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
+using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Repositories;
 
 namespace ECommerce.Application.Services
 {
-    public class ProductService : IProductService
+    public class ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork) : IProductService
     {
-        private readonly IProductRepository _productRepository;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork)
-        {
-            _productRepository = productRepository;
-            _unitOfWork = unitOfWork;
-        }
+        private readonly IProductRepository _productRepository = productRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
         {

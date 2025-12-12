@@ -1,4 +1,5 @@
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -46,7 +47,7 @@ namespace ECommerce.Infrastructure.Repositories
                 .AnyAsync(u => u.Username == username);
         }
 
-        public async Task<List<User>> GetAllWithProfileAsync()
+        public async Task<IEnumerable<User>> GetAllWithProfileAsync()
         {
             return await _context.Users
                 .Include(u => u.UserProfile)

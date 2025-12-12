@@ -1,4 +1,5 @@
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -7,12 +8,8 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class ProductRepository : Repository<Product>, IProductRepository
+    public class ProductRepository(ApplicationDbContext context) : Repository<Product>(context), IProductRepository
     {
-        public ProductRepository(ApplicationDbContext context) : base(context)
-        {
-        }
-
         public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
         {
             return await _context.Products
@@ -31,7 +28,6 @@ namespace ECommerce.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        // Optional: Search by category name instead of ID
         public async Task<IEnumerable<Product>> GetProductsByCategoryNameAsync(string categoryName)
         {
             return await _context.Products
@@ -40,7 +36,7 @@ namespace ECommerce.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Product>> GetAllWithDetailsAsync()
+        public async Task<IEnumerable<Product>> GetAllWithDetailsAsync()
         {
             return await _context.Products
                 .Include(p => p.ProductSkus)

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using ECommerce.Domain.Repositories;
 
 namespace ECommerce.Infrastructure.Repositories
 {

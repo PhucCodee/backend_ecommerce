@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ECommerce.Infrastructure.Repositories
+namespace ECommerce.Domain.Repositories
 {
     public interface IOrderRepository : IRepository<Order>
     {

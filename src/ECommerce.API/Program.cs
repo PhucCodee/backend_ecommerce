@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using ECommerce.Application.Common.Responses;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
+using ECommerce.Domain.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,11 +106,11 @@ app.UseExceptionHandler(errorApp =>
 });
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment())
+// {
+app.UseSwagger();
+app.UseSwaggerUI();
+// }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

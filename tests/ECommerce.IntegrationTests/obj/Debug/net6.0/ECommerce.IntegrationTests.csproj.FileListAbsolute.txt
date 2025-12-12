@@ -1,6 +1,0 @@
-/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.IntegrationTests/obj/Debug/net6.0/ECommerce.IntegrationTests.csproj.AssemblyReference.cache
-/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.IntegrationTests/obj/Debug/net6.0/MvcTestingAppManifest.json
-/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.IntegrationTests/obj/Debug/net6.0/ECommerce.IntegrationTests.GeneratedMSBuildEditorConfig.editorconfig
-/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.IntegrationTests/obj/Debug/net6.0/ECommerce.IntegrationTests.AssemblyInfoInputs.cache
-/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.IntegrationTests/obj/Debug/net6.0/ECommerce.IntegrationTests.AssemblyInfo.cs
-/Users/tranhoangphuc/Downloads/backend/tests/ECommerce.IntegrationTests/obj/Debug/net6.0/ECommerce.IntegrationTests.csproj.CoreCompileInputs.cache
