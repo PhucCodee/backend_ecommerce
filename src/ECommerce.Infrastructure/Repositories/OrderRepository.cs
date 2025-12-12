@@ -1,4 +1,5 @@
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,12 +9,8 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class OrderRepository : Repository<Order>, IOrderRepository
+    public class OrderRepository(ApplicationDbContext context) : Repository<Order>(context), IOrderRepository
     {
-        public OrderRepository(ApplicationDbContext context) : base(context)
-        {
-        }
-
         public async Task<Order?> GetOrderWithDetailsAsync(int orderId)
         {
             return await _context.Orders

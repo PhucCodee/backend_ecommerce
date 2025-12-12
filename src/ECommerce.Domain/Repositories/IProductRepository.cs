@@ -2,14 +2,14 @@ using ECommerce.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ECommerce.Infrastructure.Repositories
+namespace ECommerce.Domain.Repositories
 {
     public interface IProductRepository : IRepository<Product>
     {
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
         Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm);
         Task<IEnumerable<Product>> GetProductsByCategoryNameAsync(string categoryName);
-        Task<List<Product>> GetAllWithDetailsAsync();
+        Task<IEnumerable<Product>> GetAllWithDetailsAsync();
         Task<Product?> GetByIdWithDetailsAsync(int id);
     }
 }

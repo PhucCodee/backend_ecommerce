@@ -10,16 +10,11 @@ namespace ECommerce.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UploadsController : ControllerBase
+    public class UploadsController(IWebHostEnvironment env) : ControllerBase
     {
-        private readonly IWebHostEnvironment _env;
-        private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        private readonly IWebHostEnvironment _env = env;
+        private readonly string[] _allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
         private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
-
-        public UploadsController(IWebHostEnvironment env)
-        {
-            _env = env;
-        }
 
         [HttpPost]
         public async Task<IActionResult> Upload(IFormFile file)

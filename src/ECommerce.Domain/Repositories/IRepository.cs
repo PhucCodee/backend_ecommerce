@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace ECommerce.Infrastructure.Repositories
+namespace ECommerce.Domain.Repositories
 {
     public interface IRepository<T> where T : class
     {

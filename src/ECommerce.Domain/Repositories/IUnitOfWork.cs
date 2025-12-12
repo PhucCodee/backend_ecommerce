@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using ECommerce.Domain.Entities;
 
-namespace ECommerce.Infrastructure.Repositories
+namespace ECommerce.Domain.Repositories
 {
     public interface IUnitOfWork : IDisposable
     {
