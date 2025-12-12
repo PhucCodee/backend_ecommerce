@@ -38,9 +38,9 @@ COPY --from=build /app/publish .
 # Copy source code for EF migrations
 COPY --from=build /src/src ./src
 
-# Copy startup script
+# Copy startup script and fix Windows line endings
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 # Set the container to listen on port 8080
 ENV ASPNETCORE_URLS=http://+:8080

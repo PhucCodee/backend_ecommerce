@@ -4,6 +4,7 @@ using ECommerce.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ECommerce.Application.Common.Responses;
 
 namespace ECommerce.API.Controllers
 {
@@ -18,70 +19,50 @@ namespace ECommerce.API.Controllers
             _productService = productService;
         }
 
-        // GET: api/products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
+        public async Task<IActionResult> GetAllProducts()
         {
-            var products = await Task.FromResult(new List<ProductDto>
-            {
-                new ProductDto
-                {
-                    Id = 0,
-                    Name = "Test Product",
-                    Description = "A placeholder product",
-                    Price = 9.99m,
-                    Stock = 100,
-                    ImageUrl = "https://example.com/image.png"
-                }
-            });
-            return Ok(products);
+            var products = await _productService.GetAllProductsAsync();
+            return Ok(ApiResponse<IEnumerable<ProductDto>>.SuccessResponse(products));
         }
 
-        // GET: api/products/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProductDto>> GetProduct(int id)
+        public async Task<IActionResult> GetProductById(int id)
         {
-            if (id == 0)
-                return NotFound();
+            var product = await _productService.GetProductByIdAsync(id);
+            if (product == null) return NotFound();
 
-            var product = await Task.FromResult(new ProductDto
-            {
-                Id = 0,
-                Name = "Test Product",
-                Description = "A placeholder product",
-                Price = 9.99m,
-                Stock = 100,
-                ImageUrl = "https://example.com/image.png"
-            });
-            return Ok(product);
+            return Ok(ApiResponse<ProductDto>.SuccessResponse(product));
         }
 
-        // POST: api/products
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> CreateProduct(ProductDto productDto)
+        public async Task<IActionResult> CreateProduct([FromBody] ProductDto productDto)
         {
-            productDto.Id = 0;
-            var createdProduct = await Task.FromResult(productDto);
-            return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.Id }, createdProduct);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiResponse<ProductDto>.Failure("Invalid product data", 400));
+            }
+
+            var createdProduct = await _productService.CreateProductAsync(productDto);
+            return CreatedAtAction(nameof(GetProductById), new { id = createdProduct.Id }, ApiResponse<ProductDto>.SuccessResponse(createdProduct, "Product created", 201));
         }
 
-        // PUT: api/products/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, ProductDto productDto)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductDto productDto)
         {
-            if (id != productDto.Id)
-                return BadRequest();
+            var updated = await _productService.UpdateProductAsync(id, productDto);
+            if (updated == null) return NotFound();
 
-            await Task.CompletedTask; // Placeholder
-            return NoContent();
+            return Ok(ApiResponse<ProductDto>.SuccessResponse(updated, "Product updated"));
         }
 
-        // DELETE: api/products/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            await Task.CompletedTask; // Placeholder
-            return NoContent();
+            var deleted = await _productService.DeleteProductAsync(id);
+            if (!deleted) return NotFound();
+
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Product deleted"));
         }
     }
 }

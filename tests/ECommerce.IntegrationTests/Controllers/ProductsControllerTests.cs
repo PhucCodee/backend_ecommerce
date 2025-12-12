@@ -9,6 +9,7 @@ using ECommerce.API.Controllers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.DTOs;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ECommerce.IntegrationTests.Controllers
 {
@@ -29,8 +30,8 @@ namespace ECommerce.IntegrationTests.Controllers
             // Arrange
             var products = new List<ProductDto>
             {
-                new ProductDto { Id = 1, Name = "Product 1", Price = 10.0m },
-                new ProductDto { Id = 2, Name = "Product 2", Price = 20.0m }
+                new ProductDto { Id = 1, Name = "Product 1", Price = 10.0m, Stock = 1, CategoryId = 1, SellerId = 1 },
+                new ProductDto { Id = 2, Name = "Product 2", Price = 20.0m, Stock = 1, CategoryId = 1, SellerId = 1 }
             };
             _mockProductService.Setup(service => service.GetAllProductsAsync()).ReturnsAsync(products);
 
@@ -40,8 +41,8 @@ namespace ECommerce.IntegrationTests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
-            var returnProducts = Assert.IsType<List<ProductDto>>(okResult.Value);
-            Assert.Equal(2, returnProducts.Count);
+            dynamic response = okResult.Value!;
+            Assert.Equal(2, ((IEnumerable<ProductDto>)response.Data).Count());
         }
 
         [Fact]
@@ -62,7 +63,7 @@ namespace ECommerce.IntegrationTests.Controllers
         public async Task CreateProduct_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            var newProduct = new ProductDto { Name = "New Product", Price = 15.0m };
+            var newProduct = new ProductDto { Name = "New Product", Price = 15.0m, Stock = 1, CategoryId = 1, SellerId = 1 };
             _mockProductService.Setup(service => service.CreateProductAsync(newProduct)).ReturnsAsync(newProduct);
 
             // Act
@@ -71,7 +72,8 @@ namespace ECommerce.IntegrationTests.Controllers
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal((int)HttpStatusCode.Created, createdResult.StatusCode);
-            Assert.Equal(newProduct, createdResult.Value);
+            dynamic response = createdResult.Value!;
+            Assert.Equal(newProduct, response.Data);
         }
     }
 }
