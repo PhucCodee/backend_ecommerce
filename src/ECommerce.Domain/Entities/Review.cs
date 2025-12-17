@@ -11,7 +11,7 @@ public partial class Review
 
     public int UserId { get; set; }
 
-    public int OrderId { get; set; }
+    public int OrderItemId { get; set; }
 
     public int Rating { get; set; }
 
@@ -41,7 +41,7 @@ public partial class Review
 
     public virtual ICollection<ReviewImage> ReviewImages { get; set; } = [];
 
-    public required virtual Order Order { get; set; }
+    public required virtual OrderItem OrderItem { get; set; }
 
     public required virtual Product Product { get; set; }
 

@@ -357,7 +357,7 @@ CREATE TABLE
     carts (
         cart_id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users (user_id) ON DELETE CASCADE,
-        status SMALLINT NOT NULL DEFAULT 0, -- 0=active, 1=abandoned, 2=converted
+        status SMALLINT NOT NULL DEFAULT 0,
         subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0,
         total_items INTEGER NOT NULL DEFAULT 0,
         session_id VARCHAR(255), -- For guest carts (future feature)

@@ -1,4 +1,4 @@
-using ECommerce.Application.DTOs;
+using ECommerce.Application.Common.Exceptions;
 using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Helpers;
@@ -8,13 +8,7 @@ using ECommerce.Domain.Enums;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECommerce.Application.Services
@@ -26,12 +20,25 @@ namespace ECommerce.Application.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            // Check if user already exists
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == registerDto.Email || u.Username == registerDto.Username);
+            // Trim and normalize inputs
+            registerDto.Email = registerDto.Email.Trim().ToLowerInvariant();
+            registerDto.Username = registerDto.Username.Trim();
+            registerDto.FirstName = registerDto.FirstName.Trim();
+            registerDto.LastName = registerDto.LastName.Trim();
 
-            if (existingUser != null)
-                throw new InvalidOperationException("User with this email or username already exists");
+            // Check if email already exists
+            var emailExists = await _context.Users
+                .AnyAsync(u => u.Email == registerDto.Email);
+
+            if (emailExists)
+                throw new ConflictException("Email is already registered");
+
+            // Check if username already exists (case-insensitive)
+            var usernameExists = await _context.Users
+                .AnyAsync(u => EF.Functions.ILike(u.Username, registerDto.Username));
+
+            if (usernameExists)
+                throw new ConflictException("Username is already taken");
 
             // Hash password
             var (passwordHash, passwordSalt) = SecurityHelper.HashPassword(registerDto.Password);
@@ -40,6 +47,11 @@ namespace ECommerce.Application.Services
             var user = User.CreateDefault(registerDto.Email, registerDto.Username);
             user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
             user.UserProfile = UserProfile.CreateDefault(user, registerDto.FirstName, registerDto.LastName);
+
+            if (!string.IsNullOrWhiteSpace(registerDto.Phone))
+            {
+                user.UserProfile.Phone = registerDto.Phone.Trim();
+            }
 
             var accessToken = JwtHelper.GenerateAccessToken(user, _configuration);
             var refreshToken = SecurityHelper.GenerateRefreshToken();
@@ -84,15 +96,18 @@ namespace ECommerce.Application.Services
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Email || u.Username == loginDto.Email);
 
             if (user == null || user.UserCredential == null)
-                throw new UnauthorizedAccessException("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
+
+            if (user.UserProfile == null)
+                throw new BadRequestException("User profile not found. Please contact support.");
 
             // Check account status
             if (user.Status != UserStatus.active)
-                throw new UnauthorizedAccessException("Account is not active");
+                throw new UnauthorizedException("Invalid credentials");
 
             // Check if account is locked
             if (user.UserCredential.LockedUntil.HasValue && user.UserCredential.LockedUntil > DateTime.UtcNow)
-                throw new UnauthorizedAccessException("Account is temporarily locked");
+                throw new UnauthorizedException("Account is temporarily locked");
 
             // Verify password
             if (!SecurityHelper.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
@@ -106,7 +121,7 @@ namespace ECommerce.Application.Services
                 user.UserCredential.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
-                throw new UnauthorizedAccessException("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
             }
 
             // Reset failed attempts on successful login

@@ -29,7 +29,9 @@ namespace ECommerce.Infrastructure.Data
         public DbSet<OrderPayment> OrderPayments { get; set; }
         public DbSet<OrderFulfillment> OrderFulfillments { get; set; }
         public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
+        public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Coupon> Coupons { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<ReviewImage> ReviewImages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -44,6 +46,7 @@ namespace ECommerce.Infrastructure.Data
 
             modelBuilder
                 .HasPostgresEnum<AddressType>()
+                .HasPostgresEnum<CartStatus>()
                 .HasPostgresEnum<Currency>()
                 .HasPostgresEnum<DeviceType>()
                 .HasPostgresEnum<EntityType>()

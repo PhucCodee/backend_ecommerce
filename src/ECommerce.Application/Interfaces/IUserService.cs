@@ -8,13 +8,11 @@ namespace ECommerce.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
-        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
         Task<UserProfileDto> GetProfileAsync(int userId);
         Task<IEnumerable<UserProfileDto>> GetAllAsync();
-        Task<UserProfileDto?> GetByIdAsync(int userId);
+        Task<UserProfileDto> GetByIdAsync(int userId);
         Task<UserProfileDto> CreateAsync(UserCreateDto createDto);
-        Task<UserProfileDto?> UpdateAsync(int userId, UserUpdateDto updateDto);
+        Task<UserProfileDto> UpdateAsync(int userId, UserUpdateDto updateDto);
         Task<bool> DeleteAsync(int userId);
     }
 }

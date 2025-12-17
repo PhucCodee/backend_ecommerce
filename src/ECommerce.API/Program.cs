@@ -19,6 +19,7 @@ using ECommerce.Application.Common.Responses;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using ECommerce.Domain.Repositories;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,42 +69,23 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.InvalidModelStateResponseFactory = context =>
     {
         var errors = context.ModelState
-            .Where(e => e.Value.Errors.Count > 0)
+            .Where(e => e.Value != null && e.Value.Errors.Count > 0)
             .ToDictionary(
                 kvp => kvp.Key,
-                kvp => kvp.Value.Errors.Select(x => x.ErrorMessage).ToArray()
+                kvp => kvp.Value!.Errors.Select(x => x.ErrorMessage).ToArray()
             );
 
-        var apiResponse = ApiResponse<object>.ValidationFailure("Validation failed", errors, 400);
+        var apiResponse = ApiResponse<object>.Fail(
+            message: "Validation failed",
+            errors: null,
+            validationErrors: errors
+        );
+
         return new BadRequestObjectResult(apiResponse);
     };
 });
 
 var app = builder.Build();
-
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-        if (exceptionHandlerPathFeature?.Error is JsonException)
-        {
-            var malformedJsonErrors = new[] { "Malformed JSON or missing required properties." };
-            context.Response.StatusCode = 400;
-            context.Response.ContentType = "application/json";
-            var errors = new Dictionary<string, string[]>
-            {
-                { "body", malformedJsonErrors }
-            };
-            var apiResponse = ApiResponse<object>.ValidationFailure(
-                "Invalid request body or missing required fields.",
-                errors,
-                400
-            );
-            await context.Response.WriteAsJsonAsync(apiResponse);
-        }
-    });
-});
 
 // Configure the HTTP request pipeline
 // if (app.Environment.IsDevelopment())
