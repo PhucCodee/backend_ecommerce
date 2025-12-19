@@ -349,23 +349,67 @@ COMMENT ON COLUMN inventory_history.change_type IS 'Type of change: restock, sal
 COMMENT ON COLUMN inventory_history.reference_type IS 'Context of change: order, manual, system, return';
 
 -- ====================================
--- 3. SHOPPING CART TABLE
+-- 3. SHOPPING CART TABLES
 -- ====================================
+-- Shopping carts table
+-- Tracks cart metadata and lifecycle - supports multiple carts per user
+CREATE TABLE
+    carts (
+        cart_id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users (user_id) ON DELETE CASCADE,
+        status SMALLINT NOT NULL DEFAULT 0,
+        subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0,
+        total_items INTEGER NOT NULL DEFAULT 0,
+        session_id VARCHAR(255), -- For guest carts (future feature)
+        ip_address VARCHAR(45),
+        abandoned_at TIMESTAMP,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP, -- Auto-clear old carts after 90 days
+        CONSTRAINT cart_owner_check CHECK (
+            (
+                user_id IS NOT NULL
+                AND session_id IS NULL
+            )
+            OR (
+                user_id IS NULL
+                AND session_id IS NOT NULL
+            )
+        )
+    );
+
+-- Partial unique index: only ONE active cart per authenticated user
+CREATE UNIQUE INDEX idx_one_active_cart_per_user ON carts (user_id)
+WHERE
+    status = 0
+    AND user_id IS NOT NULL;
+
+-- Partial unique index: only ONE active cart per guest session
+CREATE UNIQUE INDEX idx_one_active_cart_per_session ON carts (session_id)
+WHERE
+    status = 0
+    AND session_id IS NOT NULL;
+
+COMMENT ON TABLE carts IS 'Multiple carts per user for historical tracking. Only ONE active cart enforced by partial unique index. Converted carts preserved for analytics.';
+
+COMMENT ON COLUMN carts.status IS '0=active (current shopping), 1=abandoned (inactive 24hrs), 2=converted (became an order)';
+
+COMMENT ON COLUMN carts.expires_at IS 'Cleanup timestamp - abandoned carts auto-deleted after 90 days';
+
 -- Shopping cart items table
--- Simple design with direct SKU reference
 CREATE TABLE
     cart_items (
         cart_item_id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
+        cart_id INTEGER NOT NULL REFERENCES carts (cart_id) ON DELETE CASCADE,
         sku_id INTEGER NOT NULL REFERENCES product_skus (sku_id) ON DELETE CASCADE,
         quantity INTEGER NOT NULL DEFAULT 1,
         price_snapshot DECIMAL(10, 2) NOT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE (user_id, sku_id) -- One SKU per user cart
+        UNIQUE (cart_id, sku_id) -- One SKU per cart
     );
 
-COMMENT ON TABLE cart_items IS 'Shopping cart items. Simplified design using sku_id directly. Price snapshot preserved for price change detection.';
+COMMENT ON TABLE cart_items IS 'Shopping cart line items. Price snapshot preserved for analytics and price change detection.';
 
 COMMENT ON COLUMN cart_items.price_snapshot IS 'Price at time of adding to cart - used to detect price changes before checkout';
 
@@ -612,7 +656,7 @@ CREATE TABLE
         review_id SERIAL PRIMARY KEY,
         product_id INTEGER NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
         user_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-        order_id INTEGER NOT NULL REFERENCES orders (order_id) ON DELETE RESTRICT,
+        order_item_id INTEGER NOT NULL REFERENCES order_items (order_item_id) ON DELETE RESTRICT,
         rating INTEGER NOT NULL,
         title VARCHAR(200),
         comment TEXT,
@@ -625,12 +669,12 @@ CREATE TABLE
         moderated_by INTEGER REFERENCES users (user_id) ON DELETE SET NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE (product_id, user_id, order_id) -- Can review same product from different orders
+        UNIQUE (user_id, order_item_id) -- One review per order item
     );
 
-COMMENT ON TABLE reviews IS 'Product reviews. Requires valid order_id - users can only review purchased products. Validated via trigger.';
+COMMENT ON TABLE reviews IS 'Product reviews. Requires valid order_item_id - users can review each purchased item separately. order_item_id automatically validates user purchased the product.';
 
-COMMENT ON COLUMN reviews.order_id IS 'REQUIRED - ensures verified purchase. Trigger validates user purchased product in this order.';
+COMMENT ON COLUMN reviews.order_item_id IS 'REQUIRED - links to specific purchased item. Automatically verifies purchase and allows reviewing multiple products from same order.';
 
 COMMENT ON COLUMN reviews.rating IS 'Rating from 1 to 5 stars';
 

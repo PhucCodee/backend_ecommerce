@@ -10,12 +10,13 @@ services:
             - ConnectionStrings__DefaultConnection=Username=postgres;Password=123;Host=db;Port=5432;Database=database
             - Redis__Host=cache
             - RabbitMQ__Host=message_broker
+            - TZ=Asia/Ho_Chi_Minh
         volumes:
             - uploads_data:/app/uploads
         depends_on:
             - db
-            - cache
-            - message_broker
+            # - cache
+            # - message_broker
 
     db:
         image: postgres:15
@@ -23,6 +24,7 @@ services:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=123
             - POSTGRES_DB=database
+            - TZ=Asia/Ho_Chi_Minh
         ports:
             - "5432:5432"
         volumes:
@@ -30,18 +32,18 @@ services:
             - ./database/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
             - ./database/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
 
-    cache:
-        image: redis:7
-        ports:
-            - "6379:6379"
-        volumes:
-            - redis_data:/data
+    # cache:
+    #     image: redis:7
+    #     ports:
+    #         - "6379:6379"
+    #     volumes:
+    #         - redis_data:/data
 
-    message_broker:
-        image: rabbitmq:3-management
-        ports:
-            - "5672:5672"
-            - "15672:15672"
+    # message_broker:
+    #     image: rabbitmq:3-management
+    #     ports:
+    #         - "5672:5672"
+    #         - "15672:15672"
     # chatbot_api:
     #     build:
     #         context: .

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace ECommerce.Infrastructure.Services
+namespace ECommerce.Application.Interfaces
 {
     public interface IJwtService
     {

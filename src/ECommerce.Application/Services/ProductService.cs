@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ECommerce.Application.Common.Exceptions;
 using ECommerce.Application.DTOs;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
@@ -22,10 +23,10 @@ namespace ECommerce.Application.Services
             return products.Select(MapToDto);
         }
 
-        public async Task<ProductDto?> GetProductByIdAsync(int productId)
+        public async Task<ProductDto> GetProductByIdAsync(int productId)
         {
-            var product = await _productRepository.GetByIdWithDetailsAsync(productId);
-            return product == null ? null : MapToDto(product);
+            var product = await _productRepository.GetByIdWithDetailsAsync(productId) ?? throw new NotFoundException("Product not found");
+            return MapToDto(product);
         }
 
         public async Task<ProductDto> CreateProductAsync(ProductDto productDto)
@@ -78,7 +79,7 @@ namespace ECommerce.Application.Services
 
             defaultSku.Inventory = inventory;
 
-                if (!string.IsNullOrWhiteSpace(productDto.ImageUrl))
+            if (!string.IsNullOrWhiteSpace(productDto.ImageUrl))
             {
                 var image = new ProductImage
                 {
@@ -104,13 +105,9 @@ namespace ECommerce.Application.Services
             return MapToDto(product);
         }
 
-        public async Task<ProductDto?> UpdateProductAsync(int productId, ProductDto productDto)
+        public async Task<ProductDto> UpdateProductAsync(int productId, ProductDto productDto)
         {
-            var product = await _productRepository.GetByIdWithDetailsAsync(productId);
-            if (product == null)
-            {
-                return null;
-            }
+            var product = await _productRepository.GetByIdWithDetailsAsync(productId) ?? throw new NotFoundException("Product not found");
 
             product.ProductName = productDto.Name;
             product.Description = productDto.Description;
@@ -179,8 +176,13 @@ namespace ECommerce.Application.Services
 
         public async Task<bool> DeleteProductAsync(int productId)
         {
-            await _productRepository.DeleteAsync(productId);
-            return await _unitOfWork.SaveChangesAsync() > 0;
+            var product = await _productRepository.GetByIdAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            product.SoftDelete();
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
         private static ProductDto MapToDto(Product product)
@@ -206,9 +208,7 @@ namespace ECommerce.Application.Services
 
         private static string GenerateSlug(string name)
         {
-            var slug = new string(name.Trim().ToLowerInvariant()
-                .Select(ch => char.IsLetterOrDigit(ch) ? ch : '-')
-                .ToArray());
+            var slug = new string([.. name.Trim().ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '-')]);
             while (slug.Contains("--"))
             {
                 slug = slug.Replace("--", "-");

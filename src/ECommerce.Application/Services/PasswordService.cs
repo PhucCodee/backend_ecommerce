@@ -1,12 +1,13 @@
+using ECommerce.Application.Interfaces;
 using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ECommerce.Application.Helpers
+namespace ECommerce.Infrastructure.Services
 {
-    public static class SecurityHelper
+    public class PasswordService : IPasswordService
     {
-        public static (string hash, string salt) HashPassword(string password)
+        public (string hash, string salt) HashPassword(string password)
         {
             using var rng = RandomNumberGenerator.Create();
             var saltBytes = new byte[32];
@@ -19,7 +20,7 @@ namespace ECommerce.Application.Helpers
             return (hash, salt);
         }
 
-        public static bool VerifyPassword(string password, string hash, string salt)
+        public bool VerifyPassword(string password, string hash, string salt)
         {
             var saltBytes = Convert.FromBase64String(salt);
             using var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 10000, HashAlgorithmName.SHA256);
@@ -27,17 +28,9 @@ namespace ECommerce.Application.Helpers
             return hash == computedHash;
         }
 
-        public static string HashToken(string token)
+        public string HashToken(string token)
         {
             var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
-            return Convert.ToBase64String(bytes);
-        }
-
-        public static string GenerateRefreshToken()
-        {
-            using var rng = RandomNumberGenerator.Create();
-            var bytes = new byte[32];
-            rng.GetBytes(bytes);
             return Convert.ToBase64String(bytes);
         }
     }

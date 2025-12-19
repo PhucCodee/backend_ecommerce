@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
-using ECommerce.Infrastructure.Services;
 using System.Threading.Tasks;
-using System.Security.Claims;
+using ECommerce.Application.Interfaces;
 
 namespace ECommerce.API.Middleware
 {

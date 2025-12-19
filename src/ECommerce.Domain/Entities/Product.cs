@@ -63,4 +63,13 @@ public partial class Product
     public required virtual Category Category { get; set; }
 
     public required virtual User Seller { get; set; }
+
+    public void SoftDelete()
+    {
+        RemovedAt = DateTime.UtcNow;
+        Status = ProductStatus.removed;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public bool IsDeleted() => RemovedAt.HasValue;
 }
