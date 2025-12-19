@@ -24,6 +24,15 @@ namespace ECommerce.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
+        public async Task<User?> GetByEmailOrUsernameAsync(string emailOrUsername)
+        {
+            return await GetActiveUsers()
+                .Include(u => u.UserCredential)
+                .Include(u => u.UserProfile)
+                .Include(u => u.UserSessions)
+                .FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.Username == emailOrUsername);
+        }
+
         public async Task<User?> GetUserWithCredentialsAsync(string email)
         {
             return await GetActiveUsers()

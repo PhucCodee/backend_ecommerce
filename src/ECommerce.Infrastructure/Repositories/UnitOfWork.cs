@@ -16,7 +16,6 @@ namespace ECommerce.Infrastructure.Repositories
         private IRepository<CartItem>? _cartItems;
         private IRepository<UserAddress>? _userAddresses;
         private IRepository<Review>? _reviews;
-
         public IUserRepository Users => _users ??= new UserRepository(_context);
         public IProductRepository Products => _products ??= new ProductRepository(_context);
         public IOrderRepository Orders => _orders ??= new OrderRepository(_context);

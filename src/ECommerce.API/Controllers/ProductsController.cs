@@ -29,9 +29,9 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProduct(ProductDto productDto)
+        public async Task<IActionResult> CreateProduct(ProductDto dto)
         {
-            var created = await _productService.CreateProductAsync(productDto);
+            var created = await _productService.CreateProductAsync(dto);
             return StatusCode(
                 StatusCodes.Status201Created,
                 ApiResponse<ProductDto>.Ok(created, "Product created")
@@ -39,9 +39,9 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, ProductDto productDto)
+        public async Task<IActionResult> UpdateProduct(int id, ProductDto dto)
         {
-            var updated = await _productService.UpdateProductAsync(id, productDto);
+            var updated = await _productService.UpdateProductAsync(id, dto);
             return Ok(ApiResponse<ProductDto>.Ok(updated, "Product updated"));
         }
 

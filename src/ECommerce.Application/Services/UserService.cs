@@ -4,8 +4,6 @@ using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
-using ECommerce.Infrastructure.Repositories;
-using ECommerce.Infrastructure.Services;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -65,8 +63,7 @@ namespace ECommerce.Application.Services
                 throw new InvalidOperationException("Username already exists");
             }
 
-            var now = DateTime.UtcNow;
-            var passwordHash = _passwordService.HashPassword(createDto.Password);
+            var (passwordHash, passwordSalt) = _passwordService.HashPassword(createDto.Password);
 
             var user = new User
             {
@@ -74,8 +71,8 @@ namespace ECommerce.Application.Services
                 Username = createDto.Username,
                 EmailVerified = false,
                 Status = UserStatus.active,
-                CreatedAt = now,
-                UpdatedAt = now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             var userProfile = new UserProfile
@@ -85,8 +82,8 @@ namespace ECommerce.Application.Services
                 LastName = createDto.LastName,
                 Gender = UserGender.male,
                 Phone = createDto.Phone ?? string.Empty,
-                CreatedAt = now,
-                UpdatedAt = now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             var credentials = new UserCredential
@@ -94,11 +91,11 @@ namespace ECommerce.Application.Services
                 User = user,
                 PasswordHash = passwordHash,
                 PasswordSalt = string.Empty,
-                PasswordUpdatedAt = now,
+                PasswordUpdatedAt = DateTime.UtcNow,
                 LastLoginIp = string.Empty,
                 ResetTokenHash = string.Empty,
-                CreatedAt = now,
-                UpdatedAt = now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             user.UserProfile = userProfile;
@@ -143,7 +140,9 @@ namespace ECommerce.Application.Services
 
             if (!string.IsNullOrWhiteSpace(updateDto.Password) && user.UserCredential != null)
             {
-                user.UserCredential.PasswordHash = _passwordService.HashPassword(updateDto.Password);
+                var (passwordHash, passwordSalt) = _passwordService.HashPassword(updateDto.Password);
+                user.UserCredential.PasswordHash = passwordHash;
+                user.UserCredential.PasswordSalt = passwordSalt;
                 user.UserCredential.PasswordUpdatedAt = DateTime.UtcNow;
             }
 

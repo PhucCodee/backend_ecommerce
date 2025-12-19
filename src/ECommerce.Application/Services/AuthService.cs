@@ -1,73 +1,42 @@
 using ECommerce.Application.Common.Exceptions;
 using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.DTOs.user;
-using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
-using ECommerce.Domain.Enums;
-using ECommerce.Infrastructure.Data;
+using ECommerce.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
 
 namespace ECommerce.Application.Services
 {
-    public class AuthService(ApplicationDbContext context, IConfiguration configuration) : IAuthService
+    public class AuthService(
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork,
+        IJwtService jwtService,
+        IPasswordService passwordService) : IAuthService
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly IConfiguration _configuration = configuration;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IJwtService _jwtService = jwtService;
+        private readonly IPasswordService _passwordService = passwordService;
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            // Trim and normalize inputs
-            registerDto.Email = registerDto.Email.Trim().ToLowerInvariant();
-            registerDto.Username = registerDto.Username.Trim();
-            registerDto.FirstName = registerDto.FirstName.Trim();
-            registerDto.LastName = registerDto.LastName.Trim();
+            NormalizeDto(registerDto);
+            await EnsureEmailAndUsernameAreUnique(registerDto.Email, registerDto.Username);
 
-            // Check if email already exists
-            var emailExists = await _context.Users
-                .AnyAsync(u => u.Email == registerDto.Email);
+            var (passwordHash, passwordSalt) = _passwordService.HashPassword(registerDto.Password);
 
-            if (emailExists)
-                throw new ConflictException("Email is already registered");
-
-            // Check if username already exists (case-insensitive)
-            var usernameExists = await _context.Users
-                .AnyAsync(u => EF.Functions.ILike(u.Username, registerDto.Username));
-
-            if (usernameExists)
-                throw new ConflictException("Username is already taken");
-
-            // Hash password
-            var (passwordHash, passwordSalt) = SecurityHelper.HashPassword(registerDto.Password);
-
-            // Create user and related entities using factory methods
             var user = User.CreateDefault(registerDto.Email, registerDto.Username);
             user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
-            user.UserProfile = UserProfile.CreateDefault(user, registerDto.FirstName, registerDto.LastName);
+            user.UserProfile = UserProfile.CreateDefault(user, registerDto.FirstName, registerDto.LastName, registerDto.Phone);
 
-            if (!string.IsNullOrWhiteSpace(registerDto.Phone))
-            {
-                user.UserProfile.Phone = registerDto.Phone.Trim();
-            }
-
-            var accessToken = JwtHelper.GenerateAccessToken(user, _configuration);
-            var refreshToken = SecurityHelper.GenerateRefreshToken();
-
-            var session = UserSession.CreateDefault(
-                user,
-                SecurityHelper.HashToken(accessToken),
-                SecurityHelper.HashToken(refreshToken)
-            );
+            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user);
             user.UserSessions.Add(session);
 
-            // Add the user
-            _context.Users.Add(user);
-
-            // Save everything in one transaction
-            await _context.SaveChangesAsync();
+            await _userRepository.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -88,12 +57,9 @@ namespace ECommerce.Application.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            // Find user
-            var user = await _context.Users
-                .Include(u => u.UserCredential)
-                .Include(u => u.UserProfile)
-                .Include(u => u.UserSessions)
-                .FirstOrDefaultAsync(u => u.Email == loginDto.Email || u.Username == loginDto.Email);
+            NormalizeDto(loginDto);
+
+            var user = await _userRepository.GetByEmailOrUsernameAsync(loginDto.Identifier);
 
             if (user == null || user.UserCredential == null)
                 throw new UnauthorizedException("Invalid credentials");
@@ -101,48 +67,32 @@ namespace ECommerce.Application.Services
             if (user.UserProfile == null)
                 throw new BadRequestException("User profile not found. Please contact support.");
 
-            // Check account status
-            if (user.Status != UserStatus.active)
+            if (user.Status != Domain.Enums.UserStatus.active)
                 throw new UnauthorizedException("Invalid credentials");
 
-            // Check if account is locked
             if (user.UserCredential.LockedUntil.HasValue && user.UserCredential.LockedUntil > DateTime.UtcNow)
                 throw new UnauthorizedException("Account is temporarily locked");
 
-            // Verify password
-            if (!SecurityHelper.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
+            if (!_passwordService.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
             {
-                // Increment failed attempts
                 user.UserCredential.FailedLoginAttempts++;
                 if (user.UserCredential.FailedLoginAttempts >= 5)
-                {
                     user.UserCredential.LockedUntil = DateTime.UtcNow.AddMinutes(30);
-                }
                 user.UserCredential.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync();
 
                 throw new UnauthorizedException("Invalid credentials");
             }
 
-            // Reset failed attempts on successful login
             user.UserCredential.FailedLoginAttempts = 0;
             user.UserCredential.LockedUntil = null;
             user.UserCredential.LastLoginAt = DateTime.UtcNow;
             user.UserCredential.UpdatedAt = DateTime.UtcNow;
 
-            // Generate tokens
-            var accessToken = JwtHelper.GenerateAccessToken(user, _configuration);
-            var refreshToken = SecurityHelper.GenerateRefreshToken();
-
-            // Create session
-            var session = UserSession.CreateDefault(
-                user,
-                SecurityHelper.HashToken(accessToken),
-                SecurityHelper.HashToken(refreshToken)
-            );
+            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user);
             user.UserSessions.Add(session);
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -167,5 +117,39 @@ namespace ECommerce.Application.Services
         public Task<AuthOperationResultDto> ResetPasswordAsync(string email) => throw new NotImplementedException();
         public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
 
+        private (string accessToken, string refreshToken, UserSession session) GenerateTokensAndSession(User user)
+        {
+            var roles = Array.Empty<string>();
+            var accessToken = _jwtService.GenerateAccessToken(user.UserId, user.Email, roles);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+            var session = UserSession.CreateDefault(
+                user,
+                _passwordService.HashToken(accessToken),
+                _passwordService.HashToken(refreshToken)
+            );
+            return (accessToken, refreshToken, session);
+        }
+
+        private async Task EnsureEmailAndUsernameAreUnique(string email, string username)
+        {
+            if (await _userRepository.EmailExistsAsync(email))
+                throw new ConflictException("Email is already registered");
+            if (await _userRepository.UsernameExistsAsync(username))
+                throw new ConflictException("Username is already taken");
+        }
+
+        private static void NormalizeDto(RegisterDto dto)
+        {
+            dto.Email = dto.Email.Trim().ToLowerInvariant();
+            dto.Username = dto.Username.Trim();
+            dto.FirstName = dto.FirstName.Trim();
+            dto.LastName = dto.LastName.Trim();
+            if (dto.Phone != null) dto.Phone = dto.Phone.Trim();
+        }
+
+        private static void NormalizeDto(LoginDto dto)
+        {
+            dto.Identifier = dto.Identifier.Trim().ToLowerInvariant();
+        }
     }
 }

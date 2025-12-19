@@ -8,6 +8,7 @@ namespace ECommerce.Domain.Repositories
     {
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByUsernameAsync(string username);
+        Task<User?> GetByEmailOrUsernameAsync(string emailOrUsername);
         Task<User?> GetUserWithCredentialsAsync(string email);
         Task<User?> GetUserWithProfileAsync(int userId);
         Task<bool> EmailExistsAsync(string email);
