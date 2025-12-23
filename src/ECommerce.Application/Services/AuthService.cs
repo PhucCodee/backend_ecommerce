@@ -1,11 +1,13 @@
 using ECommerce.Application.Common.Exceptions;
 using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.DTOs.user;
+using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ECommerce.Application.Services
@@ -14,29 +16,34 @@ namespace ECommerce.Application.Services
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
         IJwtService jwtService,
-        IPasswordService passwordService) : IAuthService
+        IPasswordService passwordService,
+        UserValidationHelper validationHelper) : IAuthService
     {
-        private readonly IUserRepository _userRepository = userRepository;
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IJwtService _jwtService = jwtService;
-        private readonly IPasswordService _passwordService = passwordService;
-
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            NormalizeDto(registerDto);
-            await EnsureEmailAndUsernameAreUnique(registerDto.Email, registerDto.Username);
+            DtoNormalizer.Normalize(registerDto);
+            await validationHelper.EnsureEmailAndUsernameAreUniqueAsync(registerDto.Email, registerDto.Username);
 
-            var (passwordHash, passwordSalt) = _passwordService.HashPassword(registerDto.Password);
+            var (passwordHash, passwordSalt) = passwordService.HashPassword(registerDto.Password);
 
             var user = User.CreateDefault(registerDto.Email, registerDto.Username);
             user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
             user.UserProfile = UserProfile.CreateDefault(user, registerDto.FirstName, registerDto.LastName, registerDto.Phone);
 
-            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user);
+            // Assign default role (buyer)
+            var defaultRole = UserRole.CreateDefault(user, UserRoleType.buyer);
+            user.UserRoleUsers.Add(defaultRole);
+
+            var roles = user.UserRoleUsers
+                .Where(r => r.IsActive())
+                .Select(r => r.Role.ToString())
+                .ToArray();
+
+            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user, roles);
             user.UserSessions.Add(session);
 
-            await _userRepository.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
+            await userRepository.AddAsync(user);
+            await unitOfWork.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -57,9 +64,9 @@ namespace ECommerce.Application.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            NormalizeDto(loginDto);
+            DtoNormalizer.Normalize(loginDto);
 
-            var user = await _userRepository.GetByEmailOrUsernameAsync(loginDto.Identifier);
+            var user = await userRepository.GetByEmailOrUsernameAsync(loginDto.Identifier);
 
             if (user == null || user.UserCredential == null)
                 throw new UnauthorizedException("Invalid credentials");
@@ -67,19 +74,19 @@ namespace ECommerce.Application.Services
             if (user.UserProfile == null)
                 throw new BadRequestException("User profile not found. Please contact support.");
 
-            if (user.Status != Domain.Enums.UserStatus.active)
+            if (user.Status != UserStatus.active)
                 throw new UnauthorizedException("Invalid credentials");
 
             if (user.UserCredential.LockedUntil.HasValue && user.UserCredential.LockedUntil > DateTime.UtcNow)
                 throw new UnauthorizedException("Account is temporarily locked");
 
-            if (!_passwordService.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
+            if (!passwordService.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
             {
                 user.UserCredential.FailedLoginAttempts++;
                 if (user.UserCredential.FailedLoginAttempts >= 5)
                     user.UserCredential.LockedUntil = DateTime.UtcNow.AddMinutes(30);
                 user.UserCredential.UpdatedAt = DateTime.UtcNow;
-                await _unitOfWork.SaveChangesAsync();
+                await unitOfWork.SaveChangesAsync();
 
                 throw new UnauthorizedException("Invalid credentials");
             }
@@ -89,10 +96,15 @@ namespace ECommerce.Application.Services
             user.UserCredential.LastLoginAt = DateTime.UtcNow;
             user.UserCredential.UpdatedAt = DateTime.UtcNow;
 
-            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user);
+            var roles = user.UserRoleUsers
+                .Where(r => r.IsActive())
+                .Select(r => r.Role.ToString())
+                .ToArray();
+
+            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user, roles);
             user.UserSessions.Add(session);
 
-            await _unitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -117,39 +129,16 @@ namespace ECommerce.Application.Services
         public Task<AuthOperationResultDto> ResetPasswordAsync(string email) => throw new NotImplementedException();
         public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
 
-        private (string accessToken, string refreshToken, UserSession session) GenerateTokensAndSession(User user)
+        private (string accessToken, string refreshToken, UserSession session) GenerateTokensAndSession(User user, string[] roles)
         {
-            var roles = Array.Empty<string>();
-            var accessToken = _jwtService.GenerateAccessToken(user.UserId, user.Email, roles);
-            var refreshToken = _jwtService.GenerateRefreshToken();
+            var accessToken = jwtService.GenerateAccessToken(user.UserId, user.Email, roles);
+            var refreshToken = jwtService.GenerateRefreshToken();
             var session = UserSession.CreateDefault(
                 user,
-                _passwordService.HashToken(accessToken),
-                _passwordService.HashToken(refreshToken)
+                passwordService.HashToken(accessToken),
+                passwordService.HashToken(refreshToken)
             );
             return (accessToken, refreshToken, session);
-        }
-
-        private async Task EnsureEmailAndUsernameAreUnique(string email, string username)
-        {
-            if (await _userRepository.EmailExistsAsync(email))
-                throw new ConflictException("Email is already registered");
-            if (await _userRepository.UsernameExistsAsync(username))
-                throw new ConflictException("Username is already taken");
-        }
-
-        private static void NormalizeDto(RegisterDto dto)
-        {
-            dto.Email = dto.Email.Trim().ToLowerInvariant();
-            dto.Username = dto.Username.Trim();
-            dto.FirstName = dto.FirstName.Trim();
-            dto.LastName = dto.LastName.Trim();
-            if (dto.Phone != null) dto.Phone = dto.Phone.Trim();
-        }
-
-        private static void NormalizeDto(LoginDto dto)
-        {
-            dto.Identifier = dto.Identifier.Trim().ToLowerInvariant();
         }
     }
 }

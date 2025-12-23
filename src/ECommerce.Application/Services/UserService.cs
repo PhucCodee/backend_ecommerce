@@ -1,180 +1,174 @@
-using ECommerce.Application.DTOs;
-using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Interfaces;
+using ECommerce.Application.Helpers;
+using ECommerce.Application.Common.Exceptions;
+using ECommerce.Application.Common.Pagination;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
+using ECommerce.Domain.Repositories;
+using AutoMapper;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
-using ECommerce.Domain.Repositories;
-using ECommerce.Application.Common.Exceptions;
 
 namespace ECommerce.Application.Services
 {
     public class UserService(
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
-        IPasswordService passwordService) : IUserService
+        IPasswordService passwordService,
+        IMapper mapper,
+        UserValidationHelper validationHelper) : IUserService
     {
-        private readonly IUserRepository _userRepository = userRepository;
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IPasswordService _passwordService = passwordService;
-
         public async Task<UserProfileDto> GetProfileAsync(int userId)
         {
-            var user = await _userRepository.GetUserWithProfileAsync(userId) ?? throw new InvalidOperationException("User not found");
-            return new UserProfileDto
-            {
-                UserId = user.UserId,
-                Email = user.Email,
-                Username = user.Username,
-                FirstName = user.UserProfile?.FirstName ?? "",
-                LastName = user.UserProfile?.LastName ?? "",
-                Phone = user.UserProfile?.Phone ?? "",
-                EmailVerified = user.EmailVerified,
-                Status = user.Status.ToString(),
-                CreatedAt = user.CreatedAt
-            };
+            var user = await userRepository.GetUserWithProfileAsync(userId)
+                ?? throw new NotFoundException("User not found");
+            return mapper.Map<UserProfileDto>(user);
         }
 
         public async Task<IEnumerable<UserProfileDto>> GetAllAsync()
         {
-            var users = await _userRepository.GetAllWithProfileAsync();
-            return users.Select(MapToProfileDto);
+            var users = await userRepository.GetAllWithProfileAsync();
+            return mapper.Map<IEnumerable<UserProfileDto>>(users);
+        }
+
+        public async Task<PagedResult<UserProfileDto>> GetAllPagedAsync(PaginationParams paginationParams)
+        {
+            var (users, totalCount) = await userRepository.GetPagedAsync(paginationParams.PageNumber, paginationParams.PageSize);
+            var userDtos = mapper.Map<IEnumerable<UserProfileDto>>(users);
+            return PagedResult<UserProfileDto>.Create(userDtos, paginationParams.PageNumber, paginationParams.PageSize, totalCount);
         }
 
         public async Task<UserProfileDto> GetByIdAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId) ?? throw new NotFoundException("User not found");
-            return MapToProfileDto(user);
+            var user = await userRepository.GetUserWithProfileAsync(userId)
+                ?? throw new NotFoundException("User not found");
+            return mapper.Map<UserProfileDto>(user);
         }
 
         public async Task<UserProfileDto> CreateAsync(UserCreateDto createDto)
         {
-            if (await _userRepository.EmailExistsAsync(createDto.Email))
-            {
-                throw new InvalidOperationException("Email already exists");
-            }
+            DtoNormalizer.Normalize(createDto);
+            await validationHelper.EnsureEmailAndUsernameAreUniqueAsync(createDto.Email, createDto.Username);
 
-            if (await _userRepository.UsernameExistsAsync(createDto.Username))
-            {
-                throw new InvalidOperationException("Username already exists");
-            }
+            var (passwordHash, passwordSalt) = passwordService.HashPassword(createDto.Password);
 
-            var (passwordHash, passwordSalt) = _passwordService.HashPassword(createDto.Password);
+            var user = User.CreateDefault(createDto.Email, createDto.Username);
+            user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
+            user.UserProfile = UserProfile.CreateDefault(user, createDto.FirstName, createDto.LastName, createDto.Phone);
 
-            var user = new User
-            {
-                Email = createDto.Email,
-                Username = createDto.Username,
-                EmailVerified = false,
-                Status = UserStatus.active,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            // Assign default role (buyer)
+            var defaultRole = UserRole.CreateDefault(user, UserRoleType.buyer);
+            user.UserRoleUsers.Add(defaultRole);
 
-            var userProfile = new UserProfile
-            {
-                User = user,
-                FirstName = createDto.FirstName,
-                LastName = createDto.LastName,
-                Gender = UserGender.male,
-                Phone = createDto.Phone ?? string.Empty,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            await userRepository.AddAsync(user);
+            await unitOfWork.SaveChangesAsync();
 
-            var credentials = new UserCredential
-            {
-                User = user,
-                PasswordHash = passwordHash,
-                PasswordSalt = string.Empty,
-                PasswordUpdatedAt = DateTime.UtcNow,
-                LastLoginIp = string.Empty,
-                ResetTokenHash = string.Empty,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            user.UserProfile = userProfile;
-            user.UserCredential = credentials;
-
-            await _userRepository.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
-
-            return MapToProfileDto(user);
+            return mapper.Map<UserProfileDto>(user);
         }
 
         public async Task<UserProfileDto> UpdateAsync(int userId, UserUpdateDto updateDto)
         {
-            var user = await _userRepository.GetWithProfileAsync(userId) ?? throw new NotFoundException("User not found");
+            var user = await userRepository.GetWithProfileAsync(userId)
+                ?? throw new NotFoundException("User not found");
 
-            if (!string.IsNullOrWhiteSpace(updateDto.Email) && !string.Equals(user.Email, updateDto.Email, StringComparison.OrdinalIgnoreCase))
-            {
-                if (await _userRepository.EmailExistsAsync(updateDto.Email))
-                {
-                    throw new InvalidOperationException("Email already exists");
-                }
+            DtoNormalizer.Normalize(updateDto);
+            await UpdateEmailIfChanged(user, updateDto.Email);
+            await UpdateUsernameIfChanged(user, updateDto.Username);
+            UpdateProfile(user, updateDto);
+            UpdatePasswordIfProvided(user, updateDto.Password);
 
-                user.Email = updateDto.Email;
-            }
+            user.UpdatedAt = DateTime.UtcNow;
+            await unitOfWork.SaveChangesAsync();
 
-            if (!string.IsNullOrWhiteSpace(updateDto.Username) && !string.Equals(user.Username, updateDto.Username, StringComparison.OrdinalIgnoreCase))
-            {
-                if (await _userRepository.UsernameExistsAsync(updateDto.Username))
-                {
-                    throw new InvalidOperationException("Username already exists");
-                }
+            return mapper.Map<UserProfileDto>(user);
+        }
 
-                user.Username = updateDto.Username;
-            }
+        public async Task<UserProfileDto> UpdateProfileAsync(int userId, UserUpdateDto updateDto)
+        {
+            var user = await userRepository.GetWithProfileAsync(userId)
+                ?? throw new NotFoundException("User not found");
 
-            if (user.UserProfile != null)
-            {
-                user.UserProfile.FirstName = updateDto.FirstName ?? user.UserProfile.FirstName;
-                user.UserProfile.LastName = updateDto.LastName ?? user.UserProfile.LastName;
-                user.UserProfile.Phone = updateDto.Phone ?? user.UserProfile.Phone;
-            }
+            DtoNormalizer.Normalize(updateDto);
 
-            if (!string.IsNullOrWhiteSpace(updateDto.Password) && user.UserCredential != null)
-            {
-                var (passwordHash, passwordSalt) = _passwordService.HashPassword(updateDto.Password);
-                user.UserCredential.PasswordHash = passwordHash;
-                user.UserCredential.PasswordSalt = passwordSalt;
-                user.UserCredential.PasswordUpdatedAt = DateTime.UtcNow;
-            }
+            // Users can only update their profile info, not email/username
+            UpdateProfile(user, updateDto);
+            UpdatePasswordIfProvided(user, updateDto.Password);
 
-            await _unitOfWork.SaveChangesAsync();
-            return MapToProfileDto(user);
+            user.UpdatedAt = DateTime.UtcNow;
+            await unitOfWork.SaveChangesAsync();
+
+            return mapper.Map<UserProfileDto>(user);
         }
 
         public async Task<bool> DeleteAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId)
+            var user = await userRepository.GetByIdAsync(userId)
                 ?? throw new NotFoundException("User not found");
 
             user.SoftDelete();
+            await unitOfWork.SaveChangesAsync();
 
-            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
-        private static UserProfileDto MapToProfileDto(User user)
+        private async Task UpdateEmailIfChanged(User user, string? newEmail)
         {
-            return new UserProfileDto
-            {
-                UserId = user.UserId,
-                Email = user.Email,
-                Username = user.Username,
-                FirstName = user.UserProfile?.FirstName ?? string.Empty,
-                LastName = user.UserProfile?.LastName ?? string.Empty,
-                Phone = user.UserProfile?.Phone ?? string.Empty,
-                EmailVerified = user.EmailVerified,
-                Status = user.Status.ToString(),
-                CreatedAt = user.CreatedAt
-            };
+            if (string.IsNullOrWhiteSpace(newEmail) || string.Equals(user.Email, newEmail, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            await validationHelper.EnsureEmailIsUniqueAsync(newEmail);
+            user.Email = newEmail;
+        }
+
+        private async Task UpdateUsernameIfChanged(User user, string? newUsername)
+        {
+            if (string.IsNullOrWhiteSpace(newUsername) || string.Equals(user.Username, newUsername, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            await validationHelper.EnsureUsernameIsUniqueAsync(newUsername);
+            user.Username = newUsername;
+        }
+
+        private static void UpdateProfile(User user, UserUpdateDto updateDto)
+        {
+            if (user.UserProfile == null) return;
+
+            if (updateDto.FirstName != null)
+                user.UserProfile.FirstName = updateDto.FirstName;
+            if (updateDto.LastName != null)
+                user.UserProfile.LastName = updateDto.LastName;
+            if (updateDto.Phone != null)
+                user.UserProfile.Phone = updateDto.Phone;
+            if (updateDto.DateOfBirth.HasValue)
+                user.UserProfile.DateOfBirth = updateDto.DateOfBirth;
+            if (updateDto.Gender != null && Enum.TryParse<UserGender>(updateDto.Gender, true, out var gender))
+                user.UserProfile.Gender = gender;
+            if (updateDto.AvatarUrl != null)
+                user.UserProfile.AvatarUrl = updateDto.AvatarUrl;
+            if (updateDto.Bio != null)
+                user.UserProfile.Bio = updateDto.Bio;
+            if (updateDto.PreferredLanguage != null && Enum.TryParse<Language>(updateDto.PreferredLanguage, true, out var lang))
+                user.UserProfile.PreferredLanguage = lang;
+            if (updateDto.PreferredCurrency != null && Enum.TryParse<Currency>(updateDto.PreferredCurrency, true, out var currency))
+                user.UserProfile.PreferredCurrency = currency;
+            if (updateDto.Timezone != null)
+                user.UserProfile.Timezone = updateDto.Timezone;
+
+            user.UserProfile.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private void UpdatePasswordIfProvided(User user, string? newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword) || user.UserCredential == null)
+                return;
+
+            var (passwordHash, passwordSalt) = passwordService.HashPassword(newPassword);
+            user.UserCredential.PasswordHash = passwordHash;
+            user.UserCredential.PasswordSalt = passwordSalt;
+            user.UserCredential.PasswordUpdatedAt = DateTime.UtcNow;
+            user.UserCredential.UpdatedAt = DateTime.UtcNow;
         }
     }
 }

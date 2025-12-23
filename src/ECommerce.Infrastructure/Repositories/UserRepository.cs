@@ -29,7 +29,7 @@ namespace ECommerce.Infrastructure.Repositories
             return await GetActiveUsers()
                 .Include(u => u.UserCredential)
                 .Include(u => u.UserProfile)
-                .Include(u => u.UserSessions)
+                .Include(u => u.UserRoleUsers.Where(r => r.RevokedAt == null))
                 .FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.Username == emailOrUsername);
         }
 
@@ -47,16 +47,30 @@ namespace ECommerce.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.UserId == userId);
         }
 
-        public async Task<bool> EmailExistsAsync(string email)
+        public async Task<User?> GetUserWithRolesAsync(int userId)
         {
             return await GetActiveUsers()
-                .AnyAsync(u => u.Email == email);
+                .Include(u => u.UserRoleUsers.Where(r => r.RevokedAt == null))
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+        }
+
+        public async Task<User?> GetUserWithAllDetailsAsync(int userId)
+        {
+            return await GetActiveUsers()
+                .Include(u => u.UserCredential)
+                .Include(u => u.UserProfile)
+                .Include(u => u.UserRoleUsers.Where(r => r.RevokedAt == null))
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            return await GetActiveUsers().AnyAsync(u => u.Email == email);
         }
 
         public async Task<bool> UsernameExistsAsync(string username)
         {
-            return await GetActiveUsers()
-                .AnyAsync(u => u.Username == username);
+            return await GetActiveUsers().AnyAsync(u => u.Username == username);
         }
 
         public async Task<IEnumerable<User>> GetAllWithProfileAsync()
@@ -74,15 +88,24 @@ namespace ECommerce.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.UserId == userId);
         }
 
-        public override async Task<User?> GetByIdAsync(int userId)
-        {
-            return await GetActiveUsers()
-                .FirstOrDefaultAsync(u => u.UserId == userId);
-        }
-
         public override async Task<IEnumerable<User>> GetAllAsync()
         {
             return await GetActiveUsers().ToListAsync();
+        }
+
+        public async Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            var query = GetActiveUsers().Include(u => u.UserProfile);
+
+            var totalCount = await query.CountAsync();
+
+            var users = await query
+                .OrderBy(u => u.UserId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (users, totalCount);
         }
     }
 }

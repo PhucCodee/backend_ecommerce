@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using ECommerce.Domain.Enums;
 
 namespace ECommerce.Domain.Entities;
@@ -18,7 +17,20 @@ public partial class UserRole
 
     public DateTime? RevokedAt { get; set; }
 
-    public required virtual User GrantedByNavigation { get; set; }
+    public virtual User? GrantedByNavigation { get; set; }
 
     public required virtual User User { get; set; }
+
+    public static UserRole CreateDefault(User user, UserRoleType role, User? grantedBy = null)
+    {
+        return new UserRole
+        {
+            User = user,
+            Role = role,
+            GrantedAt = DateTime.UtcNow,
+            GrantedByNavigation = grantedBy
+        };
+    }
+
+    public bool IsActive() => RevokedAt == null;
 }

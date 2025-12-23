@@ -29,8 +29,6 @@ public partial class Review
 
     public string? ModerationNotes { get; set; }
 
-    public DateTime? ModeratedAt { get; set; }
-
     public int? ModeratedBy { get; set; }
 
     public DateTime CreatedAt { get; set; }
