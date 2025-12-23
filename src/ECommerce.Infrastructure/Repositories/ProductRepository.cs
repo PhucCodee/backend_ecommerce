@@ -10,7 +10,6 @@ namespace ECommerce.Infrastructure.Repositories
 {
     public class ProductRepository(ApplicationDbContext context) : Repository<Product>(context), IProductRepository
     {
-        // Helper method to get base query with soft delete filter
         private IQueryable<Product> GetActiveProducts() => _context.Products.Where(p => p.RemovedAt == null);
 
         public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
@@ -42,6 +41,8 @@ namespace ECommerce.Infrastructure.Repositories
         public async Task<IEnumerable<Product>> GetAllWithDetailsAsync()
         {
             return await GetActiveProducts()
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
                 .Include(p => p.ProductSkus)
                     .ThenInclude(sku => sku.Inventory!)
                 .Include(p => p.ProductImages)
@@ -51,6 +52,8 @@ namespace ECommerce.Infrastructure.Repositories
         public async Task<Product?> GetByIdWithDetailsAsync(int id)
         {
             return await GetActiveProducts()
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
                 .Include(p => p.ProductSkus)
                     .ThenInclude(sku => sku.Inventory!)
                 .Include(p => p.ProductImages)
@@ -66,6 +69,47 @@ namespace ECommerce.Infrastructure.Repositories
         public override async Task<IEnumerable<Product>> GetAllAsync()
         {
             return await GetActiveProducts().ToListAsync();
+        }
+
+        public async Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            var query = GetActiveProducts()
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
+                .Include(p => p.ProductSkus)
+                    .ThenInclude(sku => sku.Inventory!)
+                .Include(p => p.ProductImages);
+
+            var totalCount = await query.CountAsync();
+
+            var products = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (products, totalCount);
+        }
+
+        public async Task<(IEnumerable<Product> Products, int TotalCount)> GetBySellerPagedAsync(int sellerId, int pageNumber, int pageSize)
+        {
+            var query = GetActiveProducts()
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
+                .Include(p => p.ProductSkus)
+                    .ThenInclude(sku => sku.Inventory!)
+                .Include(p => p.ProductImages)
+                .Where(p => p.SellerId == sellerId);
+
+            var totalCount = await query.CountAsync();
+
+            var products = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (products, totalCount);
         }
     }
 }

@@ -2,208 +2,269 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Exceptions;
-using ECommerce.Application.DTOs;
+using ECommerce.Application.DTOs.product;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
-using ECommerce.Infrastructure.Repositories;
 
 namespace ECommerce.Application.Services
 {
-    public class ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork) : IProductService
+    public class ProductService(
+        IProductRepository productRepository,
+        IUnitOfWork unitOfWork,
+        IMapper mapper) : IProductService
     {
         private readonly IProductRepository _productRepository = productRepository;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+        public async Task<ProductDetailDto> GetByIdAsync(int productId)
+        {
+            var product = await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            if (product.IsDeleted())
+                throw new NotFoundException("Product not found");
+
+            return _mapper.Map<ProductDetailDto>(product);
+        }
+
+        public async Task<IEnumerable<ProductDetailDto>> GetAllAsync()
         {
             var products = await _productRepository.GetAllWithDetailsAsync();
-            return products.Select(MapToDto);
+            var activeProducts = products.Where(p => !p.IsDeleted());
+            return _mapper.Map<IEnumerable<ProductDetailDto>>(activeProducts);
         }
 
-        public async Task<ProductDto> GetProductByIdAsync(int productId)
+        public async Task<PagedResult<ProductDetailDto>> GetAllPagedAsync(PaginationParams paginationParams)
         {
-            var product = await _productRepository.GetByIdWithDetailsAsync(productId) ?? throw new NotFoundException("Product not found");
-            return MapToDto(product);
+            var (products, totalCount) = await _productRepository.GetPagedAsync(
+                paginationParams.PageNumber,
+                paginationParams.PageSize);
+
+            var activeProducts = products.Where(p => !p.IsDeleted());
+            var productDtos = _mapper.Map<IEnumerable<ProductDetailDto>>(activeProducts);
+
+            return PagedResult<ProductDetailDto>.Create(
+                productDtos,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount);
         }
 
-        public async Task<ProductDto> CreateProductAsync(ProductDto productDto)
+        public async Task<PagedResult<ProductDetailDto>> GetBySellerPagedAsync(int sellerId, PaginationParams paginationParams)
         {
-            var now = DateTime.UtcNow;
-            var slug = GenerateSlug(productDto.Name);
+            var (products, totalCount) = await _productRepository.GetBySellerPagedAsync(
+                sellerId,
+                paginationParams.PageNumber,
+                paginationParams.PageSize);
+
+            var activeProducts = products.Where(p => !p.IsDeleted());
+            var productDtos = _mapper.Map<IEnumerable<ProductDetailDto>>(activeProducts);
+
+            return PagedResult<ProductDetailDto>.Create(
+                productDtos,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount);
+        }
+
+        public async Task<ProductDetailDto> CreateAsync(ProductCreateDto createDto, int sellerId)
+        {
+            var slug = GenerateSlug(createDto.Name);
             var baseSku = $"SKU-{Guid.NewGuid():N}"[..12];
 
-            var product = new Product
-            {
-                ProductName = productDto.Name,
-                Description = productDto.Description,
-                SellerId = productDto.SellerId == 0 ? 1 : productDto.SellerId,
-                CategoryId = productDto.CategoryId == 0 ? 1 : productDto.CategoryId,
-                Slug = slug,
-                BaseSku = baseSku,
-                HasVariants = false,
-                Brand = string.Empty,
-                Status = ProductStatus.active,
-                Moderation = ModerationStatus.approved,
-                CreatedAt = now,
-                UpdatedAt = now,
-                Category = null!,
-                Seller = null!,
-            };
+            var product = Product.CreateDefault(
+                name: createDto.Name,
+                slug: slug,
+                baseSku: baseSku,
+                sellerId: sellerId,
+                categoryId: createDto.CategoryId == 0 ? 1 : createDto.CategoryId,
+                description: createDto.Description,
+                brand: createDto.Brand,
+                weightKg: createDto.WeightKg,
+                dimensionsCm: createDto.DimensionsCm);
 
-            var defaultSku = new ProductSku
-            {
-                Product = product,
-                Sku = $"{baseSku}-DEFAULT",
-                VariantAttributes = "{}",
-                Price = productDto.Price,
-                IsActive = true,
-                IsDefault = true,
-                CreatedAt = now,
-                UpdatedAt = now,
-            };
+            var defaultSku = ProductSku.CreateDefault(
+                product: product,
+                sku: $"{baseSku}-DEFAULT",
+                price: createDto.Price);
 
-            var inventory = new Inventory
-            {
-                Sku = defaultSku,
-                QuantityAvailable = productDto.Stock,
-                QuantityReserved = 0,
-                QuantitySold = 0,
-                ReorderPoint = 0,
-                ReorderQuantity = 0,
-                CreatedAt = now,
-                UpdatedAt = now
-            };
+            var inventory = Inventory.CreateDefault(
+                sku: defaultSku,
+                quantityAvailable: createDto.Stock);
 
             defaultSku.Inventory = inventory;
+            product.ProductSkus.Add(defaultSku);
 
-            if (!string.IsNullOrWhiteSpace(productDto.ImageUrl))
+            if (!string.IsNullOrWhiteSpace(createDto.ImageUrl))
             {
-                var image = new ProductImage
-                {
-                    Product = product,
-                    Sku = defaultSku,
-                    ImageUrl = productDto.ImageUrl!,
-                    ThumbnailUrl = productDto.ImageUrl,
-                    AltText = productDto.Name,
-                    DisplayOrder = 1,
-                    IsPrimary = true,
-                    CreatedAt = now,
-                    UpdatedAt = now
-                };
+                var image = ProductImage.CreateDefault(
+                    product: product,
+                    sku: defaultSku,
+                    imageUrl: createDto.ImageUrl,
+                    altText: createDto.Name,
+                    isPrimary: true);
+
                 product.ProductImages.Add(image);
                 defaultSku.ProductImages.Add(image);
             }
 
-            product.ProductSkus.Add(defaultSku);
-
             await _productRepository.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
 
-            return MapToDto(product);
+            return _mapper.Map<ProductDetailDto>(product);
         }
 
-        public async Task<ProductDto> UpdateProductAsync(int productId, ProductDto productDto)
+        public async Task<ProductDetailDto> UpdateAsync(int productId, ProductUpdateDto updateDto)
         {
-            var product = await _productRepository.GetByIdWithDetailsAsync(productId) ?? throw new NotFoundException("Product not found");
+            var product = await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found");
 
-            product.ProductName = productDto.Name;
-            product.Description = productDto.Description;
-            product.CategoryId = productDto.CategoryId == 0 ? product.CategoryId : productDto.CategoryId;
-            product.SellerId = productDto.SellerId == 0 ? product.SellerId : productDto.SellerId;
-            product.Slug = GenerateSlug(productDto.Name);
+            if (product.IsDeleted())
+                throw new NotFoundException("Product not found");
 
-            var defaultSku = product.ProductSkus.FirstOrDefault(ps => ps.IsDefault) ?? product.ProductSkus.FirstOrDefault();
-            if (defaultSku != null)
-            {
-                defaultSku.Price = productDto.Price;
-                defaultSku.VariantAttributes ??= "{}";
-                defaultSku.UpdatedAt = DateTime.UtcNow;
-
-                if (defaultSku.Inventory != null)
-                {
-                    defaultSku.Inventory.QuantityAvailable = productDto.Stock;
-                    defaultSku.Inventory.UpdatedAt = DateTime.UtcNow;
-                }
-                else
-                {
-                    defaultSku.Inventory = new Inventory
-                    {
-                        Sku = defaultSku,
-                        QuantityAvailable = productDto.Stock,
-                        QuantityReserved = 0,
-                        QuantitySold = 0,
-                        ReorderPoint = 0,
-                        ReorderQuantity = 0,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-                }
-
-                if (!string.IsNullOrWhiteSpace(productDto.ImageUrl))
-                {
-                    var image = product.ProductImages.FirstOrDefault() ?? new ProductImage
-                    {
-                        Product = product,
-                        Sku = defaultSku,
-                        ImageUrl = productDto.ImageUrl ?? string.Empty,
-                        ThumbnailUrl = productDto.ImageUrl,
-                        DisplayOrder = 1,
-                        IsPrimary = true,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
-                        AltText = productDto.Name
-                    };
-
-                    image.ImageUrl = productDto.ImageUrl!;
-                    image.ThumbnailUrl = productDto.ImageUrl;
-                    image.AltText = productDto.Name;
-                    image.UpdatedAt = DateTime.UtcNow;
-
-                    if (!product.ProductImages.Contains(image))
-                    {
-                        product.ProductImages.Add(image);
-                        defaultSku.ProductImages.Add(image);
-                    }
-                }
-            }
-
+            ApplyUpdates(product, updateDto);
             await _unitOfWork.SaveChangesAsync();
-            return MapToDto(product);
+
+            return _mapper.Map<ProductDetailDto>(product);
         }
 
-        public async Task<bool> DeleteProductAsync(int productId)
+        public async Task<ProductDetailDto> UpdateSellerProductAsync(int productId, int sellerId, ProductUpdateDto updateDto)
+        {
+            var product = await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            if (product.IsDeleted())
+                throw new NotFoundException("Product not found");
+
+            if (product.SellerId != sellerId)
+                throw new ForbiddenException("You do not have permission to update this product");
+
+            ApplyUpdates(product, updateDto);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<ProductDetailDto>(product);
+        }
+
+        public async Task<bool> DeleteAsync(int productId)
         {
             var product = await _productRepository.GetByIdAsync(productId)
                 ?? throw new NotFoundException("Product not found");
 
-            product.SoftDelete();
+            if (product.IsDeleted())
+                throw new NotFoundException("Product not found");
 
+            product.SoftDelete();
             await _unitOfWork.SaveChangesAsync();
+
             return true;
         }
 
-        private static ProductDto MapToDto(Product product)
+        public async Task<bool> DeleteSellerProductAsync(int productId, int sellerId)
         {
-            var defaultSku = product.ProductSkus.FirstOrDefault(ps => ps.IsDefault) ?? product.ProductSkus.FirstOrDefault();
-            var price = defaultSku?.Price ?? 0m;
-            var stock = defaultSku?.Inventory?.QuantityAvailable ?? 0;
-            var imageUrl = product.ProductImages.FirstOrDefault(pi => pi.IsPrimary)?.ImageUrl
-                           ?? product.ProductImages.FirstOrDefault()?.ImageUrl;
+            var product = await _productRepository.GetByIdAsync(productId)
+                ?? throw new NotFoundException("Product not found");
 
-            return new ProductDto
+            if (product.IsDeleted())
+                throw new NotFoundException("Product not found");
+
+            if (product.SellerId != sellerId)
+                throw new ForbiddenException("You do not have permission to delete this product");
+
+            product.SoftDelete();
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+        }
+
+        private static void ApplyUpdates(Product product, ProductUpdateDto updateDto)
+        {
+            var now = DateTime.UtcNow;
+
+            if (!string.IsNullOrWhiteSpace(updateDto.Name))
             {
-                Id = product.ProductId,
-                CategoryId = product.CategoryId,
-                SellerId = product.SellerId,
-                Name = product.ProductName,
-                Description = product.Description,
-                Price = price,
-                Stock = stock,
-                ImageUrl = imageUrl
-            };
+                product.ProductName = updateDto.Name;
+                product.Slug = GenerateSlug(updateDto.Name);
+            }
+
+            if (updateDto.Description != null)
+                product.Description = updateDto.Description;
+
+            if (updateDto.CategoryId.HasValue && updateDto.CategoryId.Value > 0)
+                product.CategoryId = updateDto.CategoryId.Value;
+
+            if (updateDto.Brand != null)
+                product.Brand = updateDto.Brand;
+
+            if (updateDto.WeightKg.HasValue)
+                product.WeightKg = updateDto.WeightKg;
+
+            if (updateDto.DimensionsCm != null)
+                product.DimensionsCm = updateDto.DimensionsCm;
+
+            if (!string.IsNullOrWhiteSpace(updateDto.Status) &&
+                Enum.TryParse<ProductStatus>(updateDto.Status, true, out var status))
+                product.Status = status;
+
+            product.UpdatedAt = now;
+
+            // Update SKU and inventory
+            var defaultSku = product.ProductSkus.FirstOrDefault(ps => ps.IsDefault)
+                ?? product.ProductSkus.FirstOrDefault();
+
+            if (defaultSku != null)
+            {
+                if (updateDto.Price.HasValue)
+                    defaultSku.Price = updateDto.Price.Value;
+
+                defaultSku.UpdatedAt = now;
+
+                if (updateDto.Stock.HasValue)
+                {
+                    if (defaultSku.Inventory != null)
+                    {
+                        defaultSku.Inventory.QuantityAvailable = updateDto.Stock.Value;
+                        defaultSku.Inventory.UpdatedAt = now;
+                    }
+                    else
+                    {
+                        defaultSku.Inventory = Inventory.CreateDefault(
+                            sku: defaultSku,
+                            quantityAvailable: updateDto.Stock.Value);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(updateDto.ImageUrl))
+                {
+                    var image = product.ProductImages.FirstOrDefault(pi => pi.IsPrimary)
+                        ?? product.ProductImages.FirstOrDefault();
+
+                    if (image != null)
+                    {
+                        image.ImageUrl = updateDto.ImageUrl;
+                        image.ThumbnailUrl = updateDto.ImageUrl;
+                        image.AltText = product.ProductName;
+                        image.UpdatedAt = now;
+                    }
+                    else
+                    {
+                        var newImage = ProductImage.CreateDefault(
+                            product: product,
+                            sku: defaultSku,
+                            imageUrl: updateDto.ImageUrl,
+                            altText: product.ProductName,
+                            isPrimary: true);
+
+                        product.ProductImages.Add(newImage);
+                        defaultSku.ProductImages.Add(newImage);
+                    }
+                }
+            }
         }
 
         private static string GenerateSlug(string name)
@@ -213,7 +274,6 @@ namespace ECommerce.Application.Services
             {
                 slug = slug.Replace("--", "-");
             }
-
             return slug.Trim('-');
         }
     }

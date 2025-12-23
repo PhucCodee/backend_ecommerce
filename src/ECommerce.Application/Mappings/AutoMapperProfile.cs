@@ -1,5 +1,7 @@
+using System.Linq;
 using AutoMapper;
 using ECommerce.Application.DTOs;
+using ECommerce.Application.DTOs.product;
 using ECommerce.Application.DTOs.user;
 using ECommerce.Domain.Entities;
 
@@ -26,6 +28,25 @@ namespace ECommerce.Application.Mappings
 
             // Product mappings
             CreateMap<Product, ProductDto>();
+            CreateMap<Product, ProductDetailDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProductId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ProductName))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null))
+                .ForMember(dest => dest.SellerName, opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
+                    src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null
+                        ? src.ProductSkus.First(ps => ps.IsDefault).Price
+                        : src.ProductSkus.Any() ? src.ProductSkus.First().Price : 0))
+                .ForMember(dest => dest.Stock, opt => opt.MapFrom(src =>
+                    src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null && src.ProductSkus.First(ps => ps.IsDefault).Inventory != null
+                        ? src.ProductSkus.First(ps => ps.IsDefault).Inventory!.QuantityAvailable
+                        : src.ProductSkus.Any() && src.ProductSkus.First().Inventory != null
+                            ? src.ProductSkus.First().Inventory!.QuantityAvailable : 0))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
+                    src.ProductImages.FirstOrDefault(pi => pi.IsPrimary) != null
+                        ? src.ProductImages.First(pi => pi.IsPrimary).ImageUrl
+                        : src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
             // Order mappings
             CreateMap<Order, OrderDto>();

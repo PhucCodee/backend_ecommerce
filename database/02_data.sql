@@ -11,7 +11,12 @@ VALUES
     ('messi@gmail.com', 'messi', 0),
     ('lebron@gmail.com', 'king', 0),
     ('stephen@gmail.com', 'curry', 0),
-    ('ye@gmail.com', 'west', 0);
+    ('ye@gmail.com', 'west', 0),
+    ('taylor@gmail.com', 'taylorswift', 0),
+    ('elon@gmail.com', 'elonmusk', 0),
+    ('bill@gmail.com', 'billgates', 0),
+    ('beyonce@gmail.com', 'beyonce', 0),
+    ('drake@gmail.com', 'drake', 0);
 
 -- ====================================
 -- 2. USER CREDENTIALS
@@ -41,6 +46,31 @@ VALUES
     ),
     (
         5,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        6,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        7,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        8,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        9,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        10,
         'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
         'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
     );
@@ -127,6 +157,71 @@ VALUES
         0,
         'America/Chicago',
         0
+    ),
+    (
+        6,
+        'Taylor',
+        'Swift',
+        '+16175550123',
+        '1989-12-13',
+        1,
+        'https://example.com/avatars/taylor.jpg',
+        'Singer-songwriter. Lover of cats and catchy hooks.',
+        0,
+        'America/New_York',
+        0
+    ),
+    (
+        7,
+        'Elon',
+        'Musk',
+        '+16505550123',
+        '1971-06-28',
+        0,
+        'https://example.com/avatars/elon.jpg',
+        'Entrepreneur. Rockets, cars, and memes.',
+        0,
+        'America/Los_Angeles',
+        0
+    ),
+    (
+        8,
+        'Bill',
+        'Gates',
+        '+12065550123',
+        '1955-10-28',
+        0,
+        'https://example.com/avatars/bill.jpg',
+        'Philanthropist. Co-founder of Microsoft.',
+        0,
+        'America/Los_Angeles',
+        0
+    ),
+    (
+        9,
+        'Beyoncé',
+        'Knowles',
+        '+17185550123',
+        '1981-09-04',
+        1,
+        'https://example.com/avatars/beyonce.jpg',
+        'Queen Bey. Singer, actress, icon.',
+        0,
+        'America/Chicago',
+        0
+    ),
+    (
+        10,
+        'Aubrey',
+        'Graham',
+        '+14165550123',
+        '1986-10-24',
+        0,
+        'https://example.com/avatars/drake.jpg',
+        'Rapper, singer, and global superstar.',
+        0,
+        'America/Toronto',
+        0
     );
 
 -- ====================================
@@ -141,7 +236,12 @@ VALUES
     (3, 0), -- Seller can also buy
     (4, 1),
     (4, 0), -- Seller can also buy
-    (5, 2);
+    (5, 2),
+    (6, 2),
+    (7, 2),
+    (8, 2),
+    (9, 2),
+    (10, 2);
 
 -- ====================================
 -- 5. CATEGORIES

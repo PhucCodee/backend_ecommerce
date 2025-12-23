@@ -3,8 +3,9 @@ namespace ECommerce.Application.Common.Authorization
     public static class Policies
     {
         public const string AdminOnly = "AdminOnly";
-        public const string SellerOrAdmin = "SellerOrAdmin";
+        public const string SellerOnly = "SellerOnly";
         public const string Authenticated = "Authenticated";
+        public const string AdminOrSeller = "AdminOrSeller";
     }
 
     public static class Roles

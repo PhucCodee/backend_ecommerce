@@ -60,14 +60,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Add Authorization Policies
 builder.Services.AddAuthorizationBuilder()
-                                 // Add Authorization Policies
-                                 .AddPolicy(Policies.AdminOnly, policy =>
+    .AddPolicy(Policies.AdminOnly, policy =>
         policy.RequireRole(Roles.Admin))
-                                 // Add Authorization Policies
-                                 .AddPolicy(Policies.SellerOrAdmin, policy =>
+    .AddPolicy(Policies.AdminOrSeller, policy =>
         policy.RequireRole(Roles.Admin, Roles.Seller))
-                                 // Add Authorization Policies
-                                 .AddPolicy(Policies.Authenticated, policy =>
+    .AddPolicy(Policies.SellerOnly, policy =>
+        policy.RequireRole(Roles.Seller))
+    .AddPolicy(Policies.Authenticated, policy =>
         policy.RequireAuthenticatedUser());
 
 // Add Entity Framework

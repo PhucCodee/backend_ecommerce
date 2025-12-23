@@ -40,4 +40,22 @@ public partial class ProductSku
     public virtual Inventory? Inventory { get; set; }
 
     public required virtual Product Product { get; set; }
+
+    public static ProductSku CreateDefault(
+        Product product,
+        string sku,
+        decimal price)
+    {
+        return new ProductSku
+        {
+            Product = product,
+            Sku = sku,
+            VariantAttributes = "{}",
+            Price = price,
+            IsActive = true,
+            IsDefault = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 }

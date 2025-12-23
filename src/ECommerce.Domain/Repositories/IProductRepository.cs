@@ -11,5 +11,7 @@ namespace ECommerce.Domain.Repositories
         Task<IEnumerable<Product>> GetProductsByCategoryNameAsync(string categoryName);
         Task<IEnumerable<Product>> GetAllWithDetailsAsync();
         Task<Product?> GetByIdWithDetailsAsync(int id);
+        Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
+        Task<(IEnumerable<Product> Products, int TotalCount)> GetBySellerPagedAsync(int sellerId, int pageNumber, int pageSize);
     }
 }

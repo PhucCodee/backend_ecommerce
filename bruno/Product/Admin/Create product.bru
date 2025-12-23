@@ -1,0 +1,35 @@
+meta {
+  name: Create product
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/api/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ5ZUBnbWFpbC5jb20iLCJqdGkiOiJhNzZmMWE2ZS0zNmYxLTRmM2ItYTAzOC0zMTVkY2IyYTdjMTciLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImV4cCI6MTc2NjUwNTU4MCwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.frFqTyMbhnIAWZzpDSANPdFcxMk6z6-xCNl7r1INsBI
+}
+
+body:json {
+  {
+    "name": "New Product",
+    "description": "Description here",
+    "price": 199.99,
+    "stock": 50,
+    "categoryId": 1,
+    "sellerId": 3,
+    "imageUrl": "https://example.com/image.jpg",
+    "brand": "BrandX",
+    "weightKg": 1.5,
+    "dimensionsCm": "30x20x10"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
