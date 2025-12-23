@@ -1,3 +1,5 @@
+#orchestrator.py
+
 import os
 from dotenv import load_dotenv
 from typing import Annotated, Literal, List, Dict, Any
@@ -23,8 +25,8 @@ if not os.environ.get("GOOGLE_API_KEY"):
     print("Warning: GOOGLE_API_KEY not found.")
 
 llm = init_chat_model(
-    "gemini-2.5-flash", 
-    model_provider="google_genai", 
+    "llama-3.3-70b-versatile", 
+    model_provider="groq",
     temperature=0
 )
 
@@ -122,29 +124,38 @@ workflow.add_edge("rag_branch", END)
 workflow.add_edge("general_branch", END)
 
 checkpointer = MemorySaver()
-app = workflow.compile()
+app = workflow.compile(checkpointer=checkpointer)
 
 # --- 6. Main Execution Loop ---
 if __name__ == "__main__":
     print("=== ORCHESTRATOR AGENT STARTED ===")
     print("Type 'exit' to quit.\n")
     
+    # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
+    thread_id = "user-session-123"
+    config = {"configurable": {"thread_id": thread_id}}
+
     while True:
         try:
             user_input = input("User: ")
             if user_input.lower() in ["exit", "quit"]:
                 break
             
-            # Initialize state with the new user message
-            initial_state = {"messages": [HumanMessage(content=user_input)]}
+            # 2. Prepare the input
+            # We ONLY send the new message. LangGraph automatically pulls 
+            # the *old* messages from memory because we provided the thread_id.
+            input_payload = {"messages": [HumanMessage(content=user_input)]}
             
-            # Run the graph
-            result = app.invoke(initial_state)
+            # 3. Invoke with config
+            # usage of 'config' is CRITICAL for memory
+            result = app.invoke(input_payload, config=config)
             
             # Extract the final response
-            # The 'messages' list accumulates history; the last one is the AI response.
             final_msg = result["messages"][-1].content
             print(f"Assistant: {final_msg}\n")
             
         except Exception as e:
             print(f"An error occurred: {e}")
+            # Optional: Print stack trace for debugging
+            import traceback
+            traceback.print_exc()

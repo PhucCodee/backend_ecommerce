@@ -1,3 +1,5 @@
+#rag_agent.py
+
 from dotenv import load_dotenv
 import os
 from langgraph.graph import StateGraph, END
@@ -23,7 +25,8 @@ embeddings = GoogleGenerativeAIEmbeddings(
 )
 
 llm = init_chat_model(
-    "gemini-2.5-flash", model_provider="google_genai" , temperature = 0, 
+    "llama-3.3-70b-versatile", 
+    model_provider="groq" , temperature = 0, 
 )
 
 

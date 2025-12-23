@@ -44,19 +44,25 @@ services:
             - "15672:15672"
     chatbot_api:
         build:
-            context: .
-            dockerfile: ai-module/main/Dockerfile.api
+            context: ./ai-module/main  # Trỏ thẳng vào thư mục chứa code chatbot
+            dockerfile: Dockerfile.api
+        container_name: chatbot_service
         ports:
         - "8000:8000"
         env_file:
-        - chatbot.env
+        - ./ai-module/main/.env  # Chứa API_KEY và cấu hình nhạy cảm
         environment:
         - DB_HOST=db
         - DB_NAME=database
         - DB_USER=postgres
         - DB_PASSWORD=123
+        - DB_PORT=5432
+        - REDIS_HOST=cache
         depends_on:
         - db
+        - cache
+        networks:
+        - default
 
 volumes:
     postgres_data:

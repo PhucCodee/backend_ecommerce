@@ -11,6 +11,5 @@ __pycache__/
 
 # ChromaDB / Vector Store data
 chroma_db_data/
-*.sqlite3
 # Ignore the UUID folders (wildcard match)
 [0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*/
