@@ -1,4 +1,4 @@
-using ECommerce.Application.Common.Exceptions;
+using ECommerce.Application.Exceptions;
 using ECommerce.Domain.Repositories;
 using System.Threading.Tasks;
 

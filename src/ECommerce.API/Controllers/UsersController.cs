@@ -8,7 +8,7 @@ using ECommerce.Application.Common.Responses;
 using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Common.Authorization;
 using Microsoft.AspNetCore.Http;
-using ECommerce.Application.Common.Exceptions;
+using ECommerce.Application.Exceptions;
 
 namespace ECommerce.API.Controllers
 {

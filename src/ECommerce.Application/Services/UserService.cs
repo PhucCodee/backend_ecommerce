@@ -1,7 +1,7 @@
 using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Helpers;
-using ECommerce.Application.Common.Exceptions;
+using ECommerce.Application.Exceptions;
 using ECommerce.Application.Common.Pagination;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;

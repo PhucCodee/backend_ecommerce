@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ECommerce.Application.Common.Exceptions;
+using ECommerce.Application.Exceptions;
 using ECommerce.Application.DTOs;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
@@ -33,7 +33,7 @@ namespace ECommerce.Application.Services
         {
             var now = DateTime.UtcNow;
             var slug = GenerateSlug(productDto.Name);
-            var baseSku = $"SKU-{Guid.NewGuid():N}".Substring(0, 12);
+            var baseSku = $"SKU-{Guid.NewGuid():N}"[..12];
 
             var product = new Product
             {
