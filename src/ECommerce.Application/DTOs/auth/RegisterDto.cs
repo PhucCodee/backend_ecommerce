@@ -42,7 +42,7 @@ namespace ECommerce.Application.DTOs.auth
         public required string LastName { get; set; }
 
         [Phone(ErrorMessage = "Invalid phone number format")]
-        [RegularExpression(@"^\+?[1-9]\d{1,14}$", ErrorMessage = "Phone number must be in international format (E.164)")]
+        [MaxLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
         public string? Phone { get; set; }
 
         [Required(ErrorMessage = "You must accept the terms and conditions")]
