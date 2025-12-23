@@ -75,9 +75,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            builder.Property(r => r.ModeratedAt)
-                .HasColumnName("moderated_at");
-
             builder.HasIndex(r => new { r.ProductId, r.UserId, r.OrderItemId })
                 .IsUnique();
 

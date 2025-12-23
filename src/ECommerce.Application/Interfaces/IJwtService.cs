@@ -1,12 +1,12 @@
-using System.Security.Claims;
+using System.Collections.Generic;
 
 namespace ECommerce.Application.Interfaces
 {
     public interface IJwtService
     {
-        string GenerateToken(int userId, string email, string role);
-        string GenerateAccessToken(int userId, string email, string[] roles);
+        string GenerateAccessToken(int userId, string email, IEnumerable<string> roles);
         string GenerateRefreshToken();
-        ClaimsPrincipal? ValidateToken(string token);
+        int? ValidateAccessToken(string token);
+        int? ValidateRefreshToken(string token);
     }
 }

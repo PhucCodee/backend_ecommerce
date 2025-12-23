@@ -10,8 +10,16 @@ namespace ECommerce.Application.DTOs.user
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
         public string? Phone { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? Bio { get; set; }
+        public string? PreferredLanguage { get; set; }
+        public string? PreferredCurrency { get; set; }
+        public string? Timezone { get; set; }
         public bool EmailVerified { get; set; }
         public string Status { get; set; } = "Active";
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

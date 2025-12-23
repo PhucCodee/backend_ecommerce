@@ -1,0 +1,20 @@
+meta {
+  name: Get current user profile
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/users/profile
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjYiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJwaHVjMUBnbWFpbC5jb20iLCJqdGkiOiIyNjZmOGIyMi0yMDA2LTRhNjYtOTRhMi0xZjAyY2ZiNGM1ZmEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJidXllciIsImV4cCI6MTc2NjQ3MDkzMywiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.bY3g7HrbGUk8Z3Z12rVs8HTpgNiwtJ0jjpVl99J4JyM
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

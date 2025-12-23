@@ -665,7 +665,6 @@ CREATE TABLE
         helpful_count INTEGER NOT NULL DEFAULT 0,
         unhelpful_count INTEGER NOT NULL DEFAULT 0,
         moderation_notes TEXT,
-        moderated_at TIMESTAMP,
         moderated_by INTEGER REFERENCES users (user_id) ON DELETE SET NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
