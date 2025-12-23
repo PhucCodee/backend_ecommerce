@@ -1,0 +1,23 @@
+meta {
+  name: Admin login
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/api/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "identifier": "west",
+    "password": "Phuc123"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

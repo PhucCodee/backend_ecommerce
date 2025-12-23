@@ -9,15 +9,16 @@ using ECommerce.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using ECommerce.Infrastructure.Services;
 using ECommerce.API.Middleware;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using Microsoft.AspNetCore.Diagnostics;
-using System.Text.Json;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using ECommerce.Application.Common.Responses;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
+using ECommerce.Domain.Repositories;
+using ECommerce.Application.Helpers;
+using ECommerce.Application.Mappings;
+using ECommerce.Application.Common.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,70 +40,65 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured"))),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "ECommerce",
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "ECommerce",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+// Add Authorization Policies
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.AdminOnly, policy =>
+        policy.RequireRole(Roles.Admin))
+    .AddPolicy(Policies.AdminOrSeller, policy =>
+        policy.RequireRole(Roles.Admin, Roles.Seller))
+    .AddPolicy(Policies.SellerOnly, policy =>
+        policy.RequireRole(Roles.Seller))
+    .AddPolicy(Policies.Authenticated, policy =>
+        policy.RequireAuthenticatedUser());
+
 // Add Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register repositories
+// Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductSkuRepository, ProductSkuRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-
-// Register services
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IPasswordService, PasswordService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// Helpers
+builder.Services.AddScoped<UserValidationHelper>();
+
+// Infrastructure services
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+// Application services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductSkuService, ProductSkuService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
 // Add AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
-
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = context.ModelState
-            .Where(e => e.Value.Errors.Count > 0)
-            .ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Errors.Select(x => x.ErrorMessage).ToArray()
-            );
-
-        var apiResponse = ApiResponse<object>.ValidationFailure("Validation failed", errors, 400);
-        return new BadRequestObjectResult(apiResponse);
-    };
-});
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 var app = builder.Build();
-
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-        if (exceptionHandlerPathFeature?.Error is JsonException)
-        {
-            var malformedJsonErrors = new[] { "Malformed JSON or missing required properties." };
-            context.Response.StatusCode = 400;
-            context.Response.ContentType = "application/json";
-            var errors = new Dictionary<string, string[]>
-            {
-                { "body", malformedJsonErrors }
-            };
-            var apiResponse = ApiResponse<object>.ValidationFailure(
-                "Invalid request body or missing required fields.",
-                errors,
-                400
-            );
-            await context.Response.WriteAsJsonAsync(apiResponse);
-        }
-    });
-});
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -112,12 +108,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-app.UseMiddleware<AuthenticationMiddleware>();
-
-app.UseHttpsRedirection();
-
 app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 // Serve uploaded files as static files
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
@@ -125,16 +119,11 @@ if (!Directory.Exists(uploadsPath))
 {
     Directory.CreateDirectory(uploadsPath);
 }
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/uploads"
 });
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();

@@ -1,4 +1,7 @@
-docker-compose up -d
-docker-compose up -d --build
+### Remove All Containers, Networks, Volumes
 
-docker compose exec db psql -U postgres -d database
+docker compose down -v
+
+### Build and Start All Services
+
+docker compose up -d --build

@@ -32,4 +32,6 @@ public partial class OrderItem
     public required virtual User Seller { get; set; }
 
     public required virtual ProductSku SkuNavigation { get; set; }
+
+    public virtual ICollection<Review> Reviews { get; set; } = [];
 }

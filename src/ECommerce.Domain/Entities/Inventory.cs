@@ -28,4 +28,21 @@ public partial class Inventory
     public virtual ICollection<InventoryHistory> InventoryHistories { get; set; } = [];
 
     public required virtual ProductSku Sku { get; set; }
+
+    public static Inventory CreateDefault(
+    ProductSku sku,
+    int quantityAvailable)
+    {
+        return new Inventory
+        {
+            Sku = sku,
+            QuantityAvailable = quantityAvailable,
+            QuantityReserved = 0,
+            QuantitySold = 0,
+            ReorderPoint = 0,
+            ReorderQuantity = 0,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 }

@@ -2,12 +2,13 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Domain.Entities;
 using System.Threading.Tasks;
 using System;
+using ECommerce.Domain.Repositories;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context = context;
         private IUserRepository? _users;
         private IProductRepository? _products;
         private IOrderRepository? _orders;
@@ -15,12 +16,6 @@ namespace ECommerce.Infrastructure.Repositories
         private IRepository<CartItem>? _cartItems;
         private IRepository<UserAddress>? _userAddresses;
         private IRepository<Review>? _reviews;
-
-        public UnitOfWork(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
         public IUserRepository Users => _users ??= new UserRepository(_context);
         public IProductRepository Products => _products ??= new ProductRepository(_context);
         public IOrderRepository Orders => _orders ??= new OrderRepository(_context);

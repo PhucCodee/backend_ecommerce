@@ -1,0 +1,29 @@
+meta {
+  name: User registration
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "phuc1@gmail.com",
+    "username": "phuc1",
+    "password": "Test123@",
+    "confirmPassword": "Test123@",
+    "firstName": "Phúc",
+    "lastName": "Trần",
+    "phone": "84901548666",
+    "acceptTerms": true
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

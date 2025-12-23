@@ -51,3 +51,19 @@ docker-compose.override.yml
 
 # Environment
 chatbot.env
+
+# Editor config
+.editorconfig
+
+# Cache files
+.cache/
+*.cache
+
+# Dependency graph spec
+*.dgspec.json
+
+# MSBuild targets
+*.g.targets
+
+# Asset files
+assets.json

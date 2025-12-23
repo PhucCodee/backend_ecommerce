@@ -24,7 +24,7 @@ public partial class User
 
     public DateTime? DeletedAt { get; set; }
 
-    public virtual ICollection<CartItem> CartItems { get; set; } = [];
+    public virtual ICollection<Cart> Carts { get; set; } = [];
 
     public virtual ICollection<DeadLetterQueue> DeadLetterQueues { get; set; } = [];
 
@@ -62,7 +62,9 @@ public partial class User
 
     public virtual UserProfile? UserProfile { get; set; }
 
-    public static User CreateDefault(string email, string username)
+    public static User CreateDefault(
+        string email,
+        string username)
     {
         return new User
         {
@@ -74,4 +76,13 @@ public partial class User
             UpdatedAt = DateTime.UtcNow
         };
     }
+
+    public void SoftDelete()
+    {
+        DeletedAt = DateTime.UtcNow;
+        Status = UserStatus.suspended;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public bool IsDeleted() => DeletedAt.HasValue;
 }

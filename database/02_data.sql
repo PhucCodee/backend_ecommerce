@@ -7,11 +7,16 @@
 INSERT INTO
     users (email, username, status)
 VALUES
-    ('ronaldo@example.com', 'goat', 0),
-    ('messi@example.com', 'messi', 0),
-    ('lebron@example.com', 'king', 0),
-    ('stephen@example.com', 'curry', 0),
-    ('ye@example.com', 'west', 0);
+    ('ronaldo@gmail.com', 'goat', 0),
+    ('messi@gmail.com', 'messi', 0),
+    ('lebron@gmail.com', 'king', 0),
+    ('stephen@gmail.com', 'curry', 0),
+    ('ye@gmail.com', 'west', 0),
+    ('taylor@gmail.com', 'taylorswift', 0),
+    ('elon@gmail.com', 'elonmusk', 0),
+    ('bill@gmail.com', 'billgates', 0),
+    ('beyonce@gmail.com', 'beyonce', 0),
+    ('drake@gmail.com', 'drake', 0);
 
 -- ====================================
 -- 2. USER CREDENTIALS
@@ -19,11 +24,56 @@ VALUES
 INSERT INTO
     user_credentials (user_id, password_hash, password_salt)
 VALUES
-    (1, 'hash', 'salt'),
-    (2, 'hash', 'salt'),
-    (3, 'hash', 'salt'),
-    (4, 'hash', 'salt'),
-    (5, 'hash', 'salt');
+    (
+        1, -- Default password: Phuc123
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        2,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        3,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        4,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        5,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        6,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        7,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        8,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        9,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    ),
+    (
+        10,
+        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
+        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+    );
 
 -- ====================================
 -- 3. USER PROFILES
@@ -107,6 +157,71 @@ VALUES
         0,
         'America/Chicago',
         0
+    ),
+    (
+        6,
+        'Taylor',
+        'Swift',
+        '+16175550123',
+        '1989-12-13',
+        1,
+        'https://example.com/avatars/taylor.jpg',
+        'Singer-songwriter. Lover of cats and catchy hooks.',
+        0,
+        'America/New_York',
+        0
+    ),
+    (
+        7,
+        'Elon',
+        'Musk',
+        '+16505550123',
+        '1971-06-28',
+        0,
+        'https://example.com/avatars/elon.jpg',
+        'Entrepreneur. Rockets, cars, and memes.',
+        0,
+        'America/Los_Angeles',
+        0
+    ),
+    (
+        8,
+        'Bill',
+        'Gates',
+        '+12065550123',
+        '1955-10-28',
+        0,
+        'https://example.com/avatars/bill.jpg',
+        'Philanthropist. Co-founder of Microsoft.',
+        0,
+        'America/Los_Angeles',
+        0
+    ),
+    (
+        9,
+        'Beyoncé',
+        'Knowles',
+        '+17185550123',
+        '1981-09-04',
+        1,
+        'https://example.com/avatars/beyonce.jpg',
+        'Queen Bey. Singer, actress, icon.',
+        0,
+        'America/Chicago',
+        0
+    ),
+    (
+        10,
+        'Aubrey',
+        'Graham',
+        '+14165550123',
+        '1986-10-24',
+        0,
+        'https://example.com/avatars/drake.jpg',
+        'Rapper, singer, and global superstar.',
+        0,
+        'America/Toronto',
+        0
     );
 
 -- ====================================
@@ -121,7 +236,12 @@ VALUES
     (3, 0), -- Seller can also buy
     (4, 1),
     (4, 0), -- Seller can also buy
-    (5, 2);
+    (5, 2),
+    (6, 2),
+    (7, 2),
+    (8, 2),
+    (9, 2),
+    (10, 2);
 
 -- ====================================
 -- 5. CATEGORIES
@@ -513,100 +633,432 @@ VALUES
         30.00
     );
 
-
-
-INSERT INTO products (seller_id, category_id, product_name, slug, base_sku, status, moderation_status, description)
+INSERT INTO
+    products (
+        seller_id,
+        category_id,
+        product_name,
+        slug,
+        base_sku,
+        status,
+        moderation_status,
+        description
+    )
 VALUES
     -- ELECTRONICS (Category 1)
-    (3, 1, 'SonicBlast Pro Noise Cancelling Headphones', 'sonicblast-pro', 'ELEC-005', 1, 1, 
-    'Experience the ultimate audio immersion with the SonicBlast Pro. These over-ear headphones feature industry-leading Active Noise Cancellation (ANC) that blocks out up to 98% of ambient background noise, making them perfect for travel, office work, or focusing in loud environments. 
+    (
+        3,
+        1,
+        'SonicBlast Pro Noise Cancelling Headphones',
+        'sonicblast-pro',
+        'ELEC-005',
+        1,
+        1,
+        'Experience the ultimate audio immersion with the SonicBlast Pro. These over-ear headphones feature industry-leading Active Noise Cancellation (ANC) that blocks out up to 98% of ambient background noise, making them perfect for travel, office work, or focusing in loud environments. 
     
     Equipped with 40mm liquid crystal polymer drivers, they deliver deep, punchy bass and crystal-clear highs. The battery life is exceptional, offering 30 hours of playback with ANC turned on, and up to 40 hours without. Fast charging is supported via USB-C: a 10-minute charge gives you 5 hours of listening time. 
     
-    Connectivity includes Bluetooth 5.2 for a stable wireless connection and multi-point pairing, allowing you to switch seamlessly between your laptop and phone. Built-in microphones ensure clear call quality even in windy conditions.'),
-
-    (3, 1, 'UltraView 27-inch 4K Gaming Monitor', 'ultraview-27-4k', 'ELEC-006', 1, 1, 
-    'Elevate your gaming setup with the UltraView 27-inch 4K UHD monitor. Featuring an IPS panel with a resolution of 3840 x 2160, colors are vibrant and accurate, covering 99% of the sRGB color gamut. 
+    Connectivity includes Bluetooth 5.2 for a stable wireless connection and multi-point pairing, allowing you to switch seamlessly between your laptop and phone. Built-in microphones ensure clear call quality even in windy conditions.'
+    ),
+    (
+        3,
+        1,
+        'UltraView 27-inch 4K Gaming Monitor',
+        'ultraview-27-4k',
+        'ELEC-006',
+        1,
+        1,
+        'Elevate your gaming setup with the UltraView 27-inch 4K UHD monitor. Featuring an IPS panel with a resolution of 3840 x 2160, colors are vibrant and accurate, covering 99% of the sRGB color gamut. 
     
     Gamers will appreciate the 144Hz refresh rate and 1ms response time (GtG), ensuring smooth, ghosting-free visuals during fast-paced action. It is NVIDIA G-SYNC compatible and supports AMD FreeSync Premium to eliminate screen tearing. 
     
-    The ergonomic stand allows for tilt, swivel, pivot, and height adjustment to find your perfect viewing angle. Connectivity ports include 2x HDMI 2.1 (perfect for PS5 and Xbox Series X), 1x DisplayPort 1.4, and a USB 3.0 hub.'),
-
+    The ergonomic stand allows for tilt, swivel, pivot, and height adjustment to find your perfect viewing angle. Connectivity ports include 2x HDMI 2.1 (perfect for PS5 and Xbox Series X), 1x DisplayPort 1.4, and a USB 3.0 hub.'
+    ),
     -- CLOTHING (Category 2)
-    (4, 2, 'Alpine Explorer Waterproof Hiking Jacket', 'alpine-explorer-jacket', 'CLOTH-005', 1, 1, 
-    'Conquer the elements with the Alpine Explorer jacket. Designed for extreme weather, this shell is constructed from 3-layer Gore-Tex fabric, providing 100% waterproof protection while remaining highly breathable to prevent overheating during strenuous hikes.
+    (
+        4,
+        2,
+        'Alpine Explorer Waterproof Hiking Jacket',
+        'alpine-explorer-jacket',
+        'CLOTH-005',
+        1,
+        1,
+        'Conquer the elements with the Alpine Explorer jacket. Designed for extreme weather, this shell is constructed from 3-layer Gore-Tex fabric, providing 100% waterproof protection while remaining highly breathable to prevent overheating during strenuous hikes.
     
     The jacket features reinforced elbows for durability, a helmet-compatible adjustable hood, and pit zips for rapid ventilation. It includes two waterproof chest pockets, two handwarmer pockets, and an internal media pocket. 
     
-    All seams are fully taped to prevent water ingress. The fit is athletic but allows room for layering a fleece or puffer underneath. Ideal for mountaineering, skiing, or rainy urban commutes.'),
-
-    (4, 2, 'Vintage Leather Aviator Jacket', 'vintage-leather-aviator', 'CLOTH-006', 1, 1, 
-    'A timeless classic. This Aviator jacket is crafted from premium full-grain cowhide leather that is designed to age beautifully, developing a unique patina over time. The interior is lined with soft, quilted polyester for warmth and comfort in cooler temperatures.
+    All seams are fully taped to prevent water ingress. The fit is athletic but allows room for layering a fleece or puffer underneath. Ideal for mountaineering, skiing, or rainy urban commutes.'
+    ),
+    (
+        4,
+        2,
+        'Vintage Leather Aviator Jacket',
+        'vintage-leather-aviator',
+        'CLOTH-006',
+        1,
+        1,
+        'A timeless classic. This Aviator jacket is crafted from premium full-grain cowhide leather that is designed to age beautifully, developing a unique patina over time. The interior is lined with soft, quilted polyester for warmth and comfort in cooler temperatures.
     
     Features include heavy-duty brass zippers, a removable faux-fur collar, and ribbed cuffs and hem to seal out the wind. It has deep snap-button pockets on the front and a hidden secure inner pocket for your wallet or phone. 
     
-    Whether you are riding a motorcycle or just heading out for a night on the town, this jacket adds instant rugged style to any outfit.'),
-
+    Whether you are riding a motorcycle or just heading out for a night on the town, this jacket adds instant rugged style to any outfit.'
+    ),
     -- HOME (Category 4) - Good for distinguishing from "Coffee Mug"
-    (4, 4, 'BaristaPro Smart Coffee Maker', 'baristapro-smart', 'HOME-005', 1, 1, 
-    'Wake up to the smell of freshly ground coffee every morning. The BaristaPro is a WiFi-enabled smart coffee maker that you can control via a mobile app or voice commands (Alexa/Google Assistant). 
+    (
+        4,
+        4,
+        'BaristaPro Smart Coffee Maker',
+        'baristapro-smart',
+        'HOME-005',
+        1,
+        1,
+        'Wake up to the smell of freshly ground coffee every morning. The BaristaPro is a WiFi-enabled smart coffee maker that you can control via a mobile app or voice commands (Alexa/Google Assistant). 
     
     It features a built-in conical burr grinder with 15 grind settings, ensuring your beans are ground seconds before brewing for maximum flavor freshness. The thermal carafe keeps coffee hot for up to 4 hours without burning it.
     
-    You can schedule brew times, adjust brew strength (Regular, Bold, Gold), and even order replacement beans directly from the app when supplies run low. The water reservoir allows for 12 cups of brewing capacity.'),
-
-    (4, 4, 'ErgoCloud Office Chair', 'ergocloud-chair', 'HOME-006', 1, 1, 
-    'Say goodbye to back pain with the ErgoCloud Office Chair. Designed for professionals who spend long hours at a desk, this chair features a high-tension mesh backrest that promotes airflow and keeps you cool.
+    You can schedule brew times, adjust brew strength (Regular, Bold, Gold), and even order replacement beans directly from the app when supplies run low. The water reservoir allows for 12 cups of brewing capacity.'
+    ),
+    (
+        4,
+        4,
+        'ErgoCloud Office Chair',
+        'ergocloud-chair',
+        'HOME-006',
+        1,
+        1,
+        'Say goodbye to back pain with the ErgoCloud Office Chair. Designed for professionals who spend long hours at a desk, this chair features a high-tension mesh backrest that promotes airflow and keeps you cool.
     
     The dynamic lumbar support automatically adjusts to your posture as you lean back. It includes 4D adjustable armrests (height, width, depth, and pivot), a seat depth slider, and a headrest that can be adjusted for height and angle. 
     
-    The heavy-duty aluminum base supports up to 300lbs and rolls smoothly on all floor types. Easy assembly in under 15 minutes.'),
-
+    The heavy-duty aluminum base supports up to 300lbs and rolls smoothly on all floor types. Easy assembly in under 15 minutes.'
+    ),
     -- SPORTS (Category 5)
-    (3, 5, 'FlexCore Adjustable Dumbbells (Pair)', 'flexcore-dumbbells', 'SPORT-005', 1, 1, 
-    'Replace an entire rack of weights with the FlexCore Adjustable Dumbbells. This space-saving solution is perfect for home gyms where floor space is at a premium. 
+    (
+        3,
+        5,
+        'FlexCore Adjustable Dumbbells (Pair)',
+        'flexcore-dumbbells',
+        'SPORT-005',
+        1,
+        1,
+        'Replace an entire rack of weights with the FlexCore Adjustable Dumbbells. This space-saving solution is perfect for home gyms where floor space is at a premium. 
     
     With a simple turn of the handle dial, you can adjust the weight from 5 lbs to 52.5 lbs in 2.5 lb increments. The mechanism is smooth and quiet, locking the weight plates securely into place for safety.
     
-    The handles are textured for a non-slip grip, and the plates are coated in durable molding to prevent clanging noise and protect your floors. Sold as a pair with storage trays included.');
+    The handles are textured for a non-slip grip, and the plates are coated in durable molding to prevent clanging noise and protect your floors. Sold as a pair with storage trays included.'
+    );
 
 -- ====================================
 -- 14. EXTENDED PRODUCT SKUS
 -- ====================================
-
-INSERT INTO product_skus (product_id, sku, price, is_default)
+INSERT INTO
+    product_skus (product_id, sku, price, is_default)
 VALUES
     -- Headphones (Product ID: 21 assuming sequence continues)
-    ((SELECT product_id FROM products WHERE slug='sonicblast-pro'), 'ELEC-005-BLK', 299.99, true),
-    
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'sonicblast-pro'
+        ),
+        'ELEC-005-BLK',
+        299.99,
+        true
+    ),
     -- Monitor (Product ID: 22)
-    ((SELECT product_id FROM products WHERE slug='ultraview-27-4k'), 'ELEC-006-STD', 450.00, true),
-    
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'ultraview-27-4k'
+        ),
+        'ELEC-006-STD',
+        450.00,
+        true
+    ),
     -- Hiking Jacket (Product ID: 23)
-    ((SELECT product_id FROM products WHERE slug='alpine-explorer-jacket'), 'CLOTH-005-M-RED', 180.00, true),
-    
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'alpine-explorer-jacket'
+        ),
+        'CLOTH-005-M-RED',
+        180.00,
+        true
+    ),
     -- Leather Jacket (Product ID: 24)
-    ((SELECT product_id FROM products WHERE slug='vintage-leather-aviator'), 'CLOTH-006-L-BRN', 250.00, true),
-    
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'vintage-leather-aviator'
+        ),
+        'CLOTH-006-L-BRN',
+        250.00,
+        true
+    ),
     -- Coffee Maker (Product ID: 25)
-    ((SELECT product_id FROM products WHERE slug='baristapro-smart'), 'HOME-005-SS', 120.00, true),
-    
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'baristapro-smart'
+        ),
+        'HOME-005-SS',
+        120.00,
+        true
+    ),
     -- Office Chair (Product ID: 26)
-    ((SELECT product_id FROM products WHERE slug='ergocloud-chair'), 'HOME-006-BLK', 350.00, true),
-    
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'ergocloud-chair'
+        ),
+        'HOME-006-BLK',
+        350.00,
+        true
+    ),
     -- Dumbbells (Product ID: 27)
-    ((SELECT product_id FROM products WHERE slug='flexcore-dumbbells'), 'SPORT-005-SET', 199.00, true);
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'flexcore-dumbbells'
+        ),
+        'SPORT-005-SET',
+        199.00,
+        true
+    );
 
 -- ====================================
 -- 15. EXTENDED INVENTORY
 -- ====================================
-
-INSERT INTO inventory (sku_id, quantity_available)
+INSERT INTO
+    inventory (sku_id, quantity_available)
 VALUES
-    ((SELECT sku_id FROM product_skus WHERE sku='ELEC-005-BLK'), 45),
-    ((SELECT sku_id FROM product_skus WHERE sku='ELEC-006-STD'), 20),
-    ((SELECT sku_id FROM product_skus WHERE sku='CLOTH-005-M-RED'), 100),
-    ((SELECT sku_id FROM product_skus WHERE sku='CLOTH-006-L-BRN'), 15),
-    ((SELECT sku_id FROM product_skus WHERE sku='HOME-005-SS'), 60),
-    ((SELECT sku_id FROM product_skus WHERE sku='HOME-006-BLK'), 30),
-    ((SELECT sku_id FROM product_skus WHERE sku='SPORT-005-SET'), 25);
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'ELEC-005-BLK'
+        ),
+        45
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'ELEC-006-STD'
+        ),
+        20
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'CLOTH-005-M-RED'
+        ),
+        100
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'CLOTH-006-L-BRN'
+        ),
+        15
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'HOME-005-SS'
+        ),
+        60
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'HOME-006-BLK'
+        ),
+        30
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'SPORT-005-SET'
+        ),
+        25
+    );
+
+-- For 'SonicBlast Pro Noise Cancelling Headphones' (slug: 'sonicblast-pro')
+INSERT INTO
+    product_skus (
+        product_id,
+        sku,
+        price,
+        is_default,
+        variant_attributes
+    )
+VALUES
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'sonicblast-pro'
+        ),
+        'ELEC-005-WHT',
+        309.99,
+        false,
+        '{"color":"white"}'
+    ),
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'sonicblast-pro'
+        ),
+        'ELEC-005-BLU',
+        319.99,
+        false,
+        '{"color":"blue"}'
+    );
+
+-- For 'Alpine Explorer Waterproof Hiking Jacket' (slug: 'alpine-explorer-jacket')
+INSERT INTO
+    product_skus (
+        product_id,
+        sku,
+        price,
+        is_default,
+        variant_attributes
+    )
+VALUES
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'alpine-explorer-jacket'
+        ),
+        'CLOTH-005-L-BLK',
+        185.00,
+        false,
+        '{"size":"L","color":"black"}'
+    ),
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'alpine-explorer-jacket'
+        ),
+        'CLOTH-005-XL-RED',
+        190.00,
+        false,
+        '{"size":"XL","color":"red"}'
+    );
+
+INSERT INTO
+    inventory (sku_id, quantity_available)
+VALUES
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'ELEC-005-WHT'
+        ),
+        20
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'ELEC-005-BLU'
+        ),
+        15
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'CLOTH-005-L-BLK'
+        ),
+        40
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'CLOTH-005-XL-RED'
+        ),
+        25
+    );

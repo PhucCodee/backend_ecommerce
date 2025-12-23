@@ -48,8 +48,6 @@ public partial class Order
 
     public virtual ICollection<OrderStatusHistory> OrderStatusHistories { get; set; } = [];
 
-    public virtual ICollection<Review> Reviews { get; set; } = [];
-
     public virtual OrderFulfillment? OrderFulfillment { get; set; }
 
     public virtual OrderShipping? OrderShipping { get; set; }

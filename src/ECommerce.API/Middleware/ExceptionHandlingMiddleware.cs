@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using ECommerce.Application.Common.Responses;
+using ECommerce.Application.Exceptions;
 
 namespace ECommerce.API.Middleware
 {
-    public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public sealed class ExceptionHandlingMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionHandlingMiddleware> logger)
     {
         public async Task InvokeAsync(HttpContext context)
         {
@@ -16,30 +18,48 @@ namespace ECommerce.API.Middleware
             {
                 await next(context);
             }
+            catch (AppException ex)
+            {
+                await WriteError(context, ex.StatusCode, ex.Message);
+            }
+            catch (JsonException)
+            {
+                await WriteError(
+                    context,
+                    StatusCodes.Status400BadRequest,
+                    "Malformed JSON request body"
+                );
+            }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(context, ex);
+                logger.LogError(
+                    ex,
+                    "[{TraceId}] Unhandled exception",
+                    context.TraceIdentifier
+                );
+
+                await WriteError(
+                    context,
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred"
+                );
             }
         }
 
-        private Task HandleExceptionAsync(HttpContext context, Exception ex)
+        private static async Task WriteError(
+            HttpContext context,
+            int statusCode,
+            string message)
         {
-            logger.LogError(ex, "An unhandled exception has occurred: {Message}", ex.Message);
+            if (context.Response.HasStarted)
+                return;
 
-            var (statusCode, message) = ex switch
-            {
-                UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Access denied"),
-                ArgumentException => (HttpStatusCode.BadRequest, ex.Message),
-                InvalidOperationException => (HttpStatusCode.BadRequest, ex.Message),
-                KeyNotFoundException => (HttpStatusCode.NotFound, "Resource not found"),
-                _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred")
-            };
-
+            context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)statusCode;
 
-            var response = ApiResponse<object>.Failure(message, (int)statusCode);
-            return context.Response.WriteAsJsonAsync(response);
+            await context.Response.WriteAsJsonAsync(
+                ApiResponse<object>.Fail(message)
+            );
         }
     }
 }

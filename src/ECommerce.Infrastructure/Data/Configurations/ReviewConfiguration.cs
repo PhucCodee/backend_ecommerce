@@ -15,7 +15,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
 
             builder.Property(r => r.ProductId).HasColumnName("product_id");
             builder.Property(r => r.UserId).HasColumnName("user_id");
-            builder.Property(r => r.OrderId).HasColumnName("order_id");
+            builder.Property(r => r.OrderItemId).HasColumnName("order_item_id");
             builder.Property(r => r.ModeratedBy).HasColumnName("moderated_by");
 
             builder.HasOne(r => r.User) // Reviewer
@@ -33,9 +33,9 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasForeignKey(r => r.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(r => r.Order)
+            builder.HasOne(r => r.OrderItem)
                 .WithMany(o => o.Reviews)
-                .HasForeignKey(r => r.OrderId)
+                .HasForeignKey(r => r.OrderItemId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(r => r.Title)
@@ -75,10 +75,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            builder.Property(r => r.ModeratedAt)
-                .HasColumnName("moderated_at");
-
-            builder.HasIndex(r => new { r.ProductId, r.UserId, r.OrderId })
+            builder.HasIndex(r => new { r.ProductId, r.UserId, r.OrderItemId })
                 .IsUnique();
 
             // Other indexes

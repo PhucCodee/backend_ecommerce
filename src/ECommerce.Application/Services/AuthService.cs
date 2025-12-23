@@ -1,61 +1,49 @@
-using ECommerce.Application.DTOs;
+using ECommerce.Application.Exceptions;
 using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
-using ECommerce.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+using ECommerce.Domain.Repositories;
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECommerce.Application.Services
 {
-    public class AuthService(ApplicationDbContext context, IConfiguration configuration) : IAuthService
+    public class AuthService(
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork,
+        IJwtService jwtService,
+        IPasswordService passwordService,
+        UserValidationHelper validationHelper) : IAuthService
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly IConfiguration _configuration = configuration;
-
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            // Check if user already exists
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == registerDto.Email || u.Username == registerDto.Username);
+            DtoNormalizer.Normalize(registerDto);
+            await validationHelper.EnsureEmailAndUsernameAreUniqueAsync(registerDto.Email, registerDto.Username);
 
-            if (existingUser != null)
-                throw new InvalidOperationException("User with this email or username already exists");
+            var (passwordHash, passwordSalt) = passwordService.HashPassword(registerDto.Password);
 
-            // Hash password
-            var (passwordHash, passwordSalt) = SecurityHelper.HashPassword(registerDto.Password);
-
-            // Create user and related entities using factory methods
             var user = User.CreateDefault(registerDto.Email, registerDto.Username);
             user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
-            user.UserProfile = UserProfile.CreateDefault(user, registerDto.FirstName, registerDto.LastName);
+            user.UserProfile = UserProfile.CreateDefault(user, registerDto.FirstName, registerDto.LastName, registerDto.Phone);
 
-            var accessToken = JwtHelper.GenerateAccessToken(user, _configuration);
-            var refreshToken = SecurityHelper.GenerateRefreshToken();
+            // Assign default role (buyer)
+            var defaultRole = UserRole.CreateDefault(user, UserRoleType.buyer);
+            user.UserRoleUsers.Add(defaultRole);
 
-            var session = UserSession.CreateDefault(
-                user,
-                SecurityHelper.HashToken(accessToken),
-                SecurityHelper.HashToken(refreshToken)
-            );
+            var roles = user.UserRoleUsers
+                .Where(r => r.IsActive())
+                .Select(r => r.Role.ToString())
+                .ToArray();
+
+            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user, roles);
             user.UserSessions.Add(session);
 
-            // Add the user
-            _context.Users.Add(user);
-
-            // Save everything in one transaction
-            await _context.SaveChangesAsync();
+            await userRepository.AddAsync(user);
+            await unitOfWork.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -76,58 +64,47 @@ namespace ECommerce.Application.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            // Find user
-            var user = await _context.Users
-                .Include(u => u.UserCredential)
-                .Include(u => u.UserProfile)
-                .Include(u => u.UserSessions)
-                .FirstOrDefaultAsync(u => u.Email == loginDto.Email || u.Username == loginDto.Email);
+            DtoNormalizer.Normalize(loginDto);
+
+            var user = await userRepository.GetByEmailOrUsernameAsync(loginDto.Identifier);
 
             if (user == null || user.UserCredential == null)
-                throw new UnauthorizedAccessException("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
 
-            // Check account status
+            if (user.UserProfile == null)
+                throw new BadRequestException("User profile not found. Please contact support.");
+
             if (user.Status != UserStatus.active)
-                throw new UnauthorizedAccessException("Account is not active");
+                throw new UnauthorizedException("Invalid credentials");
 
-            // Check if account is locked
             if (user.UserCredential.LockedUntil.HasValue && user.UserCredential.LockedUntil > DateTime.UtcNow)
-                throw new UnauthorizedAccessException("Account is temporarily locked");
+                throw new UnauthorizedException("Account is temporarily locked");
 
-            // Verify password
-            if (!SecurityHelper.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
+            if (!passwordService.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
             {
-                // Increment failed attempts
                 user.UserCredential.FailedLoginAttempts++;
                 if (user.UserCredential.FailedLoginAttempts >= 5)
-                {
                     user.UserCredential.LockedUntil = DateTime.UtcNow.AddMinutes(30);
-                }
                 user.UserCredential.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                await unitOfWork.SaveChangesAsync();
 
-                throw new UnauthorizedAccessException("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
             }
 
-            // Reset failed attempts on successful login
             user.UserCredential.FailedLoginAttempts = 0;
             user.UserCredential.LockedUntil = null;
             user.UserCredential.LastLoginAt = DateTime.UtcNow;
             user.UserCredential.UpdatedAt = DateTime.UtcNow;
 
-            // Generate tokens
-            var accessToken = JwtHelper.GenerateAccessToken(user, _configuration);
-            var refreshToken = SecurityHelper.GenerateRefreshToken();
+            var roles = user.UserRoleUsers
+                .Where(r => r.IsActive())
+                .Select(r => r.Role.ToString())
+                .ToArray();
 
-            // Create session
-            var session = UserSession.CreateDefault(
-                user,
-                SecurityHelper.HashToken(accessToken),
-                SecurityHelper.HashToken(refreshToken)
-            );
+            var (accessToken, refreshToken, session) = GenerateTokensAndSession(user, roles);
             user.UserSessions.Add(session);
 
-            await _context.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -152,5 +129,16 @@ namespace ECommerce.Application.Services
         public Task<AuthOperationResultDto> ResetPasswordAsync(string email) => throw new NotImplementedException();
         public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
 
+        private (string accessToken, string refreshToken, UserSession session) GenerateTokensAndSession(User user, string[] roles)
+        {
+            var accessToken = jwtService.GenerateAccessToken(user.UserId, user.Email, roles);
+            var refreshToken = jwtService.GenerateRefreshToken();
+            var session = UserSession.CreateDefault(
+                user,
+                passwordService.HashToken(accessToken),
+                passwordService.HashToken(refreshToken)
+            );
+            return (accessToken, refreshToken, session);
+        }
     }
 }

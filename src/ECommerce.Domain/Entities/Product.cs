@@ -63,4 +63,45 @@ public partial class Product
     public required virtual Category Category { get; set; }
 
     public required virtual User Seller { get; set; }
+
+    public static Product CreateDefault(
+        string name,
+        string slug,
+        string baseSku,
+        int sellerId,
+        int categoryId,
+        string? description = null,
+        string? brand = null,
+        decimal? weightKg = null,
+        string? dimensionsCm = null)
+    {
+        return new Product
+        {
+            ProductName = name,
+            Slug = slug,
+            BaseSku = baseSku,
+            SellerId = sellerId,
+            CategoryId = categoryId,
+            Description = description,
+            Brand = brand,
+            WeightKg = weightKg,
+            DimensionsCm = dimensionsCm,
+            HasVariants = false,
+            Status = ProductStatus.active,
+            Moderation = ModerationStatus.approved,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Category = null!,
+            Seller = null!
+        };
+    }
+
+    public void SoftDelete()
+    {
+        RemovedAt = DateTime.UtcNow;
+        Status = ProductStatus.removed;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public bool IsDeleted() => RemovedAt.HasValue;
 }

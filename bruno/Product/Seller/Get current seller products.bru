@@ -1,0 +1,20 @@
+meta {
+  name: Get current seller products
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/api/products/me/products
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjMiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsZWJyb25AZ21haWwuY29tIiwianRpIjoiY2QxMDFjM2YtOGZiNy00YjUzLTliOTktOGFhN2M4YmViYzc1IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjpbInNlbGxlciIsImJ1eWVyIl0sImV4cCI6MTc2NjQ5MTA1NSwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.Qq4hK_WeChQSPh76jpYySU5ezszLxUruULI8L3Ovm_Y
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
