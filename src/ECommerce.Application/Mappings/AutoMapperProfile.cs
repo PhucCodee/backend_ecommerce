@@ -1,6 +1,7 @@
 using AutoMapper;
 using ECommerce.Application.DTOs;
 using ECommerce.Application.DTOs.cart;
+using ECommerce.Application.DTOs.category;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.DTOs.productsku;
 using ECommerce.Application.DTOs.user;
@@ -62,7 +63,7 @@ namespace ECommerce.Application.Mappings
                     src.ProductImages.FirstOrDefault(pi => pi.IsPrimary) != null
                         ? src.ProductImages.First(pi => pi.IsPrimary).ImageUrl
                         : src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null))
-                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => 
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
                     src.ProductImages.OrderBy(pi => pi.DisplayOrder).ToList()))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
@@ -90,6 +91,9 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.AvailableStock, opt => opt.MapFrom(src =>
                     src.Sku != null && src.Sku.Inventory != null ? src.Sku.Inventory.QuantityAvailable : 0))
                 .ForMember(dest => dest.LineTotal, opt => opt.MapFrom(src => src.PriceSnapshot * src.Quantity));
+
+            CreateMap<Category, CategoryDto>()
+                .ForMember(dest => dest.ParentCategoryName, opt => opt.MapFrom(src => src.ParentCategory != null ? src.ParentCategory.CategoryName : null));
 
             // Order mappings
             CreateMap<Order, OrderDto>();

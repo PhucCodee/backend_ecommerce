@@ -1,0 +1,16 @@
+meta {
+  name: Get active categories
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/categories/active
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

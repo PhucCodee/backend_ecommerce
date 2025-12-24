@@ -17,9 +17,7 @@ namespace ECommerce.API.Controllers
     [Authorize]
     public class UsersController(IUserService userService) : ControllerBase
     {
-        // ==================== PROFILE ROUTES (must be before {id} routes) ====================
-
-        /// Get current user's profile
+        // Get current user's profile
         [HttpGet("profile")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> GetProfile()
@@ -29,7 +27,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<UserProfileDto>.Ok(result));
         }
 
-        /// Update current user's profile
+        // Update current user's profile
         [HttpPut("profile")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDto updateDto)
@@ -38,8 +36,6 @@ namespace ECommerce.API.Controllers
             var user = await userService.UpdateProfileAsync(userId, updateDto);
             return Ok(ApiResponse<UserProfileDto>.Ok(user, "Profile updated successfully"));
         }
-
-        // ==================== ADMIN ROUTES ====================
 
         // Get all users
         [HttpGet]
@@ -50,7 +46,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<UserProfileDto>>.Ok(users));
         }
 
-        /// Get user by id
+        // Get user by id
         [HttpGet("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> GetById(int id)
@@ -59,7 +55,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<UserProfileDto>.Ok(user));
         }
 
-        /// Create a new user
+        // Create a new user
         [HttpPost]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Create([FromBody] UserCreateDto createDto)
@@ -68,7 +64,7 @@ namespace ECommerce.API.Controllers
             return StatusCode(StatusCodes.Status201Created, ApiResponse<UserProfileDto>.Ok(user, "User created successfully"));
         }
 
-        /// Update user
+        // Update user
         [HttpPut("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto updateDto)
@@ -77,7 +73,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<UserProfileDto>.Ok(user, "User updated successfully"));
         }
 
-        /// Delete user
+        // Delete user
         [HttpDelete("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Delete(int id)
@@ -85,8 +81,6 @@ namespace ECommerce.API.Controllers
             await userService.DeleteAsync(id);
             return Ok(ApiResponse<object>.Ok(new { id }, "User deleted successfully"));
         }
-
-        // ==================== HELPER METHODS ====================
 
         private int GetCurrentUserId()
         {

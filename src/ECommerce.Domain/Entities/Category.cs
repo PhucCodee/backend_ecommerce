@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace ECommerce.Domain.Entities;
 
-public partial class Category
+public class Category
 {
     public int CategoryId { get; set; }
 
-    public required string CategoryName { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
 
-    public required string Slug { get; set; }
+    public string Slug { get; set; } = string.Empty;
 
     public int? ParentCategoryId { get; set; }
 
@@ -19,15 +19,46 @@ public partial class Category
 
     public int DisplayOrder { get; set; }
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
 
-    public virtual ICollection<Category> InverseParentCategory { get; set; } = [];
-
     public virtual Category? ParentCategory { get; set; }
 
+    public virtual ICollection<Category> ChildCategories { get; set; } = [];
+
     public virtual ICollection<Product> Products { get; set; } = [];
+
+    public static Category CreateDefault(
+        string name,
+        string slug,
+        int? parentCategoryId = null,
+        string? description = null,
+        string? imageUrl = null,
+        int displayOrder = 0,
+        bool isActive = true)
+    {
+        return new Category
+        {
+            CategoryName = name,
+            Slug = slug,
+            ParentCategoryId = parentCategoryId,
+            Description = description,
+            ImageUrl = imageUrl,
+            DisplayOrder = displayOrder,
+            IsActive = isActive,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    public void SoftDelete()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public bool IsDeleted() => !IsActive;
 }
