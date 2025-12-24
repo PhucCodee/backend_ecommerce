@@ -936,3 +936,129 @@ VALUES
         ),
         25
     );
+
+-- For 'SonicBlast Pro Noise Cancelling Headphones' (slug: 'sonicblast-pro')
+INSERT INTO
+    product_skus (
+        product_id,
+        sku,
+        price,
+        is_default,
+        variant_attributes
+    )
+VALUES
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'sonicblast-pro'
+        ),
+        'ELEC-005-WHT',
+        309.99,
+        false,
+        '{"color":"white"}'
+    ),
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'sonicblast-pro'
+        ),
+        'ELEC-005-BLU',
+        319.99,
+        false,
+        '{"color":"blue"}'
+    );
+
+-- For 'Alpine Explorer Waterproof Hiking Jacket' (slug: 'alpine-explorer-jacket')
+INSERT INTO
+    product_skus (
+        product_id,
+        sku,
+        price,
+        is_default,
+        variant_attributes
+    )
+VALUES
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'alpine-explorer-jacket'
+        ),
+        'CLOTH-005-L-BLK',
+        185.00,
+        false,
+        '{"size":"L","color":"black"}'
+    ),
+    (
+        (
+            SELECT
+                product_id
+            FROM
+                products
+            WHERE
+                slug = 'alpine-explorer-jacket'
+        ),
+        'CLOTH-005-XL-RED',
+        190.00,
+        false,
+        '{"size":"XL","color":"red"}'
+    );
+
+INSERT INTO
+    inventory (sku_id, quantity_available)
+VALUES
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'ELEC-005-WHT'
+        ),
+        20
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'ELEC-005-BLU'
+        ),
+        15
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'CLOTH-005-L-BLK'
+        ),
+        40
+    ),
+    (
+        (
+            SELECT
+                sku_id
+            FROM
+                product_skus
+            WHERE
+                sku = 'CLOTH-005-XL-RED'
+        ),
+        25
+    );

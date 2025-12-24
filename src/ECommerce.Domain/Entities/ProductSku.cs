@@ -11,7 +11,7 @@ public partial class ProductSku
 
     public required string Sku { get; set; } = string.Empty;
 
-    public required string VariantAttributes { get; set; } = string.Empty;
+    public string? VariantAttributes { get; set; }
 
     public decimal Price { get; set; }
 

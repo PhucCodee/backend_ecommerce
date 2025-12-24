@@ -1,9 +1,10 @@
-using System.Linq;
 using AutoMapper;
 using ECommerce.Application.DTOs;
 using ECommerce.Application.DTOs.product;
+using ECommerce.Application.DTOs.productsku;
 using ECommerce.Application.DTOs.user;
 using ECommerce.Domain.Entities;
+using System.Linq;
 
 namespace ECommerce.Application.Mappings
 {
@@ -47,6 +48,13 @@ namespace ECommerce.Application.Mappings
                         ? src.ProductImages.First(pi => pi.IsPrimary).ImageUrl
                         : src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+            // ProductSku mappings
+            CreateMap<ProductSku, ProductSkuDetailDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductName : null))
+                .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.QuantityAvailable : 0))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
+                    src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null));
 
             // Order mappings
             CreateMap<Order, OrderDto>();
