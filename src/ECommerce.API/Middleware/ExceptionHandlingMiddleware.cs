@@ -4,7 +4,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ECommerce.Application.Common.Responses;
-using ECommerce.Application.Common.Exceptions;
+using ECommerce.Application.Exceptions;
 
 namespace ECommerce.API.Middleware
 {

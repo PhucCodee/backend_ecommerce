@@ -60,14 +60,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Add Authorization Policies
 builder.Services.AddAuthorizationBuilder()
-                                 // Add Authorization Policies
-                                 .AddPolicy(Policies.AdminOnly, policy =>
+    .AddPolicy(Policies.AdminOnly, policy =>
         policy.RequireRole(Roles.Admin))
-                                 // Add Authorization Policies
-                                 .AddPolicy(Policies.SellerOrAdmin, policy =>
+    .AddPolicy(Policies.AdminOrSeller, policy =>
         policy.RequireRole(Roles.Admin, Roles.Seller))
-                                 // Add Authorization Policies
-                                 .AddPolicy(Policies.Authenticated, policy =>
+    .AddPolicy(Policies.SellerOnly, policy =>
+        policy.RequireRole(Roles.Seller))
+    .AddPolicy(Policies.Authenticated, policy =>
         policy.RequireAuthenticatedUser());
 
 // Add Entity Framework
@@ -77,6 +76,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductSkuRepository, ProductSkuRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -91,6 +91,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductSkuService, ProductSkuService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
 // Add AutoMapper

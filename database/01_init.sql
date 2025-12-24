@@ -264,7 +264,7 @@ CREATE TABLE
         sku_id SERIAL PRIMARY KEY,
         product_id INTEGER NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
         sku VARCHAR(100) UNIQUE NOT NULL,
-        variant_attributes JSONB,
+        variant_attributes JSONB DEFAULT '{}',
         price DECIMAL(10, 2) NOT NULL,
         cost_price DECIMAL(10, 2),
         compare_at_price DECIMAL(10, 2),

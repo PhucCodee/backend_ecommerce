@@ -1,6 +1,6 @@
 using System;
 
-namespace ECommerce.Application.Common.Exceptions
+namespace ECommerce.Application.Exceptions
 {
     public abstract class AppException(string message, int statusCode) : Exception(message)
     {

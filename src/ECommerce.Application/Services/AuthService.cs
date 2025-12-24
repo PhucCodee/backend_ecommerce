@@ -1,4 +1,4 @@
-using ECommerce.Application.Common.Exceptions;
+using ECommerce.Application.Exceptions;
 using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Helpers;
