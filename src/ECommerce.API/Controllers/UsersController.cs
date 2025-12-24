@@ -17,50 +17,7 @@ namespace ECommerce.API.Controllers
     [Authorize]
     public class UsersController(IUserService userService) : ControllerBase
     {
-        // Get all users
-        [HttpGet]
-        [Authorize(Policy = Policies.AdminOnly)]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
-        {
-            var users = await userService.GetAllPagedAsync(paginationParams);
-            return Ok(ApiResponse<PagedResult<UserProfileDto>>.Ok(users));
-        }
-
-        /// Get user by id
-        [HttpGet("{id}")]
-        [Authorize(Policy = Policies.AdminOnly)]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var user = await userService.GetByIdAsync(id);
-            return Ok(ApiResponse<UserProfileDto>.Ok(user));
-        }
-
-        /// Create a new user
-        [HttpPost]
-        [Authorize(Policy = Policies.AdminOnly)]
-        public async Task<IActionResult> Create([FromBody] UserCreateDto createDto)
-        {
-            var user = await userService.CreateAsync(createDto);
-            return StatusCode(StatusCodes.Status201Created, ApiResponse<UserProfileDto>.Ok(user, "User created successfully"));
-        }
-
-        /// Update user
-        [HttpPut("{id}")]
-        [Authorize(Policy = Policies.AdminOnly)]
-        public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto updateDto)
-        {
-            var user = await userService.UpdateAsync(id, updateDto);
-            return Ok(ApiResponse<UserProfileDto>.Ok(user, "User updated successfully"));
-        }
-
-        /// Delete user
-        [HttpDelete("{id}")]
-        [Authorize(Policy = Policies.AdminOnly)]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await userService.DeleteAsync(id);
-            return Ok(ApiResponse<object>.Ok(new { id }, "User deleted successfully"));
-        }
+        // ==================== PROFILE ROUTES (must be before {id} routes) ====================
 
         /// Get current user's profile
         [HttpGet("profile")]
@@ -81,6 +38,55 @@ namespace ECommerce.API.Controllers
             var user = await userService.UpdateProfileAsync(userId, updateDto);
             return Ok(ApiResponse<UserProfileDto>.Ok(user, "Profile updated successfully"));
         }
+
+        // ==================== ADMIN ROUTES ====================
+
+        // Get all users
+        [HttpGet]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
+        {
+            var users = await userService.GetAllPagedAsync(paginationParams);
+            return Ok(ApiResponse<PagedResult<UserProfileDto>>.Ok(users));
+        }
+
+        /// Get user by id
+        [HttpGet("{id:int}")]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var user = await userService.GetByIdAsync(id);
+            return Ok(ApiResponse<UserProfileDto>.Ok(user));
+        }
+
+        /// Create a new user
+        [HttpPost]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> Create([FromBody] UserCreateDto createDto)
+        {
+            var user = await userService.CreateAsync(createDto);
+            return StatusCode(StatusCodes.Status201Created, ApiResponse<UserProfileDto>.Ok(user, "User created successfully"));
+        }
+
+        /// Update user
+        [HttpPut("{id:int}")]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto updateDto)
+        {
+            var user = await userService.UpdateAsync(id, updateDto);
+            return Ok(ApiResponse<UserProfileDto>.Ok(user, "User updated successfully"));
+        }
+
+        /// Delete user
+        [HttpDelete("{id:int}")]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await userService.DeleteAsync(id);
+            return Ok(ApiResponse<object>.Ok(new { id }, "User deleted successfully"));
+        }
+
+        // ==================== HELPER METHODS ====================
 
         private int GetCurrentUserId()
         {
