@@ -6,6 +6,7 @@ using AutoMapper;
 using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.DTOs.product;
+using ECommerce.Application.DTOs.productsku;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
@@ -40,13 +41,20 @@ namespace ECommerce.Application.Services
             return _mapper.Map<IEnumerable<ProductDetailDto>>(activeProducts);
         }
 
-        public async Task<PagedResult<ProductDetailDto>> GetAllPagedAsync(PaginationParams paginationParams)
+        public async Task<PagedResult<ProductDetailDto>> GetAllPagedAsync(PaginationParams paginationParams, bool? primaryOnly = null)
         {
             var (products, totalCount) = await _productRepository.GetPagedAsync(
                 paginationParams.PageNumber,
                 paginationParams.PageSize);
 
             var activeProducts = products.Where(p => !p.IsDeleted());
+            
+            // Filter for primary products only (products with is_default = true SKU)
+            if (primaryOnly == true)
+            {
+                activeProducts = activeProducts.Where(p => p.ProductSkus.Any(s => s.IsDefault));
+            }
+
             var productDtos = _mapper.Map<IEnumerable<ProductDetailDto>>(activeProducts);
 
             return PagedResult<ProductDetailDto>.Create(
@@ -54,6 +62,19 @@ namespace ECommerce.Application.Services
                 paginationParams.PageNumber,
                 paginationParams.PageSize,
                 totalCount);
+        }
+
+        public async Task<IEnumerable<ProductSkuDetailDto>> GetVariantsAsync(int productId)
+        {
+            var product = await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            if (product.IsDeleted())
+                throw new NotFoundException("Product not found");
+
+            // Return all non-default SKUs (variants)
+            var variants = product.ProductSkus.Where(s => !s.IsDefault);
+            return _mapper.Map<IEnumerable<ProductSkuDetailDto>>(variants);
         }
 
         public async Task<PagedResult<ProductDetailDto>> GetBySellerPagedAsync(int sellerId, PaginationParams paginationParams)

@@ -20,18 +20,34 @@ namespace ECommerce.API.Controllers
 
         // Get all products (public)
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams, [FromQuery] bool? primaryOnly = null)
         {
-            var products = await _productService.GetAllPagedAsync(paginationParams);
+            var products = await _productService.GetAllPagedAsync(paginationParams, primaryOnly);
+            return Ok(ApiResponse<PagedResult<ProductDetailDto>>.Ok(products));
+        }
+
+        // Get only primary/parent products (public - for buyer homepage)
+        [HttpGet("primary")]
+        public async Task<IActionResult> GetPrimaryProducts([FromQuery] PaginationParams paginationParams)
+        {
+            var products = await _productService.GetAllPagedAsync(paginationParams, primaryOnly: true);
             return Ok(ApiResponse<PagedResult<ProductDetailDto>>.Ok(products));
         }
 
         // Get product by id (public)
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var product = await _productService.GetByIdAsync(id);
             return Ok(ApiResponse<ProductDetailDto>.Ok(product));
+        }
+
+        // Get variants of a product (public)
+        [HttpGet("{id:int}/variants")]
+        public async Task<IActionResult> GetVariants(int id)
+        {
+            var variants = await _productService.GetVariantsAsync(id);
+            return Ok(ApiResponse<object>.Ok(variants));
         }
 
         // Create a new product (Admin only)

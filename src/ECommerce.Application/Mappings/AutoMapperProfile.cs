@@ -37,6 +37,17 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ProductName))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null))
                 .ForMember(dest => dest.SellerName, opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null))
+                // SKU from default SKU
+                .ForMember(dest => dest.Sku, opt => opt.MapFrom(src =>
+                    src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null
+                        ? src.ProductSkus.First(ps => ps.IsDefault).Sku
+                        : src.ProductSkus.Any() ? src.ProductSkus.First().Sku : null))
+                // IsDefault - true if this product has a default SKU (primary product)
+                .ForMember(dest => dest.IsDefault, opt => opt.MapFrom(src =>
+                    src.ProductSkus.Any(ps => ps.IsDefault)))
+                // VariantCount - number of non-default SKUs
+                .ForMember(dest => dest.VariantCount, opt => opt.MapFrom(src =>
+                    src.ProductSkus.Count(ps => !ps.IsDefault)))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
                     src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null
                         ? src.ProductSkus.First(ps => ps.IsDefault).Price
