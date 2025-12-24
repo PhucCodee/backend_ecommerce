@@ -27,6 +27,9 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
 
+            // ProductImage mapping
+            CreateMap<ProductImage, ProductImageDto>();
+
             // Product mappings
             CreateMap<Product, ProductDto>();
             CreateMap<Product, ProductDetailDto>()
@@ -47,6 +50,8 @@ namespace ECommerce.Application.Mappings
                     src.ProductImages.FirstOrDefault(pi => pi.IsPrimary) != null
                         ? src.ProductImages.First(pi => pi.IsPrimary).ImageUrl
                         : src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null))
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => 
+                    src.ProductImages.OrderBy(pi => pi.DisplayOrder).ToList()))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
             // ProductSku mappings

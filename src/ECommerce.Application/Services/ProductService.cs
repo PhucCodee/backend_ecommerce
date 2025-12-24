@@ -101,7 +101,26 @@ namespace ECommerce.Application.Services
             defaultSku.Inventory = inventory;
             product.ProductSkus.Add(defaultSku);
 
-            if (!string.IsNullOrWhiteSpace(createDto.ImageUrl))
+            // Handle multiple images
+            if (createDto.Images != null && createDto.Images.Count > 0)
+            {
+                for (int i = 0; i < createDto.Images.Count; i++)
+                {
+                    var imgDto = createDto.Images[i];
+                    var image = ProductImage.CreateDefault(
+                        product: product,
+                        sku: defaultSku,
+                        imageUrl: imgDto.ImageUrl,
+                        altText: imgDto.AltText ?? createDto.Name,
+                        isPrimary: imgDto.IsPrimary || i == 0); // First image is primary if none specified
+
+                    image.DisplayOrder = imgDto.DisplayOrder > 0 ? imgDto.DisplayOrder : i + 1;
+                    product.ProductImages.Add(image);
+                    defaultSku.ProductImages.Add(image);
+                }
+            }
+            // Fallback to single ImageUrl for backward compatibility
+            else if (!string.IsNullOrWhiteSpace(createDto.ImageUrl))
             {
                 var image = ProductImage.CreateDefault(
                     product: product,
@@ -239,7 +258,30 @@ namespace ECommerce.Application.Services
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(updateDto.ImageUrl))
+                // Handle multiple images update
+                if (updateDto.Images != null && updateDto.Images.Count > 0)
+                {
+                    // Clear existing images and add new ones
+                    product.ProductImages.Clear();
+                    defaultSku.ProductImages.Clear();
+
+                    for (int i = 0; i < updateDto.Images.Count; i++)
+                    {
+                        var imgDto = updateDto.Images[i];
+                        var newImage = ProductImage.CreateDefault(
+                            product: product,
+                            sku: defaultSku,
+                            imageUrl: imgDto.ImageUrl,
+                            altText: imgDto.AltText ?? product.ProductName,
+                            isPrimary: imgDto.IsPrimary || i == 0);
+
+                        newImage.DisplayOrder = imgDto.DisplayOrder > 0 ? imgDto.DisplayOrder : i + 1;
+                        product.ProductImages.Add(newImage);
+                        defaultSku.ProductImages.Add(newImage);
+                    }
+                }
+                // Fallback to single ImageUrl for backward compatibility
+                else if (!string.IsNullOrWhiteSpace(updateDto.ImageUrl))
                 {
                     var image = product.ProductImages.FirstOrDefault(pi => pi.IsPrimary)
                         ?? product.ProductImages.FirstOrDefault();

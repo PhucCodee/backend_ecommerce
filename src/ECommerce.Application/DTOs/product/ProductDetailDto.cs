@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ECommerce.Application.DTOs.product
 {
@@ -15,7 +16,8 @@ namespace ECommerce.Application.DTOs.product
         public string? Brand { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
-        public string? ImageUrl { get; set; }
+        public string? ImageUrl { get; set; } // Primary image for backward compatibility
+        public List<ProductImageDto>? Images { get; set; } // All images
         public decimal? WeightKg { get; set; }
         public string? DimensionsCm { get; set; }
         public string? Status { get; set; }
