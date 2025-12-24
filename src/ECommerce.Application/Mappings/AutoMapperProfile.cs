@@ -27,6 +27,9 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
 
+            // ProductImage mapping
+            CreateMap<ProductImage, ProductImageDto>();
+
             // Product mappings
             CreateMap<Product, ProductDto>();
             CreateMap<Product, ProductDetailDto>()
@@ -34,6 +37,17 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ProductName))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null))
                 .ForMember(dest => dest.SellerName, opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null))
+                // SKU from default SKU
+                .ForMember(dest => dest.Sku, opt => opt.MapFrom(src =>
+                    src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null
+                        ? src.ProductSkus.First(ps => ps.IsDefault).Sku
+                        : src.ProductSkus.Any() ? src.ProductSkus.First().Sku : null))
+                // IsDefault - true if this product has a default SKU (primary product)
+                .ForMember(dest => dest.IsDefault, opt => opt.MapFrom(src =>
+                    src.ProductSkus.Any(ps => ps.IsDefault)))
+                // VariantCount - number of non-default SKUs
+                .ForMember(dest => dest.VariantCount, opt => opt.MapFrom(src =>
+                    src.ProductSkus.Count(ps => !ps.IsDefault)))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
                     src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null
                         ? src.ProductSkus.First(ps => ps.IsDefault).Price
@@ -47,6 +61,8 @@ namespace ECommerce.Application.Mappings
                     src.ProductImages.FirstOrDefault(pi => pi.IsPrimary) != null
                         ? src.ProductImages.First(pi => pi.IsPrimary).ImageUrl
                         : src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null))
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => 
+                    src.ProductImages.OrderBy(pi => pi.DisplayOrder).ToList()))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
             // ProductSku mappings
