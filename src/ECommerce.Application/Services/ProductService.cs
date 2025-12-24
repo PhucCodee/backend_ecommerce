@@ -6,6 +6,7 @@ using AutoMapper;
 using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.DTOs.product;
+using ECommerce.Application.DTOs.productsku;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
@@ -40,13 +41,20 @@ namespace ECommerce.Application.Services
             return _mapper.Map<IEnumerable<ProductDetailDto>>(activeProducts);
         }
 
-        public async Task<PagedResult<ProductDetailDto>> GetAllPagedAsync(PaginationParams paginationParams)
+        public async Task<PagedResult<ProductDetailDto>> GetAllPagedAsync(PaginationParams paginationParams, bool? primaryOnly = null)
         {
             var (products, totalCount) = await _productRepository.GetPagedAsync(
                 paginationParams.PageNumber,
                 paginationParams.PageSize);
 
             var activeProducts = products.Where(p => !p.IsDeleted());
+            
+            // Filter for primary products only (products with is_default = true SKU)
+            if (primaryOnly == true)
+            {
+                activeProducts = activeProducts.Where(p => p.ProductSkus.Any(s => s.IsDefault));
+            }
+
             var productDtos = _mapper.Map<IEnumerable<ProductDetailDto>>(activeProducts);
 
             return PagedResult<ProductDetailDto>.Create(
@@ -54,6 +62,19 @@ namespace ECommerce.Application.Services
                 paginationParams.PageNumber,
                 paginationParams.PageSize,
                 totalCount);
+        }
+
+        public async Task<IEnumerable<ProductSkuDetailDto>> GetVariantsAsync(int productId)
+        {
+            var product = await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            if (product.IsDeleted())
+                throw new NotFoundException("Product not found");
+
+            // Return all non-default SKUs (variants)
+            var variants = product.ProductSkus.Where(s => !s.IsDefault);
+            return _mapper.Map<IEnumerable<ProductSkuDetailDto>>(variants);
         }
 
         public async Task<PagedResult<ProductDetailDto>> GetBySellerPagedAsync(int sellerId, PaginationParams paginationParams)
@@ -101,7 +122,26 @@ namespace ECommerce.Application.Services
             defaultSku.Inventory = inventory;
             product.ProductSkus.Add(defaultSku);
 
-            if (!string.IsNullOrWhiteSpace(createDto.ImageUrl))
+            // Handle multiple images
+            if (createDto.Images != null && createDto.Images.Count > 0)
+            {
+                for (int i = 0; i < createDto.Images.Count; i++)
+                {
+                    var imgDto = createDto.Images[i];
+                    var image = ProductImage.CreateDefault(
+                        product: product,
+                        sku: defaultSku,
+                        imageUrl: imgDto.ImageUrl,
+                        altText: imgDto.AltText ?? createDto.Name,
+                        isPrimary: imgDto.IsPrimary || i == 0); // First image is primary if none specified
+
+                    image.DisplayOrder = imgDto.DisplayOrder > 0 ? imgDto.DisplayOrder : i + 1;
+                    product.ProductImages.Add(image);
+                    defaultSku.ProductImages.Add(image);
+                }
+            }
+            // Fallback to single ImageUrl for backward compatibility
+            else if (!string.IsNullOrWhiteSpace(createDto.ImageUrl))
             {
                 var image = ProductImage.CreateDefault(
                     product: product,
@@ -239,7 +279,30 @@ namespace ECommerce.Application.Services
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(updateDto.ImageUrl))
+                // Handle multiple images update
+                if (updateDto.Images != null && updateDto.Images.Count > 0)
+                {
+                    // Clear existing images and add new ones
+                    product.ProductImages.Clear();
+                    defaultSku.ProductImages.Clear();
+
+                    for (int i = 0; i < updateDto.Images.Count; i++)
+                    {
+                        var imgDto = updateDto.Images[i];
+                        var newImage = ProductImage.CreateDefault(
+                            product: product,
+                            sku: defaultSku,
+                            imageUrl: imgDto.ImageUrl,
+                            altText: imgDto.AltText ?? product.ProductName,
+                            isPrimary: imgDto.IsPrimary || i == 0);
+
+                        newImage.DisplayOrder = imgDto.DisplayOrder > 0 ? imgDto.DisplayOrder : i + 1;
+                        product.ProductImages.Add(newImage);
+                        defaultSku.ProductImages.Add(newImage);
+                    }
+                }
+                // Fallback to single ImageUrl for backward compatibility
+                else if (!string.IsNullOrWhiteSpace(updateDto.ImageUrl))
                 {
                     var image = product.ProductImages.FirstOrDefault(pi => pi.IsPrimary)
                         ?? product.ProductImages.FirstOrDefault();
