@@ -52,7 +52,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.HasOne(c => c.ParentCategory)
-                .WithMany(c => c.InverseParentCategory)
+                .WithMany(c => c.ChildCategories)
                 .HasForeignKey(c => c.ParentCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 

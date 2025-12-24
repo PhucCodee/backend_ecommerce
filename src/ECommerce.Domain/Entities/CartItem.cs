@@ -21,4 +21,19 @@ public partial class CartItem
     public required virtual ProductSku Sku { get; set; }
 
     public required virtual Cart Cart { get; set; }
+
+    public static CartItem CreateDefault(Cart cart, ProductSku sku, int quantity)
+    {
+        return new CartItem
+        {
+            Cart = cart,
+            CartId = cart.CartId,
+            Sku = sku,
+            SkuId = sku.SkuId,
+            Quantity = quantity,
+            PriceSnapshot = sku.Price,
+            AddedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 }

@@ -12,7 +12,5 @@ namespace ECommerce.API.Controllers
     public class OrdersController(IOrderService orderService) : ControllerBase
     {
         private readonly IOrderService _orderService = orderService;
-
-
     }
 }
