@@ -1,3 +1,5 @@
+#centralize_agent.py
+
 import os
 from dotenv import load_dotenv
 from typing import Annotated, Literal
@@ -16,7 +18,8 @@ if not os.environ.get("GOOGLE_API_KEY"):
 
 # 1. FIXED: Explicitly define the model_provider
 llm = init_chat_model(
-    "gemini-2.5-flash", model_provider="google_genai" , temperature = 0,
+    "llama-3.3-70b-versatile", 
+    model_provider="groq" , temperature = 0,
 )
 
 
