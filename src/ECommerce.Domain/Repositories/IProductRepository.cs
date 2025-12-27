@@ -13,5 +13,6 @@ namespace ECommerce.Domain.Repositories
         Task<Product?> GetByIdWithDetailsAsync(int id);
         Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
         Task<(IEnumerable<Product> Products, int TotalCount)> GetBySellerPagedAsync(int sellerId, int pageNumber, int pageSize);
+        Task<bool> SlugExistsAsync(string slug, int? excludeProductId = null);
     }
 }

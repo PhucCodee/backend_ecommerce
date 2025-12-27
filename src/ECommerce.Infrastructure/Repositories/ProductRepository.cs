@@ -111,5 +111,15 @@ namespace ECommerce.Infrastructure.Repositories
 
             return (products, totalCount);
         }
+
+        public async Task<bool> SlugExistsAsync(string slug, int? excludeProductId = null)
+        {
+            var query = _context.Products.Where(p => p.Slug == slug);
+            if (excludeProductId.HasValue)
+            {
+                query = query.Where(p => p.ProductId != excludeProductId.Value);
+            }
+            return await query.AnyAsync();
+        }
     }
 }

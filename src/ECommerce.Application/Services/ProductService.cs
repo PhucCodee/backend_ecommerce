@@ -96,7 +96,7 @@ namespace ECommerce.Application.Services
 
         public async Task<ProductDetailDto> CreateAsync(ProductCreateDto createDto, int sellerId)
         {
-            var slug = GenerateSlug(createDto.Name);
+            var slug = await GenerateUniqueSlugAsync(createDto.Name);
             var baseSku = $"SKU-{Guid.NewGuid():N}"[..12];
 
             var product = Product.CreateDefault(
@@ -179,7 +179,13 @@ namespace ECommerce.Application.Services
             if (product.IsDeleted())
                 throw new NotFoundException("Product not found");
 
-            ApplyUpdates(product, updateDto);
+            string? uniqueSlug = null;
+            if (!string.IsNullOrWhiteSpace(updateDto.Name))
+            {
+                uniqueSlug = await GenerateUniqueSlugAsync(updateDto.Name, productId);
+            }
+
+            ApplyUpdates(product, updateDto, uniqueSlug);
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<ProductDetailDto>(product);
@@ -196,7 +202,13 @@ namespace ECommerce.Application.Services
             if (product.SellerId != sellerId)
                 throw new ForbiddenException("You do not have permission to update this product");
 
-            ApplyUpdates(product, updateDto);
+            string? uniqueSlug = null;
+            if (!string.IsNullOrWhiteSpace(updateDto.Name))
+            {
+                uniqueSlug = await GenerateUniqueSlugAsync(updateDto.Name, productId);
+            }
+
+            ApplyUpdates(product, updateDto, uniqueSlug);
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<ProductDetailDto>(product);
@@ -233,14 +245,14 @@ namespace ECommerce.Application.Services
             return true;
         }
 
-        private static void ApplyUpdates(Product product, ProductUpdateDto updateDto)
+        private static void ApplyUpdates(Product product, ProductUpdateDto updateDto, string? uniqueSlug = null)
         {
             var now = DateTime.UtcNow;
 
             if (!string.IsNullOrWhiteSpace(updateDto.Name))
             {
                 product.ProductName = updateDto.Name;
-                product.Slug = GenerateSlug(updateDto.Name);
+                product.Slug = uniqueSlug ?? GenerateSlug(updateDto.Name);
             }
 
             if (updateDto.Description != null)
@@ -362,6 +374,21 @@ namespace ECommerce.Application.Services
                 slug = slug.Replace("--", "-");
             }
             return slug.Trim('-');
+        }
+
+        private async Task<string> GenerateUniqueSlugAsync(string name, int? excludeProductId = null)
+        {
+            var baseSlug = GenerateSlug(name);
+            var slug = baseSlug;
+            var counter = 1;
+
+            while (await _productRepository.SlugExistsAsync(slug, excludeProductId))
+            {
+                slug = $"{baseSlug}-{counter}";
+                counter++;
+            }
+
+            return slug;
         }
     }
 }
