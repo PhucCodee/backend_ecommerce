@@ -17,5 +17,6 @@ namespace ECommerce.Application.DTOs.user
         public string? PreferredLanguage { get; set; }
         public string? PreferredCurrency { get; set; }
         public string? Timezone { get; set; }
+        public int[]? Roles { get; set; }
     }
 }

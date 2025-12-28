@@ -10,6 +10,7 @@ using AutoMapper;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ECommerce.Application.Services
 {
@@ -58,9 +59,19 @@ namespace ECommerce.Application.Services
             user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
             user.UserProfile = UserProfile.CreateDefault(user, createDto.FirstName, createDto.LastName, createDto.Phone);
 
-            // Assign default role (buyer)
-            var defaultRole = UserRole.CreateDefault(user, UserRoleType.buyer);
-            user.UserRoleUsers.Add(defaultRole);
+            // Assign roles from DTO
+            var rolesToAssign = createDto.Roles != null && createDto.Roles.Length > 0
+                ? createDto.Roles.Select(r => (UserRoleType)r).Distinct().ToArray()
+                : new[] { UserRoleType.buyer };
+
+            foreach (var role in rolesToAssign)
+            {
+                if (Enum.IsDefined(typeof(UserRoleType), role))
+                {
+                    var userRole = UserRole.CreateDefault(user, role);
+                    user.UserRoleUsers.Add(userRole);
+                }
+            }
 
             await userRepository.AddAsync(user);
             await unitOfWork.SaveChangesAsync();
@@ -70,7 +81,7 @@ namespace ECommerce.Application.Services
 
         public async Task<UserProfileDto> UpdateAsync(int userId, UserUpdateDto updateDto)
         {
-            var user = await userRepository.GetWithProfileAsync(userId)
+            var user = await userRepository.GetUserWithAllDetailsAsync(userId)
                 ?? throw new NotFoundException("User not found");
 
             DtoNormalizer.Normalize(updateDto);
@@ -78,6 +89,12 @@ namespace ECommerce.Application.Services
             await UpdateUsernameIfChanged(user, updateDto.Username);
             UpdateProfile(user, updateDto);
             UpdatePasswordIfProvided(user, updateDto.Password);
+
+            // Update roles 
+            if (updateDto.Roles != null)
+            {
+                UpdateUserRoles(user, updateDto.Roles);
+            }
 
             user.UpdatedAt = DateTime.UtcNow;
             await unitOfWork.SaveChangesAsync();
@@ -104,13 +121,19 @@ namespace ECommerce.Application.Services
 
         public async Task<bool> DeleteAsync(int userId)
         {
-            var user = await userRepository.GetByIdAsync(userId)
-                ?? throw new NotFoundException("User not found");
-
-            user.SoftDelete();
+            // Hard delete - completely remove user from database
+            await userRepository.DeleteAsync(userId);
             await unitOfWork.SaveChangesAsync();
 
             return true;
+
+            /* Soft delete (commented out for later use if needed):
+            var user = await userRepository.GetByIdAsync(userId)
+                ?? throw new NotFoundException("User not found");
+            user.SoftDelete();
+            await unitOfWork.SaveChangesAsync();
+            return true;
+            */
         }
 
         private async Task UpdateEmailIfChanged(User user, string? newEmail)
@@ -169,6 +192,44 @@ namespace ECommerce.Application.Services
             user.UserCredential.PasswordSalt = passwordSalt;
             user.UserCredential.PasswordUpdatedAt = DateTime.UtcNow;
             user.UserCredential.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private static void UpdateUserRoles(User user, int[] roleIds)
+        {
+            if (roleIds == null || roleIds.Length == 0)
+            {
+                roleIds = new[] { (int)UserRoleType.buyer };
+            }
+
+            var activeRoles = user.UserRoleUsers.Where(r => r.RevokedAt == null).ToList();
+            foreach (var role in activeRoles)
+            {
+                role.RevokedAt = DateTime.UtcNow;
+            }
+
+            var rolesToAssign = roleIds
+                .Select(r => (UserRoleType)r)
+                .Where(r => Enum.IsDefined(typeof(UserRoleType), r))
+                .Distinct()
+                .ToArray();
+
+            foreach (var roleType in rolesToAssign)
+            {
+                var existingRole = user.UserRoleUsers.FirstOrDefault(r => r.Role == roleType);
+                if (existingRole != null)
+                {
+                    if (existingRole.RevokedAt != null)
+                    {
+                        existingRole.RevokedAt = null;
+                        existingRole.GrantedAt = DateTime.UtcNow;
+                    }
+                }
+                else
+                {
+                    var newRole = UserRole.CreateDefault(user, roleType);
+                    user.UserRoleUsers.Add(newRole);
+                }
+            }
         }
     }
 }
