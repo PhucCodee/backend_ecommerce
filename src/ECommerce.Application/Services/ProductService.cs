@@ -180,7 +180,11 @@ namespace ECommerce.Application.Services
                 throw new NotFoundException("Product not found");
 
             string? uniqueSlug = null;
-            if (!string.IsNullOrWhiteSpace(updateDto.Name))
+            if (!string.IsNullOrWhiteSpace(updateDto.Slug))
+            {
+                uniqueSlug = await GenerateUniqueSlugAsync(updateDto.Slug, productId);
+            }
+            else if (!string.IsNullOrWhiteSpace(updateDto.Name))
             {
                 uniqueSlug = await GenerateUniqueSlugAsync(updateDto.Name, productId);
             }
@@ -203,7 +207,11 @@ namespace ECommerce.Application.Services
                 throw new ForbiddenException("You do not have permission to update this product");
 
             string? uniqueSlug = null;
-            if (!string.IsNullOrWhiteSpace(updateDto.Name))
+            if (!string.IsNullOrWhiteSpace(updateDto.Slug))
+            {
+                uniqueSlug = await GenerateUniqueSlugAsync(updateDto.Slug, productId);
+            }
+            else if (!string.IsNullOrWhiteSpace(updateDto.Name))
             {
                 uniqueSlug = await GenerateUniqueSlugAsync(updateDto.Name, productId);
             }
@@ -252,7 +260,14 @@ namespace ECommerce.Application.Services
             if (!string.IsNullOrWhiteSpace(updateDto.Name))
             {
                 product.ProductName = updateDto.Name;
-                product.Slug = uniqueSlug ?? GenerateSlug(updateDto.Name);
+            }
+            if (!string.IsNullOrWhiteSpace(uniqueSlug))
+            {
+                product.Slug = uniqueSlug;
+            }
+            else if (!string.IsNullOrWhiteSpace(updateDto.Name))
+            {
+                product.Slug = GenerateSlug(updateDto.Name);
             }
 
             if (updateDto.Description != null)

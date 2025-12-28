@@ -95,7 +95,9 @@ namespace ECommerce.Infrastructure.Repositories
 
         public async Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
         {
-            var query = GetActiveUsers().Include(u => u.UserProfile);
+            var query = GetActiveUsers()
+                .Include(u => u.UserProfile)
+                .Include(u => u.UserRoleUsers.Where(r => r.RevokedAt == null));
 
             var totalCount = await query.CountAsync();
 
