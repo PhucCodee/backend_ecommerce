@@ -8,9 +8,9 @@ public class Cart
 {
     public int CartId { get; set; }
 
-    public int? UserId { get; set; } // Nullable for guest carts
+    public int? UserId { get; set; }
 
-    public string? SessionId { get; set; } // For guest carts
+    public string? SessionId { get; set; }
 
     public CartStatus Status { get; set; }
 
@@ -31,4 +31,34 @@ public class Cart
     public virtual User? User { get; set; }
 
     public virtual ICollection<CartItem> CartItems { get; set; } = [];
+
+    public static Cart CreateDefault(int? userId = null, string? sessionId = null, string? ipAddress = null)
+    {
+        return new Cart
+        {
+            UserId = userId,
+            SessionId = sessionId,
+            Status = CartStatus.active,
+            Subtotal = 0,
+            TotalItems = 0,
+            IpAddress = ipAddress,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(30)
+        };
+    }
+
+    public void RecalculateTotals()
+    {
+        Subtotal = 0;
+        TotalItems = 0;
+
+        foreach (var item in CartItems)
+        {
+            Subtotal += item.PriceSnapshot * item.Quantity;
+            TotalItems += item.Quantity;
+        }
+
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

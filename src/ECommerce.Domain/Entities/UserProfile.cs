@@ -41,6 +41,7 @@ public partial class UserProfile
         return new UserProfile
         {
             User = user,
+            UserId = user.UserId,
             FirstName = firstName,
             LastName = lastName,
             Phone = phone?.Trim() ?? "",

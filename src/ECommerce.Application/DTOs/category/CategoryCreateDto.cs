@@ -1,0 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace ECommerce.Application.DTOs.category
+{
+    public class CategoryCreateDto
+    {
+        [Required]
+        [StringLength(100, MinimumLength = 2)]
+        public string Name { get; set; } = string.Empty;
+
+        public int? ParentCategoryId { get; set; }
+
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        public string? ImageUrl { get; set; }
+
+        public int DisplayOrder { get; set; } = 0;
+
+        public bool IsActive { get; set; } = true;
+    }
+}

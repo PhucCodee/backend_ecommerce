@@ -1,5 +1,7 @@
 using AutoMapper;
 using ECommerce.Application.DTOs;
+using ECommerce.Application.DTOs.cart;
+using ECommerce.Application.DTOs.category;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.DTOs.productsku;
 using ECommerce.Application.DTOs.user;
@@ -61,7 +63,7 @@ namespace ECommerce.Application.Mappings
                     src.ProductImages.FirstOrDefault(pi => pi.IsPrimary) != null
                         ? src.ProductImages.First(pi => pi.IsPrimary).ImageUrl
                         : src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null))
-                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => 
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
                     src.ProductImages.OrderBy(pi => pi.DisplayOrder).ToList()))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
@@ -71,6 +73,27 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.QuantityAvailable : 0))
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
                     src.ProductImages.Any() ? src.ProductImages.First().ImageUrl : null));
+
+            // Cart mappings
+            CreateMap<Cart, CartDto>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.CartItems));
+
+            CreateMap<CartItem, CartItemDto>()
+                .ForMember(dest => dest.Sku, opt => opt.MapFrom(src => src.Sku != null ? src.Sku.Sku : null))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Sku != null && src.Sku.Product != null ? src.Sku.Product.ProductName : null))
+                .ForMember(dest => dest.VariantAttributes, opt => opt.MapFrom(src => src.Sku != null ? src.Sku.VariantAttributes : null))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
+                    src.Sku != null && src.Sku.ProductImages.Any()
+                        ? src.Sku.ProductImages.First().ImageUrl
+                        : null))
+                .ForMember(dest => dest.CurrentPrice, opt => opt.MapFrom(src => src.Sku != null ? src.Sku.Price : 0))
+                .ForMember(dest => dest.AvailableStock, opt => opt.MapFrom(src =>
+                    src.Sku != null && src.Sku.Inventory != null ? src.Sku.Inventory.QuantityAvailable : 0))
+                .ForMember(dest => dest.LineTotal, opt => opt.MapFrom(src => src.PriceSnapshot * src.Quantity));
+
+            CreateMap<Category, CategoryDto>()
+                .ForMember(dest => dest.ParentCategoryName, opt => opt.MapFrom(src => src.ParentCategory != null ? src.ParentCategory.CategoryName : null));
 
             // Order mappings
             CreateMap<Order, OrderDto>();

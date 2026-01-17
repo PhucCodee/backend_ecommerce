@@ -42,7 +42,7 @@ namespace ECommerce.Application.DTOs.auth
         public required string LastName { get; set; }
 
         [Phone(ErrorMessage = "Invalid phone number format")]
-        [MaxLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
+        [RegularExpression(@"^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$", ErrorMessage = "Phone number must be a valid Vietnamese mobile number")]
         public string? Phone { get; set; }
 
         [Required(ErrorMessage = "You must accept the terms and conditions")]
