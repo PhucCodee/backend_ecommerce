@@ -1,46 +1,117 @@
+#orchestrator.py
+
+import os
+from dotenv import load_dotenv
+from typing import Annotated, Literal, List, Dict, Any
+from typing_extensions import TypedDict
+
 from langgraph.graph import StateGraph, START, END
-from pydantic import BaseModel, Literal
-from app.core.config import get_llm
-from app.core.state import MasterState
-from app.agents.prompts import ROUTER_SYSTEM_PROMPT
+from langgraph.graph.message import add_messages
+from langchain_core.messages import HumanMessage, BaseMessage
+from langchain.chat_models import init_chat_model
+from pydantic import BaseModel, Field
 
-# Import Sub-Graphs
-from app.agents.sql_agent import sql_graph
-from app.agents.rag_agent import rag_graph # (Assuming you refactor rag_agent similarly)
+# --- Import your compiled graphs ---
+# Make sure sql_agent.py and rag_agent.py represent the filenames exactly
+from .sql_agent import sql_graph
+from .rag_agent import rag_agent as rag_graph 
 
-llm = get_llm()
+from langgraph.checkpoint.memory import MemorySaver
 
+load_dotenv()
+
+# --- 1. Init Router LLM (Independent Instance) ---
+if not os.environ.get("GOOGLE_API_KEY"):
+    print("Warning: GOOGLE_API_KEY not found.")
+
+llm = init_chat_model(
+    "llama-3.3-70b-versatile", 
+    model_provider="groq",
+    temperature=0
+)
+
+# --- 2. Define Master State ---
+# This state must include ALL keys required by ALL sub-agents.
+# SQL Agent uses: sql_query, sql_result
+# RAG Agent uses: messages
+class MasterState(TypedDict):
+    messages: Annotated[list, add_messages]
+    # Keys for SQL Agent to function
+    sql_query: str | None
+    sql_result: List[Dict[str, Any]] | str | None
+    final_answer: str | None
+    # Key for Router decision
+    next_step: str | None
+
+# --- 3. The Router (Classifier) ---
 class RouterOutput(BaseModel):
-    intent: Literal["policy", "database", "general"]
+    """Classify user intent."""
+    intent: Literal["policy", "database", "general"] = Field(
+        ...,
+        description="The appropriate expert to handle the query."
+    )
 
 def router_node(state: MasterState):
-    """Decides where to send the user."""
+    """Classifies the intent of the last message."""
+    messages = state["messages"]
+    last_user_msg = messages[-1]
+    
     structured_llm = llm.with_structured_output(RouterOutput)
-    last_msg = state["messages"][-1]
+    
+    system_msg = """You are the Router for an E-commerce AI system.
+    Route the query to the correct expert:
+    
+    - 'database': For queries about specific products, prices, stock levels, orders, or user data. (Requires SQL access).
+    - 'policy': For general questions about shipping, returns, company info, privacy, or "how to" guides. (Requires Document search).
+    - 'general': For greetings, compliments, or off-topic conversation.
+    """
     
     response = structured_llm.invoke([
-        {"role": "system", "content": ROUTER_SYSTEM_PROMPT},
-        {"role": "user", "content": last_msg.content}
+        {"role": "system", "content": system_msg},
+        {"role": "user", "content": last_user_msg.content}
     ])
+    
     return {"next_step": response.intent}
 
-def call_general_chat(state: MasterState):
-    msg = llm.invoke([{"role":"system", "content":"Be nice."}, state["messages"][-1]])
+# --- 4. Subgraph Wrappers ---
+
+def call_sql_agent(state: MasterState):
+    print("\n--- 🔀 Routing to SQL Agent ---")
+    # We invoke the compiled SQL graph with the current state
+    result = sql_graph.invoke(state)
+    # The result contains the updated state from the SQL agent
+    return result
+
+def call_rag_agent(state: MasterState):
+    print("\n--- 🔀 Routing to Policy (RAG) Agent ---")
+    result = rag_graph.invoke(state)
+    return result
+
+def call_general_agent(state: MasterState):
+    print("\n--- 🔀 Routing to General Chat ---")
+    # Simple direct response for greetings
+    msg = llm.invoke([
+        {"role": "system", "content": "You are a helpful e-commerce assistant. Respond politely and concisely."},
+        state["messages"][-1]
+    ])
     return {"messages": [msg]}
 
-# Main Graph Construction
+# --- 5. Build the Master Graph ---
 workflow = StateGraph(MasterState)
 
 workflow.add_node("router", router_node)
-workflow.add_node("sql_branch", sql_graph)
-workflow.add_node("rag_branch", rag_graph) 
-workflow.add_node("general_branch", call_general_chat)
+workflow.add_node("sql_branch", call_sql_agent)
+workflow.add_node("rag_branch", call_rag_agent)
+workflow.add_node("general_branch", call_general_agent)
 
 workflow.add_edge(START, "router")
 
+def route_decision(state: MasterState):
+    return state["next_step"]
+
 workflow.add_conditional_edges(
     "router",
-    lambda x: x["next_step"],
+    route_decision,
     {
         "database": "sql_branch",
         "policy": "rag_branch",
@@ -52,5 +123,39 @@ workflow.add_edge("sql_branch", END)
 workflow.add_edge("rag_branch", END)
 workflow.add_edge("general_branch", END)
 
-# Export the compiled graph
-orchestrator_app = workflow.compile()
+checkpointer = MemorySaver()
+app = workflow.compile(checkpointer=checkpointer)
+
+# --- 6. Main Execution Loop ---
+if __name__ == "__main__":
+    print("=== ORCHESTRATOR AGENT STARTED ===")
+    print("Type 'exit' to quit.\n")
+    
+    # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
+    thread_id = "user-session-123"
+    config = {"configurable": {"thread_id": thread_id}}
+
+    while True:
+        try:
+            user_input = input("User: ")
+            if user_input.lower() in ["exit", "quit"]:
+                break
+            
+            # 2. Prepare the input
+            # We ONLY send the new message. LangGraph automatically pulls 
+            # the *old* messages from memory because we provided the thread_id.
+            input_payload = {"messages": [HumanMessage(content=user_input)]}
+            
+            # 3. Invoke with config
+            # usage of 'config' is CRITICAL for memory
+            result = app.invoke(input_payload, config=config)
+            
+            # Extract the final response
+            final_msg = result["messages"][-1].content
+            print(f"Assistant: {final_msg}\n")
+            
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            # Optional: Print stack trace for debugging
+            import traceback
+            traceback.print_exc()

@@ -23,3 +23,8 @@ langchain-chroma         # Tích hợp Chroma với LangChain
 
 # --- Utilities ---
 uuid                     # (Thư viện chuẩn, nhưng liệt kê để đảm bảo)
+
+
+jwt
+
+email-validator
