@@ -6,7 +6,10 @@ from pydantic import BaseModel, EmailStr
 from langchain_core.messages import HumanMessage
 
 # Import your graph
-from app.agents.orchestrator import app as orchestrator_app
+from app.agents.buyer.orchestrator import app as buyer_orchestrator_app
+from app.agents.admin.orchestrator import app as admin
+from app.agents.seller.orchestrator import app as seller_orchestrator_app
+
 
 api = FastAPI(title="AI Microservice - Dev Mode")
 
@@ -79,7 +82,7 @@ async def chat_endpoint(
         }
         
         # 3. Invoke Agent
-        result = await orchestrator_app.ainvoke(initial_state, config=config)
+        result = await buyer_orchestrator_app.ainvoke(initial_state, config=config)
         
         # 4. Get response
         ai_message = result["messages"][-1].content

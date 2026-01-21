@@ -27,9 +27,8 @@ llm = init_chat_model(
 
 
 
-BASE_DIR = Path(__file__).resolve().parents[2]  # ai-module/
-persist_directory = BASE_DIR / "data" / "vector"
-persist_directory = str(persist_directory)
+default_path = Path(__file__).resolve().parents[2] / "data" / "vector"
+persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
 
 
 

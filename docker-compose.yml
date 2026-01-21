@@ -45,51 +45,30 @@ services:
             - "5672:5672"
             - "15672:15672"
             
-<<<<<<< Updated upstream
-    # chatbot_api:
-    #     build:
-    #         context: ./ai-module/main  # Trỏ thẳng vào thư mục chứa code chatbot
-    #         dockerfile: Dockerfile.api
-    #     container_name: chatbot_service
-    #     ports:
-    #     - "8000:8000"
-    #     env_file:
-    #     - ./ai-module/main/.env  # Chứa API_KEY và cấu hình nhạy cảm
-    #     environment:
-    #     - DB_HOST=db
-    #     - DB_NAME=database
-    #     - DB_USER=postgres
-    #     - DB_PASSWORD=123
-    #     - DB_PORT=5432
-    #     - REDIS_HOST=cache
-    #     depends_on:
-    #     - db
-    #     - cache
-    #     networks:
-    #     - default
-=======
     chatbot_api:
         build:
-            context: ./ai-module/main  # Trỏ thẳng vào thư mục chứa code chatbot
-            dockerfile: Dockerfile.api
+            context: ./ai-module/  
+            dockerfile: Dockerfile
         container_name: chatbot_service
         ports:
         - "8000:8000"
         env_file:
-        - ./ai-module/main/.env  # Chứa API_KEY và cấu hình nhạy cảm
+        - ./ai-module/.env  
         environment:
         - DB_HOST=db
         - DB_NAME=database
         - DB_USER=postgres
         - DB_PASSWORD=123
         - DB_PORT=5432
-        - REDIS_HOST=cache
+        - CHROMA_DB_PATH=/app/chroma_db
         depends_on:
         - db
-        # - cache
         networks:
         - default
->>>>>>> Stashed changes
+        volumes:
+        - ./ai-module/data/vector:/app/chroma_db
+
+
 
 volumes:
     postgres_data:
