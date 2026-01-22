@@ -28,3 +28,6 @@ uuid                     # (Thư viện chuẩn, nhưng liệt kê để đảm 
 jwt
 
 email-validator
+
+pypdf
+

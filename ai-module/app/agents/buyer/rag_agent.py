@@ -29,10 +29,11 @@ llm = init_chat_model(
 
 default_path = Path(__file__).resolve().parents[2] / "data" / "vector"
 persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
-
-
-
 collection_name = "stock_market"
+
+# default_path = Path(__file__).resolve().parents[2] / "data" / "chroma_db"
+# persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
+# collection_name = "policies_collection"
 
 vectorstore = Chroma(
     persist_directory=persist_directory,
