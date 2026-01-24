@@ -20,6 +20,7 @@ namespace ECommerce.Application.DTOs.user
         public required string LastName { get; set; }
 
         public string? Phone { get; set; }
+        public int[]? Roles { get; set; }
     }
 }
 

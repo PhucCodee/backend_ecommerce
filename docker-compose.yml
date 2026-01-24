@@ -63,7 +63,7 @@ services:
         - REDIS_HOST=cache
         depends_on:
         - db
-        - cache
+        # - cache
         networks:
         - default
 
