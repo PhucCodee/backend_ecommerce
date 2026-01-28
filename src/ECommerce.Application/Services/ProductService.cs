@@ -125,6 +125,17 @@ namespace ECommerce.Application.Services
             // Handle multiple images
             if (createDto.Images != null && createDto.Images.Count > 0)
             {
+                var primaryImageIndex = -1;
+                for (int i = createDto.Images.Count - 1; i >= 0; i--)
+                {
+                    if (createDto.Images[i].IsPrimary)
+                    {
+                        primaryImageIndex = i;
+                        break;
+                    }
+                }
+                if (primaryImageIndex < 0) primaryImageIndex = 0;
+
                 for (int i = 0; i < createDto.Images.Count; i++)
                 {
                     var imgDto = createDto.Images[i];
@@ -133,7 +144,7 @@ namespace ECommerce.Application.Services
                         sku: defaultSku,
                         imageUrl: imgDto.ImageUrl,
                         altText: imgDto.AltText ?? createDto.Name,
-                        isPrimary: imgDto.IsPrimary || i == 0); // First image is primary if none specified
+                        isPrimary: i == primaryImageIndex);
 
                     image.DisplayOrder = imgDto.DisplayOrder > 0 ? imgDto.DisplayOrder : i + 1;
                     product.ProductImages.Add(image);
@@ -286,6 +297,19 @@ namespace ECommerce.Application.Services
                     product.ProductImages.Clear();
                     defaultSku.ProductImages.Clear();
 
+                    // Find primary image index
+                    var primaryImageIndex = -1;
+                    for (int i = updateDto.Images.Count - 1; i >= 0; i--)
+                    {
+                        if (updateDto.Images[i].IsPrimary)
+                        {
+                            primaryImageIndex = i;
+                            break;
+                        }
+                    }
+                    // No primary, pick first
+                    if (primaryImageIndex < 0) primaryImageIndex = 0;
+
                     for (int i = 0; i < updateDto.Images.Count; i++)
                     {
                         var imgDto = updateDto.Images[i];
@@ -294,7 +318,7 @@ namespace ECommerce.Application.Services
                             sku: defaultSku,
                             imageUrl: imgDto.ImageUrl,
                             altText: imgDto.AltText ?? product.ProductName,
-                            isPrimary: imgDto.IsPrimary || i == 0);
+                            isPrimary: i == primaryImageIndex);
 
                         newImage.DisplayOrder = imgDto.DisplayOrder > 0 ? imgDto.DisplayOrder : i + 1;
                         product.ProductImages.Add(newImage);
