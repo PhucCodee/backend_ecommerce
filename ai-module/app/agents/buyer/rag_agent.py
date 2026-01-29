@@ -27,8 +27,9 @@ llm = init_chat_model(
     temperature = 0, 
 )
 
-# Giữ nguyên đường dẫn như code bạn gửi
-persist_directory = Path(__file__).resolve().parents[3]/"data"/"vector"
+default_path = Path(__file__).resolve().parents[3] / "data" / "vector"
+persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
+
 
 vectorstore = Chroma(
     persist_directory=str(persist_directory), # Chuyển Path thành string cho chắc chắn
@@ -54,6 +55,8 @@ def retriever_tool(query: str) -> str:
     - Technical issues or device support
     - Introduction to the store
     """
+    print(f"Path: {persist_directory}")
+
     print(f"Calling retriever_tool with query: {query}")
     docs = retriever.invoke(query) 
 
