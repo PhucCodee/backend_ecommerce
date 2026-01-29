@@ -34,4 +34,4 @@ EXPOSE 8000
 # CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # Nếu file api.py nằm ngay ở root (/app/api.py) thì:
-CMD ["uvicorn", "app.api:api", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.api:api", "--host", "0.0.0.0", "--port", "8000","--reload"]

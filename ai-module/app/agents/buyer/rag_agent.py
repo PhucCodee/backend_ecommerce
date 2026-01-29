@@ -55,8 +55,8 @@ def retriever_tool(query: str) -> str:
     - Technical issues or device support
     - Introduction to the store
     """
-    print(f"Path: {persist_directory}")
-
+    # print(f"Path: {persist_directory}")
+    print(f"Sau khi đổi")
     print(f"Calling retriever_tool with query: {query}")
     docs = retriever.invoke(query) 
 

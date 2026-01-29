@@ -67,6 +67,7 @@ services:
         networks:
         - default
         volumes:
+        - ./ai-module/app:/app/app
         - ./ai-module/data/vector:/app/chroma_db
 
 
