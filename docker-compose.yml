@@ -63,6 +63,7 @@ services:
         - CHROMA_DB_PATH=/app/chroma_db
         depends_on:
         - db
+        # - cache
         networks:
         - default
         volumes:
