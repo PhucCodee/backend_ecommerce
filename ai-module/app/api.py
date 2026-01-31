@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr
 from langchain_core.messages import HumanMessage
 
 # Import your graph
-from app.agents.buyer.orchestrator import app as buyer_orchestrator_app
+from app.agents.buyer.orchestrator_new import app as buyer_orchestrator_app
 from app.agents.admin.orchestrator import app as admin
 from app.agents.seller.orchestrator import app as seller_orchestrator_app
 
