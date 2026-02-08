@@ -21,6 +21,6 @@ namespace ECommerce.Application.DTOs.user
         public string Status { get; set; } = "Active";
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public int[] Roles { get; set; } = Array.Empty<int>();
+        public int[] Roles { get; set; } = [];
     }
 }

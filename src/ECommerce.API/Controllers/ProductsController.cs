@@ -18,23 +18,30 @@ namespace ECommerce.API.Controllers
     {
         private readonly IProductService _productService = productService;
 
-        // Get all products (public)
+        #region Public Endpoints
+
+        /// <summary>
+        /// Get products with filtering and sorting
+        /// </summary>
+        /// <remarks>
+        /// Sort options: price, name, a-z, rating, popularity, views, sales, newest, oldest
+        /// 
+        /// Examples:
+        /// - /api/products?sortBy=price&amp;desc=false (cheapest first)
+        /// - /api/products?sortBy=price&amp;desc=true (expensive first)
+        /// - /api/products?sortBy=name (A to Z)
+        /// - /api/products?sortBy=name&amp;desc=true (Z to A)
+        /// - /api/products?minPrice=10&amp;maxPrice=100
+        /// - /api/products?categoryId=5&amp;brand=Apple
+        /// - /api/products?search=phone&amp;inStock=true
+        /// </remarks>
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams, [FromQuery] bool? primaryOnly = null)
+        public async Task<IActionResult> GetAll([FromQuery] ProductQueryParams query)
         {
-            var products = await _productService.GetAllPagedAsync(paginationParams, primaryOnly);
+            var products = await _productService.GetFilteredAsync(query);
             return Ok(ApiResponse<PagedResult<ProductDetailDto>>.Ok(products));
         }
 
-        // Get only primary/parent products (public - for buyer homepage)
-        [HttpGet("primary")]
-        public async Task<IActionResult> GetPrimaryProducts([FromQuery] PaginationParams paginationParams)
-        {
-            var products = await _productService.GetAllPagedAsync(paginationParams, primaryOnly: true);
-            return Ok(ApiResponse<PagedResult<ProductDetailDto>>.Ok(products));
-        }
-
-        // Get product by id (public)
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -42,7 +49,6 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<ProductDetailDto>.Ok(product));
         }
 
-        // Get variants of a product (public)
         [HttpGet("{id:int}/variants")]
         public async Task<IActionResult> GetVariants(int id)
         {
@@ -50,20 +56,22 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<object>.Ok(variants));
         }
 
-        // Create a new product (Admin only)
+        #endregion
+
+        #region Admin Endpoints
+
         [HttpPost]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Create([FromBody] ProductCreateDto createDto)
         {
-            var sellerId = createDto.SellerId > 0 ? createDto.SellerId : GetCurrentUserId();
+            var sellerId = createDto.SellerId ?? GetCurrentUserId();
             var product = await _productService.CreateAsync(createDto, sellerId);
             return StatusCode(
                 StatusCodes.Status201Created,
                 ApiResponse<ProductDetailDto>.Ok(product, "Product created successfully"));
         }
 
-        // Update product (Admin only)
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Update(int id, [FromBody] ProductUpdateDto updateDto)
         {
@@ -71,8 +79,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<ProductDetailDto>.Ok(product, "Product updated successfully"));
         }
 
-        // Delete product (Admin only)
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Delete(int id)
         {
@@ -80,17 +87,20 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<object>.Ok(new { id }, "Product deleted successfully"));
         }
 
-        // Get current seller's products
-        [HttpGet("me/products")]
+        #endregion
+
+        #region Seller Endpoints
+
+        [HttpGet("seller")]
         [Authorize(Policy = Policies.SellerOnly)]
-        public async Task<IActionResult> GetMyProducts([FromQuery] PaginationParams paginationParams)
+        public async Task<IActionResult> GetMyProducts([FromQuery] ProductQueryParams query)
         {
             var sellerId = GetCurrentUserId();
-            var products = await _productService.GetBySellerPagedAsync(sellerId, paginationParams);
+            query.SellerId = sellerId; // Force seller filter
+            var products = await _productService.GetFilteredAsync(query);
             return Ok(ApiResponse<PagedResult<ProductDetailDto>>.Ok(products));
         }
 
-        // Create product as seller
         [HttpPost("seller")]
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> CreateAsSeller([FromBody] ProductCreateDto createDto)
@@ -102,8 +112,7 @@ namespace ECommerce.API.Controllers
                 ApiResponse<ProductDetailDto>.Ok(product, "Product created successfully"));
         }
 
-        // Update seller's own product
-        [HttpPut("seller/{id}")]
+        [HttpPut("seller/{id:int}")]
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> UpdateAsSeller(int id, [FromBody] ProductUpdateDto updateDto)
         {
@@ -112,8 +121,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<ProductDetailDto>.Ok(product, "Product updated successfully"));
         }
 
-        // Delete seller's own product
-        [HttpDelete("seller/{id}")]
+        [HttpDelete("seller/{id:int}")]
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> DeleteAsSeller(int id)
         {
@@ -121,6 +129,8 @@ namespace ECommerce.API.Controllers
             await _productService.DeleteSellerProductAsync(id, sellerId);
             return Ok(ApiResponse<object>.Ok(new { id }, "Product deleted successfully"));
         }
+
+        #endregion
 
         private int GetCurrentUserId()
         {

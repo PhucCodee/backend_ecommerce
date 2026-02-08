@@ -12,6 +12,7 @@ namespace ECommerce.Application.Interfaces
         Task<ProductDetailDto> GetByIdAsync(int productId);
         Task<IEnumerable<ProductDetailDto>> GetAllAsync();
         Task<PagedResult<ProductDetailDto>> GetAllPagedAsync(PaginationParams paginationParams, bool? primaryOnly = null);
+        Task<PagedResult<ProductDetailDto>> GetFilteredAsync(ProductQueryParams queryParams);
         Task<IEnumerable<ProductSkuDetailDto>> GetVariantsAsync(int productId);
         Task<ProductDetailDto> CreateAsync(ProductCreateDto createDto, int sellerId);
         Task<ProductDetailDto> UpdateAsync(int productId, ProductUpdateDto updateDto);

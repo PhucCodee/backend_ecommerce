@@ -18,24 +18,27 @@ namespace ECommerce.API.Controllers
     {
         private readonly IProductSkuService _productSkuService = productSkuService;
 
-        // Get all SKUs for a product (public)
-        [HttpGet("products/{productId}/skus")]
+        #region Public Endpoints
+
+        [HttpGet("products/{productId:int}/skus")]
         public async Task<IActionResult> GetByProductId(int productId, [FromQuery] PaginationParams paginationParams)
         {
             var skus = await _productSkuService.GetByProductIdPagedAsync(productId, paginationParams);
             return Ok(ApiResponse<PagedResult<ProductSkuDetailDto>>.Ok(skus));
         }
 
-        // Get SKU by id (public)
-        [HttpGet("skus/{skuId}")]
+        [HttpGet("skus/{skuId:int}")]
         public async Task<IActionResult> GetById(int skuId)
         {
             var sku = await _productSkuService.GetByIdAsync(skuId);
             return Ok(ApiResponse<ProductSkuDetailDto>.Ok(sku));
         }
 
-        // Create a new SKU for a product (Admin only)
-        [HttpPost("products/{productId}/skus")]
+        #endregion
+
+        #region Admin Endpoints
+
+        [HttpPost("products/{productId:int}/skus")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Create(int productId, [FromBody] ProductSkuCreateDto createDto)
         {
@@ -46,8 +49,7 @@ namespace ECommerce.API.Controllers
                 ApiResponse<ProductSkuDetailDto>.Ok(sku, "Product SKU created successfully"));
         }
 
-        // Update SKU (Admin only)
-        [HttpPut("skus/{skuId}")]
+        [HttpPut("skus/{skuId:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Update(int skuId, [FromBody] ProductSkuUpdateDto updateDto)
         {
@@ -55,8 +57,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<ProductSkuDetailDto>.Ok(sku, "Product SKU updated successfully"));
         }
 
-        // Delete SKU (Admin only)
-        [HttpDelete("skus/{skuId}")]
+        [HttpDelete("skus/{skuId:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Delete(int skuId)
         {
@@ -64,7 +65,10 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<object>.Ok(new { skuId }, "Product SKU deleted successfully"));
         }
 
-        // Get current seller's SKUs
+        #endregion
+
+        #region Seller Endpoints
+
         [HttpGet("seller/skus")]
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> GetSellerSkus([FromQuery] PaginationParams paginationParams)
@@ -74,8 +78,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<ProductSkuDetailDto>>.Ok(skus));
         }
 
-        // Create SKU as seller
-        [HttpPost("seller/products/{productId}/skus")]
+        [HttpPost("seller/products/{productId:int}/skus")]
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> CreateAsSeller(int productId, [FromBody] ProductSkuCreateDto createDto)
         {
@@ -87,8 +90,7 @@ namespace ECommerce.API.Controllers
                 ApiResponse<ProductSkuDetailDto>.Ok(sku, "Product SKU created successfully"));
         }
 
-        // Update seller's own SKU
-        [HttpPut("seller/skus/{skuId}")]
+        [HttpPut("seller/skus/{skuId:int}")]
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> UpdateAsSeller(int skuId, [FromBody] ProductSkuUpdateDto updateDto)
         {
@@ -97,8 +99,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<ProductSkuDetailDto>.Ok(sku, "Product SKU updated successfully"));
         }
 
-        // Delete seller's own SKU
-        [HttpDelete("seller/skus/{skuId}")]
+        [HttpDelete("seller/skus/{skuId:int}")]
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> DeleteAsSeller(int skuId)
         {
@@ -106,6 +107,8 @@ namespace ECommerce.API.Controllers
             await _productSkuService.DeleteSellerSkuAsync(skuId, sellerId);
             return Ok(ApiResponse<object>.Ok(new { skuId }, "Product SKU deleted successfully"));
         }
+
+        #endregion
 
         private int GetCurrentUserId()
         {

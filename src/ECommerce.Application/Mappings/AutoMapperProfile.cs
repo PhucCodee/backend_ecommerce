@@ -29,9 +29,10 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Timezone, opt => opt.MapFrom(src => src.UserProfile != null ? src.UserProfile.Timezone : null))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-                .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.UserRoleUsers != null && src.UserRoleUsers.Any() 
-                    ? src.UserRoleUsers.Where(uru => uru.RevokedAt == null).Select(uru => (int)uru.Role).ToArray() 
-                    : new int[0]));
+                .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.UserRoleUsers
+                    .Where(r => r.RevokedAt == null)
+                    .Select(r => (int)r.Role)
+                    .ToArray()));
 
             // ProductImage mapping
             CreateMap<ProductImage, ProductImageDto>();

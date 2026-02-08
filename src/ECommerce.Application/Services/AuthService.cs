@@ -6,6 +6,7 @@ using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
+using AutoMapper;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace ECommerce.Application.Services
         IUnitOfWork unitOfWork,
         IJwtService jwtService,
         IPasswordService passwordService,
+        IMapper mapper,
         UserValidationHelper validationHelper) : IAuthService
     {
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
@@ -34,32 +36,14 @@ namespace ECommerce.Application.Services
             var defaultRole = UserRole.CreateDefault(user, UserRoleType.buyer);
             user.UserRoleUsers.Add(defaultRole);
 
-            var roles = user.UserRoleUsers
-                .Where(r => r.IsActive())
-                .Select(r => r.Role.ToString())
-                .ToArray();
-
+            var roles = GetActiveRoleNames(user);
             var (accessToken, refreshToken, session) = GenerateTokensAndSession(user, roles);
             user.UserSessions.Add(session);
 
             await userRepository.AddAsync(user);
             await unitOfWork.SaveChangesAsync();
 
-            return new AuthResponseDto
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddHours(1),
-                User = new UserProfileDto
-                {
-                    UserId = user.UserId,
-                    Email = user.Email,
-                    Username = user.Username,
-                    FirstName = user.UserProfile.FirstName,
-                    LastName = user.UserProfile.LastName,
-                    Phone = user.UserProfile.Phone
-                }
-            };
+            return CreateAuthResponse(accessToken, refreshToken, user);
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
@@ -96,31 +80,13 @@ namespace ECommerce.Application.Services
             user.UserCredential.LastLoginAt = DateTime.UtcNow;
             user.UserCredential.UpdatedAt = DateTime.UtcNow;
 
-            var roles = user.UserRoleUsers
-                .Where(r => r.IsActive())
-                .Select(r => r.Role.ToString())
-                .ToArray();
-
+            var roles = GetActiveRoleNames(user);
             var (accessToken, refreshToken, session) = GenerateTokensAndSession(user, roles);
             user.UserSessions.Add(session);
 
             await unitOfWork.SaveChangesAsync();
 
-            return new AuthResponseDto
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddHours(1),
-                User = new UserProfileDto
-                {
-                    UserId = user.UserId,
-                    Email = user.Email,
-                    Username = user.Username,
-                    FirstName = user.UserProfile.FirstName,
-                    LastName = user.UserProfile.LastName,
-                    Phone = user.UserProfile.Phone
-                }
-            };
+            return CreateAuthResponse(accessToken, refreshToken, user);
         }
 
         public Task<AuthResponseDto> RefreshTokenAsync(string refreshToken) => throw new NotImplementedException();
@@ -128,6 +94,20 @@ namespace ECommerce.Application.Services
         public Task<AuthOperationResultDto> ChangePasswordAsync(int userId, string currentPassword, string newPassword) => throw new NotImplementedException();
         public Task<AuthOperationResultDto> ResetPasswordAsync(string email) => throw new NotImplementedException();
         public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
+
+        private static string[] GetActiveRoleNames(User user) =>
+            [.. user.UserRoleUsers
+                .Where(r => r.IsActive())
+                .Select(r => r.Role.ToString())];
+
+        private AuthResponseDto CreateAuthResponse(string accessToken, string refreshToken, User user) =>
+            new()
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddHours(1),
+                User = mapper.Map<UserProfileDto>(user)
+            };
 
         private (string accessToken, string refreshToken, UserSession session) GenerateTokensAndSession(User user, string[] roles)
         {
