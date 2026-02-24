@@ -16,6 +16,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.tools import tool
+from IPython.display import Image, display
 from pathlib import Path
 
 load_dotenv()
@@ -26,7 +27,13 @@ if not os.environ.get("GOOGLE_API_KEY"):
 llm = init_chat_model(
     "llama-3.3-70b-versatile", 
     model_provider="groq",
-    temperature=0
+    temperature=0.1,
+)
+
+gerneral_llm =  init_chat_model(
+    "llama-3.1-8b-instant", 
+    model_provider="groq",
+    temperature=0.1,
 )
 
 class MasterState(TypedDict):
@@ -58,7 +65,7 @@ def router_node(state: MasterState):
     messages = state["messages"]
     last_user_msg = messages[-1]
     
-    structured_llm = llm.with_structured_output(RouterOutput)
+    structured_llm = gerneral_llm.with_structured_output(RouterOutput)
     
     system_msg = """You are the Router for an E-commerce AI system.
     Route the query to the correct expert:
@@ -69,8 +76,8 @@ def router_node(state: MasterState):
     """
     
     response = structured_llm.invoke([
-        SystemMessage(content=system_msg),
-        last_user_msg
+        SystemMessage(content=system_msg + f"context: {state['messages']}"),
+        HumanMessage(content = last_user_msg.content)
     ])
 
     return {
@@ -83,11 +90,8 @@ def router_node(state: MasterState):
 
 #----------------------------- SQL-AGENT  --------------------------------------
 def sql_agent(state):
-    return {
-        "messages": [
-            AIMessage(content="I will check the database for you.")
-        ]
-    }
+    print("\n--- 🔀 Routing to Policy SQL Agent ---")
+    return {}
 
 DB_HOST = os.getenv("DB_HOST", "localhost") 
 DB_NAME = os.getenv("DB_NAME", "database")
@@ -412,8 +416,8 @@ def synthesize_answer_node(state: MasterState):
     """
     
     response = llm.invoke([
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_content}
+        {"role": "system", "content": system_prompt + user_content},
+        {"role": "user", "content": original_question}
     ])
     
     return {"messages": [response]}
@@ -606,7 +610,7 @@ app = workflow.compile(checkpointer=checkpointer)
 if __name__ == "__main__":
     print("=== ORCHESTRATOR AGENT STARTED ===")
     print("Type 'exit' to quit.\n")
-    
+
     # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
     thread_id = "user-session-123"
     config = {"configurable": {"thread_id": thread_id}}
