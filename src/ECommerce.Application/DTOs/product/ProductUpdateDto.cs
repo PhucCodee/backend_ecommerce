@@ -15,12 +15,6 @@ namespace ECommerce.Application.DTOs.product
         [MaxLength(1000)]
         public string? Description { get; set; }
 
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
-        public decimal? Price { get; set; }
-
-        [Range(0, int.MaxValue, ErrorMessage = "Stock cannot be negative")]
-        public int? Stock { get; set; }
-
         [Range(1, int.MaxValue)]
         public int? CategoryId { get; set; }
 
@@ -34,11 +28,5 @@ namespace ECommerce.Application.DTOs.product
 
         [MaxLength(50)]
         public string? Status { get; set; }
-
-        [Url]
-        [MaxLength(500)]
-        public string? ImageUrl { get; set; }
-
-        public List<ProductImageUpdateDto>? Images { get; set; }
     }
 }

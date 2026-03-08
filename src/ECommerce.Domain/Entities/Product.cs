@@ -50,8 +50,6 @@ public partial class Product
 
     public DateTime? RemovedAt { get; set; }
 
-    public virtual ICollection<ProductImage> ProductImages { get; set; } = [];
-
     public virtual ICollection<ProductMetric> ProductMetrics { get; set; } = [];
 
     public virtual ICollection<ProductSku> ProductSkus { get; set; } = [];

@@ -287,14 +287,13 @@ COMMENT ON COLUMN product_skus.compare_at_price IS 'Original price before discou
 CREATE TABLE
     product_images (
         image_id SERIAL PRIMARY KEY,
-        product_id INTEGER NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
-        sku_id INTEGER REFERENCES product_skus (sku_id) ON DELETE CASCADE, -- NULL if image applies to all SKUs
+        sku_id INTEGER NOT NULL REFERENCES product_skus (sku_id) ON DELETE CASCADE,
         image_url VARCHAR(500) NOT NULL,
         thumbnail_url VARCHAR(500),
         alt_text VARCHAR(255),
         display_order INTEGER NOT NULL DEFAULT 0,
         is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 

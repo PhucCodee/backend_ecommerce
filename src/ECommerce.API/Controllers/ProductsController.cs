@@ -14,8 +14,11 @@ namespace ECommerce.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductsController(IProductService productService) : ControllerBase
+    public class ProductsController(
+        IProductQueryService productQueryService,
+        IProductService productService) : ControllerBase
     {
+        private readonly IProductQueryService _productQueryService = productQueryService;
         private readonly IProductService _productService = productService;
 
         #region Public Endpoints
@@ -38,45 +41,27 @@ namespace ECommerce.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] ProductQueryParams query)
         {
-            var products = await _productService.GetFilteredAsync(query);
-            return Ok(ApiResponse<PagedResult<ProductDetailDto>>.Ok(products));
+            var products = await _productQueryService.GetFilteredAsync(query);
+            return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var product = await _productService.GetByIdAsync(id);
+            var product = await _productQueryService.GetByIdAsync(id);
             return Ok(ApiResponse<ProductDetailDto>.Ok(product));
-        }
-
-        [HttpGet("{id:int}/variants")]
-        public async Task<IActionResult> GetVariants(int id)
-        {
-            var variants = await _productService.GetVariantsAsync(id);
-            return Ok(ApiResponse<object>.Ok(variants));
         }
 
         #endregion
 
         #region Admin Endpoints
 
-        [HttpPost]
-        [Authorize(Policy = Policies.AdminOnly)]
-        public async Task<IActionResult> Create([FromBody] ProductCreateDto createDto)
-        {
-            var sellerId = createDto.SellerId ?? GetCurrentUserId();
-            var product = await _productService.CreateAsync(createDto, sellerId);
-            return StatusCode(
-                StatusCodes.Status201Created,
-                ApiResponse<ProductDetailDto>.Ok(product, "Product created successfully"));
-        }
-
         [HttpPut("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Update(int id, [FromBody] ProductUpdateDto updateDto)
         {
             var product = await _productService.UpdateAsync(id, updateDto);
-            return Ok(ApiResponse<ProductDetailDto>.Ok(product, "Product updated successfully"));
+            return Ok(ApiResponse<ProductDto>.Ok(product, "Product updated successfully"));
         }
 
         [HttpDelete("{id:int}")]
@@ -93,12 +78,13 @@ namespace ECommerce.API.Controllers
 
         [HttpGet("seller")]
         [Authorize(Policy = Policies.SellerOnly)]
-        public async Task<IActionResult> GetMyProducts([FromQuery] ProductQueryParams query)
+        public async Task<IActionResult> GetSellerProducts([FromQuery] ProductQueryParams query)
         {
             var sellerId = GetCurrentUserId();
-            query.SellerId = sellerId; // Force seller filter
-            var products = await _productService.GetFilteredAsync(query);
-            return Ok(ApiResponse<PagedResult<ProductDetailDto>>.Ok(products));
+            query.SellerId = sellerId;
+            query.CategoryId = null;
+            var products = await _productQueryService.GetFilteredAsync(query);
+            return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));
         }
 
         [HttpPost("seller")]
@@ -109,7 +95,7 @@ namespace ECommerce.API.Controllers
             var product = await _productService.CreateAsync(createDto, sellerId);
             return StatusCode(
                 StatusCodes.Status201Created,
-                ApiResponse<ProductDetailDto>.Ok(product, "Product created successfully"));
+                ApiResponse<ProductDto>.Ok(product, "Product created successfully"));
         }
 
         [HttpPut("seller/{id:int}")]
@@ -117,8 +103,8 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> UpdateAsSeller(int id, [FromBody] ProductUpdateDto updateDto)
         {
             var sellerId = GetCurrentUserId();
-            var product = await _productService.UpdateSellerProductAsync(id, sellerId, updateDto);
-            return Ok(ApiResponse<ProductDetailDto>.Ok(product, "Product updated successfully"));
+            var product = await _productService.UpdateAsync(id, updateDto, sellerId);
+            return Ok(ApiResponse<ProductDto>.Ok(product, "Product updated successfully"));
         }
 
         [HttpDelete("seller/{id:int}")]
@@ -126,7 +112,7 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> DeleteAsSeller(int id)
         {
             var sellerId = GetCurrentUserId();
-            await _productService.DeleteSellerProductAsync(id, sellerId);
+            await _productService.DeleteAsync(id, sellerId);
             return Ok(ApiResponse<object>.Ok(new { id }, "Product deleted successfully"));
         }
 

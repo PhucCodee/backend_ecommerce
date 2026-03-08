@@ -1,4 +1,6 @@
-namespace ECommerce.Application.DTOs.productsku
+using System.Collections.Generic;
+
+namespace ECommerce.Application.DTOs.product
 {
     public class ProductSkuUpdateDto
     {
@@ -11,6 +13,6 @@ namespace ECommerce.Application.DTOs.productsku
         public bool? IsDefault { get; set; }
         public decimal? WeightKg { get; set; }
         public string? DimensionsCm { get; set; }
-        public string? ImageUrl { get; set; }
+        public List<ProductImageUpdateDto>? Images { get; set; }
     }
 }

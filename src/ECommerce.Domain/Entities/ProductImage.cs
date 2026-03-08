@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace ECommerce.Domain.Entities;
 
@@ -7,9 +6,7 @@ public partial class ProductImage
 {
     public int ImageId { get; set; }
 
-    public int ProductId { get; set; }
-
-    public int? SkuId { get; set; }
+    public int SkuId { get; set; }
 
     public required string ImageUrl { get; set; }
 
@@ -21,16 +18,13 @@ public partial class ProductImage
 
     public bool IsPrimary { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public bool IsDeleted { get; set; } = false;
 
     public DateTime UpdatedAt { get; set; }
-
-    public required virtual Product Product { get; set; }
 
     public required virtual ProductSku Sku { get; set; }
 
     public static ProductImage CreateDefault(
-        Product product,
         ProductSku sku,
         string imageUrl,
         string altText,
@@ -38,15 +32,26 @@ public partial class ProductImage
     {
         return new ProductImage
         {
-            Product = product,
             Sku = sku,
             ImageUrl = imageUrl,
             ThumbnailUrl = imageUrl,
             AltText = altText,
             DisplayOrder = 1,
             IsPrimary = isPrimary,
-            CreatedAt = DateTime.UtcNow,
+            IsDeleted = false,
             UpdatedAt = DateTime.UtcNow
         };
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Restore()
+    {
+        IsDeleted = false;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

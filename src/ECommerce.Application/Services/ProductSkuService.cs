@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using ECommerce.Application.Common.Pagination;
-using ECommerce.Application.DTOs.productsku;
+using ECommerce.Application.DTOs.product;
 using ECommerce.Application.Exceptions;
+using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
@@ -23,47 +23,7 @@ namespace ECommerce.Application.Services
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
 
-        #region Read Operations
-
-        public async Task<ProductSkuDetailDto> GetByIdAsync(int skuId)
-        {
-            var sku = await GetActiveSkuAsync(skuId);
-            return _mapper.Map<ProductSkuDetailDto>(sku);
-        }
-
-        public async Task<IEnumerable<ProductSkuDetailDto>> GetByProductIdAsync(int productId)
-        {
-            await EnsureProductExistsAsync(productId);
-            var skus = await _productSkuRepository.GetByProductIdWithDetailsAsync(productId);
-            return _mapper.Map<IEnumerable<ProductSkuDetailDto>>(skus);
-        }
-
-        public async Task<PagedResult<ProductSkuDetailDto>> GetByProductIdPagedAsync(int productId, PaginationParams paginationParams)
-        {
-            await EnsureProductExistsAsync(productId);
-            var (skus, totalCount) = await _productSkuRepository.GetByProductIdPagedAsync(
-                productId, paginationParams.PageNumber, paginationParams.PageSize);
-            return CreatePagedResult(skus, paginationParams, totalCount);
-        }
-
-        public async Task<PagedResult<ProductSkuDetailDto>> GetBySellerPagedAsync(int sellerId, PaginationParams paginationParams)
-        {
-            var (skus, totalCount) = await _productSkuRepository.GetBySellerPagedAsync(
-                sellerId, paginationParams.PageNumber, paginationParams.PageSize);
-            return CreatePagedResult(skus, paginationParams, totalCount);
-        }
-
-        #endregion
-
-        #region Create Operations
-
-        public async Task<ProductSkuDetailDto> CreateAsync(ProductSkuCreateDto createDto) =>
-            await CreateInternalAsync(createDto, null);
-
-        public async Task<ProductSkuDetailDto> CreateSellerSkuAsync(ProductSkuCreateDto createDto, int sellerId) =>
-            await CreateInternalAsync(createDto, sellerId);
-
-        private async Task<ProductSkuDetailDto> CreateInternalAsync(ProductSkuCreateDto createDto, int? sellerId)
+        public async Task<ProductSkuDto> CreateAsync(ProductSkuCreateDto createDto, int? sellerId = null)
         {
             var product = await GetActiveProductAsync(createDto.ProductId);
 
@@ -75,20 +35,10 @@ namespace ECommerce.Application.Services
             await _productSkuRepository.AddAsync(sku);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<ProductSkuDetailDto>(sku);
+            return _mapper.Map<ProductSkuDto>(sku);
         }
 
-        #endregion
-
-        #region Update Operations
-
-        public async Task<ProductSkuDetailDto> UpdateAsync(int skuId, ProductSkuUpdateDto updateDto) =>
-            await UpdateInternalAsync(skuId, null, updateDto);
-
-        public async Task<ProductSkuDetailDto> UpdateSellerSkuAsync(int skuId, int sellerId, ProductSkuUpdateDto updateDto) =>
-            await UpdateInternalAsync(skuId, sellerId, updateDto);
-
-        private async Task<ProductSkuDetailDto> UpdateInternalAsync(int skuId, int? sellerId, ProductSkuUpdateDto updateDto)
+        public async Task<ProductSkuDto> UpdateAsync(int skuId, ProductSkuUpdateDto updateDto, int? sellerId = null)
         {
             var sku = await GetActiveSkuAsync(skuId);
 
@@ -96,22 +46,22 @@ namespace ECommerce.Application.Services
                 throw new ForbiddenException("You do not have permission to update this SKU");
 
             ApplyUpdates(sku, updateDto);
+
+            if (updateDto.IsDefault == true)
+            {
+                var siblings = await _productSkuRepository.GetByProductIdAsync(sku.ProductId);
+                foreach (var sibling in siblings.Where(s => s.SkuId != skuId && s.IsDefault))
+                {
+                    sibling.IsDefault = false;
+                    sibling.UpdatedAt = DateTime.UtcNow;
+                }
+            }
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<ProductSkuDetailDto>(sku);
+            return _mapper.Map<ProductSkuDto>(sku);
         }
 
-        #endregion
-
-        #region Delete Operations
-
-        public async Task<bool> DeleteAsync(int skuId) =>
-            await DeleteInternalAsync(skuId, null);
-
-        public async Task<bool> DeleteSellerSkuAsync(int skuId, int sellerId) =>
-            await DeleteInternalAsync(skuId, sellerId);
-
-        private async Task<bool> DeleteInternalAsync(int skuId, int? sellerId)
+        public async Task<bool> DeleteAsync(int skuId, int? sellerId = null)
         {
             var sku = await GetActiveSkuAsync(skuId);
 
@@ -124,8 +74,6 @@ namespace ECommerce.Application.Services
 
             return true;
         }
-
-        #endregion
 
         #region Private Helpers
 
@@ -151,15 +99,6 @@ namespace ECommerce.Application.Services
             return product;
         }
 
-        private async Task EnsureProductExistsAsync(int productId) => await GetActiveProductAsync(productId);
-
-        private PagedResult<ProductSkuDetailDto> CreatePagedResult(
-            IEnumerable<ProductSku> skus, PaginationParams paginationParams, int totalCount)
-        {
-            var dtos = _mapper.Map<IEnumerable<ProductSkuDetailDto>>(skus);
-            return PagedResult<ProductSkuDetailDto>.Create(dtos, paginationParams.PageNumber, paginationParams.PageSize, totalCount);
-        }
-
         private static ProductSku CreateSkuFromDto(Product product, ProductSkuCreateDto dto)
         {
             var skuCode = $"{product.BaseSku}-{Guid.NewGuid():N}"[..16].ToUpperInvariant();
@@ -174,7 +113,7 @@ namespace ECommerce.Application.Services
                 CostPrice = dto.CostPrice,
                 CompareAtPrice = dto.CompareAtPrice,
                 IsActive = true,
-                IsDefault = dto.IsDefault,
+                IsDefault = false,
                 WeightKg = dto.WeightKg,
                 DimensionsCm = dto.DimensionsCm,
                 CreatedAt = DateTime.UtcNow,
@@ -182,12 +121,7 @@ namespace ECommerce.Application.Services
             };
 
             sku.Inventory = Inventory.CreateDefault(sku, dto.Stock);
-
-            if (!string.IsNullOrWhiteSpace(dto.ImageUrl))
-            {
-                var image = ProductImage.CreateDefault(product, sku, dto.ImageUrl, $"{product.ProductName} - {skuCode}", false);
-                sku.ProductImages.Add(image);
-            }
+            ImageHelper.AddImages(sku, dto.Images, $"{product.ProductName} - {skuCode}");
 
             return sku;
         }
@@ -207,7 +141,6 @@ namespace ECommerce.Application.Services
 
             sku.UpdatedAt = now;
 
-            // Update inventory
             if (dto.Stock.HasValue)
             {
                 if (sku.Inventory != null)
@@ -221,21 +154,8 @@ namespace ECommerce.Application.Services
                 }
             }
 
-            // Update image
-            if (!string.IsNullOrWhiteSpace(dto.ImageUrl))
-            {
-                var image = sku.ProductImages.FirstOrDefault();
-                if (image != null)
-                {
-                    image.ImageUrl = dto.ImageUrl;
-                    image.ThumbnailUrl = dto.ImageUrl;
-                    image.UpdatedAt = now;
-                }
-                else
-                {
-                    sku.ProductImages.Add(ProductImage.CreateDefault(sku.Product, sku, dto.ImageUrl, $"{sku.Product.ProductName} - {sku.Sku}", false));
-                }
-            }
+            if (dto.Images?.Count > 0)
+                ImageHelper.MergeImages(sku, dto.Images, now, $"{sku.Product.ProductName} - {sku.Sku}");
         }
 
         #endregion

@@ -92,7 +92,9 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 // Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductSkuQueryService, ProductSkuQueryService>();
 builder.Services.AddScoped<IProductSkuService, ProductSkuService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();

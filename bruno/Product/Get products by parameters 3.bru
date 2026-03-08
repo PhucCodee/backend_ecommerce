@@ -1,0 +1,21 @@
+meta {
+  name: Get products by parameters 3
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/api/products?sortBy=name&desc=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  sortBy: name
+  desc: true
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
