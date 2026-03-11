@@ -246,819 +246,227 @@ VALUES
 -- ====================================
 -- 5. CATEGORIES
 -- ====================================
-INSERT INTO
-    categories (category_name, slug, description)
-VALUES
-    (
-        'Electronics',
-        'electronics',
-        'Electronic devices'
-    ),
-    ('Clothing', 'clothing', 'Apparel and fashion'),
-    ('Books', 'books', 'Books and reading'),
-    ('Home', 'home', 'Home goods'),
-    ('Sports', 'sports', 'Sports equipment');
+INSERT INTO categories (category_name, slug, description) VALUES
+('Tops', 'tops', 'T-shirts, hoodies, and shirts'),
+('Bottoms', 'bottoms', 'Jeans, joggers, and trousers'),
+('Outerwear', 'outerwear', 'Jackets, coats, and blazers'),
+('Footwear', 'footwear', 'Sneakers, boots, and formal shoes'),
+('Accessories', 'accessories', 'Hats, bags, and jewelry');
+    
+
 
 -- ====================================
 -- 6. PRODUCTS
 -- ====================================
-INSERT INTO
-    products (
-        seller_id,
-        category_id,
-        product_name,
-        slug,
-        base_sku,
-        description,
-        status,
-        moderation_status
-    )
-VALUES
-    -- Electronics
-    (
-        3,
-        1,
-        'Wireless Mouse',
-        'wireless-mouse',
-        'ELEC-001',
-        'Comfortable wireless mouse',
-        1,
-        1
-    ),
-    (
-        3,
-        1,
-        'USB Keyboard',
-        'usb-keyboard',
-        'ELEC-002',
-        'Mechanical keyboard',
-        1,
-        1
-    ),
-    (
-        3,
-        1,
-        'Laptop Stand',
-        'laptop-stand',
-        'ELEC-003',
-        'Adjustable laptop stand',
-        1,
-        1
-    ),
-    (
-        3,
-        1,
-        'Phone Charger',
-        'phone-charger',
-        'ELEC-004',
-        'Fast charging cable',
-        1,
-        1
-    ),
-    -- Clothing
-    (
-        4,
-        2,
-        'T-Shirt',
-        't-shirt',
-        'CLOTH-001',
-        'Cotton t-shirt',
-        1,
-        1
-    ),
-    (
-        4,
-        2,
-        'Jeans',
-        'jeans',
-        'CLOTH-002',
-        'Blue denim jeans',
-        1,
-        1
-    ),
-    (
-        4,
-        2,
-        'Sneakers',
-        'sneakers',
-        'CLOTH-003',
-        'Running shoes',
-        1,
-        1
-    ),
-    (
-        4,
-        2,
-        'Hat',
-        'hat',
-        'CLOTH-004',
-        'Baseball cap',
-        1,
-        1
-    ),
-    -- Books
-    (
-        3,
-        3,
-        'Novel',
-        'novel',
-        'BOOK-001',
-        'Fiction book',
-        1,
-        1
-    ),
-    (
-        3,
-        3,
-        'Cookbook',
-        'cookbook',
-        'BOOK-002',
-        'Recipe collection',
-        1,
-        1
-    ),
-    (
-        3,
-        3,
-        'Programming Guide',
-        'programming-guide',
-        'BOOK-003',
-        'Learn to code',
-        1,
-        1
-    ),
-    (
-        3,
-        3,
-        'Magazine',
-        'magazine',
-        'BOOK-004',
-        'Monthly magazine',
-        1,
-        1
-    ),
-    -- Home
-    (
-        4,
-        4,
-        'Coffee Mug',
-        'coffee-mug',
-        'HOME-001',
-        'Ceramic mug',
-        1,
-        1
-    ),
-    (
-        4,
-        4,
-        'Pillow',
-        'pillow',
-        'HOME-002',
-        'Soft pillow',
-        1,
-        1
-    ),
-    (
-        4,
-        4,
-        'Lamp',
-        'lamp',
-        'HOME-003',
-        'Desk lamp',
-        1,
-        1
-    ),
-    (
-        4,
-        4,
-        'Plant Pot',
-        'plant-pot',
-        'HOME-004',
-        'Decorative pot',
-        1,
-        1
-    ),
-    -- Sports
-    (
-        3,
-        5,
-        'Yoga Mat',
-        'yoga-mat',
-        'SPORT-001',
-        'Exercise mat',
-        1,
-        1
-    ),
-    (
-        3,
-        5,
-        'Water Bottle',
-        'water-bottle',
-        'SPORT-002',
-        'Sports bottle',
-        1,
-        1
-    ),
-    (
-        3,
-        5,
-        'Dumbbells',
-        'dumbbells',
-        'SPORT-003',
-        'Weight training',
-        1,
-        1
-    ),
-    (
-        3,
-        5,
-        'Jump Rope',
-        'jump-rope',
-        'SPORT-004',
-        'Cardio equipment',
-        1,
-        1
-    );
+
+INSERT INTO products (seller_id, category_id, product_name, slug, base_sku, description) VALUES
+-- ID 1: Tops
+(3, 1, 'Vintage Wash Heavyweight Tee', 'vintage-wash-tee', 'CLOTH-TEE-001', 'Boxy fit, garment-dyed t-shirt with a vintage feel.'),
+-- ID 2: Bottoms
+(4, 2, 'Tech-Wear Cargo Pants', 'tech-cargo-pants', 'CLOTH-PAN-001', 'Water-repellent cargo pants with 6 functional pockets.' ),
+-- ID 3: Outerwear
+(3, 3, 'Sherpa Lined Denim Jacket', 'sherpa-denim-jacket', 'CLOTH-JKT-001', 'Classic blue denim jacket with warm faux-shearling lining.'),
+-- ID 4: Footwear
+(4, 4, 'Urban Nomad Knit Sneakers', 'urban-nomad-sneakers', 'CLOTH-SHN-001', 'Breathable knit upper with responsive foam cushioning.'),
+-- ID 5: Accessories
+(3, 5, 'Signature Embroidered Beanie', 'signature-beanie', 'CLOTH-ACC-001', 'Tight-knit acrylic beanie with fold-over cuff.'),
+-- ID 6: High Performance (Category 3 - Outerwear)
+(4, 3, 'Alpine Explorer Hiking Jacket', 'alpine-explorer-jacket', 'CLOTH-JKT-002', '3-layer Gore-Tex shell, 100% waterproof and breathable.'),
+(3, 1, 'Oversized Street Tee', 'oversized-street-tee', 'CLOTH-TEE-002', 'Heavy cotton oversized streetwear t-shirt.'),
+(4, 1, 'Minimal Logo Tee', 'minimal-logo-tee', 'CLOTH-TEE-003', 'Clean minimalist t-shirt with small embroidered logo.'),
+(3, 1, 'Vintage Graphic Tee', 'vintage-graphic-tee', 'CLOTH-TEE-004', 'Retro graphic print cotton t-shirt.'),
+(4, 2, 'Slim Fit Denim Jeans', 'slim-fit-denim-jeans', 'CLOTH-PAN-002', 'Stretch slim-fit denim jeans.'),
+(3, 2, 'Relaxed Fit Sweatpants', 'relaxed-sweatpants', 'CLOTH-PAN-003', 'Comfortable fleece sweatpants for daily wear.'),
+(4, 2, 'Urban Jogger Pants', 'urban-jogger-pants', 'CLOTH-PAN-004', 'Tapered joggers with elastic ankle cuffs.'),
+(3, 3, 'Lightweight Windbreaker', 'lightweight-windbreaker', 'CLOTH-JKT-003', 'Ultra lightweight windbreaker jacket.'),
+(4, 3, 'Puffer Winter Jacket', 'puffer-winter-jacket', 'CLOTH-JKT-004', 'Insulated puffer jacket for cold weather.'),
+(3, 3, 'Utility Field Jacket', 'utility-field-jacket', 'CLOTH-JKT-005', 'Military inspired field jacket with pockets.'),
+(4, 4, 'Runner Pro Sneakers', 'runner-pro-sneakers', 'CLOTH-SHN-002', 'Lightweight running sneakers with mesh upper.'),
+(3, 4, 'Classic Canvas Sneakers', 'canvas-sneakers', 'CLOTH-SHN-003', 'Timeless canvas sneakers with rubber sole.'),
+(4, 4, 'Street Skate Shoes', 'street-skate-shoes', 'CLOTH-SHN-004', 'Durable skateboarding shoes.'),
+(3, 5, 'Classic Baseball Cap', 'classic-baseball-cap', 'CLOTH-ACC-002', 'Adjustable cotton baseball cap.'),
+(4, 5, 'Minimalist Leather Belt', 'leather-belt', 'CLOTH-ACC-003', 'Premium leather belt with metal buckle.'),
+(3, 5, 'Urban Sling Bag', 'urban-sling-bag', 'CLOTH-ACC-004', 'Compact sling bag for everyday carry.'),
+(4, 1, 'Performance Training Tee', 'training-performance-tee', 'CLOTH-TEE-005', 'Moisture-wicking training shirt.'),
+(3, 2, 'Cargo Utility Shorts', 'cargo-utility-shorts', 'CLOTH-PAN-005', 'Functional cargo shorts with multiple pockets.'),
+(4, 3, 'Softshell Tactical Jacket', 'softshell-tactical-jacket', 'CLOTH-JKT-006', 'Durable tactical jacket with softshell fabric.'),
+(3, 4, 'Trail Running Shoes', 'trail-running-shoes', 'CLOTH-SHN-005', 'Trail running shoes with rugged outsole.'),
+(4, 5, 'Winter Knit Scarf', 'winter-knit-scarf', 'CLOTH-ACC-005', 'Warm knitted scarf for winter.');
 
 -- ====================================
 -- 7. PRODUCT SKUs
 -- ====================================
-INSERT INTO
-    product_skus (product_id, sku, price, is_default)
-VALUES
-    (1, 'ELEC-001-DEFAULT', 25.00, true),
-    (2, 'ELEC-002-DEFAULT', 75.00, true),
-    (3, 'ELEC-003-DEFAULT', 40.00, true),
-    (4, 'ELEC-004-DEFAULT', 15.00, true),
-    (5, 'CLOTH-001-DEFAULT', 20.00, true),
-    (6, 'CLOTH-002-DEFAULT', 50.00, true),
-    (7, 'CLOTH-003-DEFAULT', 80.00, true),
-    (8, 'CLOTH-004-DEFAULT', 15.00, true),
-    (9, 'BOOK-001-DEFAULT', 12.00, true),
-    (10, 'BOOK-002-DEFAULT', 18.00, true),
-    (11, 'BOOK-003-DEFAULT', 35.00, true),
-    (12, 'BOOK-004-DEFAULT', 8.00, true),
-    (13, 'HOME-001-DEFAULT', 10.00, true),
-    (14, 'HOME-002-DEFAULT', 25.00, true),
-    (15, 'HOME-003-DEFAULT', 30.00, true),
-    (16, 'HOME-004-DEFAULT', 12.00, true),
-    (17, 'SPORT-001-DEFAULT', 20.00, true),
-    (18, 'SPORT-002-DEFAULT', 15.00, true),
-    (19, 'SPORT-003-DEFAULT', 45.00, true),
-    (20, 'SPORT-004-DEFAULT', 10.00, true);
+INSERT INTO product_skus (product_id, sku, price, is_default, variant_attributes) VALUES
+
+-- Product 1
+(1, 'CLOTH-TEE-001-BLK-M', 35.00, true,  '{"color": "Charcoal Black", "size": "M"}'),
+(1, 'CLOTH-TEE-001-BLK-L', 35.00, false, '{"color": "Charcoal Black", "size": "L"}'),
+(1, 'CLOTH-TEE-001-BLK-XL', 38.00, false, '{"color": "Charcoal Black", "size": "XL"}'),
+
+-- Product 2
+(2, 'CLOTH-PAN-001-OLV-S', 85.00, true,  '{"color": "Olive Drab", "size": "S"}'),
+(2, 'CLOTH-PAN-001-OLV-M', 85.00, false, '{"color": "Olive Drab", "size": "M"}'),
+(2, 'CLOTH-PAN-001-OLV-L', 85.00, false, '{"color": "Olive Drab", "size": "L"}'),
+
+-- Product 3
+(3, 'CLOTH-JKT-001-BLU-M', 120.00, true,  '{"color": "Indio Blue", "size": "M"}'),
+(3, 'CLOTH-JKT-001-BLU-L', 120.00, false, '{"color": "Indio Blue", "size": "L"}'),
+
+-- Product 4
+(4, 'CLOTH-SHN-001-WHT-9', 110.00, true,  '{"color": "Triple White", "size": "9"}'),
+(4, 'CLOTH-SHN-001-WHT-10',110.00, false, '{"color": "Triple White", "size": "10"}'),
+(4, 'CLOTH-SHN-001-WHT-11',110.00, false, '{"color": "Triple White", "size": "11"}'),
+
+-- Product 5
+(5,'CLOTH-ACC-001-BLK-STD',25,true,'{"color":"Black","size":"One Size"}'),
+
+-- Product 6
+(6,'CLOTH-JKT-002-RED-M',220,true,'{"color":"Red","size":"M"}'),
+(6,'CLOTH-JKT-002-RED-L',220,false,'{"color":"Red","size":"L"}'),
+
+-- Product 7
+(7,'CLOTH-TEE-002-BLK-M',32,true,'{"color":"Black","size":"M"}'),
+(7,'CLOTH-TEE-002-BLK-L',32,false,'{"color":"Black","size":"L"}'),
+
+-- Product 8
+(8,'CLOTH-TEE-003-WHT-M',30,true,'{"color":"White","size":"M"}'),
+(8,'CLOTH-TEE-003-WHT-L',30,false,'{"color":"White","size":"L"}'),
+
+-- Product 9
+(9,'CLOTH-TEE-004-GRY-M',34,true,'{"color":"Grey","size":"M"}'),
+(9,'CLOTH-TEE-004-GRY-L',34,false,'{"color":"Grey","size":"L"}'),
+
+-- Product 10
+(10,'CLOTH-PAN-002-BLU-30',70,true,'{"color":"Blue","size":"30"}'),
+(10,'CLOTH-PAN-002-BLU-32',70,false,'{"color":"Blue","size":"32"}'),
+
+-- Product 11
+(11,'CLOTH-PAN-003-GRY-M',55,true,'{"color":"Grey","size":"M"}'),
+(11,'CLOTH-PAN-003-GRY-L',55,false,'{"color":"Grey","size":"L"}'),
+
+-- Product 12
+(12,'CLOTH-PAN-004-BLK-M',60,true,'{"color":"Black","size":"M"}'),
+(12,'CLOTH-PAN-004-BLK-L',60,false,'{"color":"Black","size":"L"}'),
+
+-- Product 13
+(13,'CLOTH-JKT-003-NVY-M',95,true,'{"color":"Navy","size":"M"}'),
+(13,'CLOTH-JKT-003-NVY-L',95,false,'{"color":"Navy","size":"L"}'),
+
+-- Product 14
+(14,'CLOTH-JKT-004-BLK-M',150,true,'{"color":"Black","size":"M"}'),
+(14,'CLOTH-JKT-004-BLK-L',150,false,'{"color":"Black","size":"L"}'),
+
+-- Product 15
+(15,'CLOTH-JKT-005-OLV-M',130,true,'{"color":"Olive","size":"M"}'),
+(15,'CLOTH-JKT-005-OLV-L',130,false,'{"color":"Olive","size":"L"}'),
+
+-- Product 16
+(16,'CLOTH-SHN-002-WHT-9',120,true,'{"color":"White","size":"9"}'),
+(16,'CLOTH-SHN-002-WHT-10',120,false,'{"color":"White","size":"10"}'),
+
+-- Product 17
+(17,'CLOTH-SHN-003-BLK-9',65,true,'{"color":"Black","size":"9"}'),
+(17,'CLOTH-SHN-003-BLK-10',65,false,'{"color":"Black","size":"10"}'),
+
+-- Product 18
+(18,'CLOTH-SHN-004-BLK-9',90,true,'{"color":"Black","size":"9"}'),
+(18,'CLOTH-SHN-004-BLK-10',90,false,'{"color":"Black","size":"10"}'),
+
+-- Product 19
+(19,'CLOTH-ACC-002-BLK-STD',25,true,'{"color":"Black","size":"One Size"}'),
+(19,'CLOTH-ACC-002-NVY-STD',25,false,'{"color":"Navy","size":"One Size"}'),
+
+-- Product 20
+(20,'CLOTH-ACC-003-BRN-M',45,true,'{"color":"Brown","size":"M"}'),
+(20,'CLOTH-ACC-003-BRN-L',45,false,'{"color":"Brown","size":"L"}'),
+
+-- Product 21
+(21,'CLOTH-ACC-004-BLK-STD',50,true,'{"color":"Black","size":"One Size"}'),
+(21,'CLOTH-ACC-004-GRY-STD',50,false,'{"color":"Grey","size":"One Size"}'),
+
+-- Product 22
+(22,'CLOTH-TEE-005-BLK-M',38,true,'{"color":"Black","size":"M"}'),
+(22,'CLOTH-TEE-005-BLK-L',38,false,'{"color":"Black","size":"L"}'),
+
+-- Product 23
+(23,'CLOTH-PAN-005-KHK-M',40,true,'{"color":"Khaki","size":"M"}'),
+(23,'CLOTH-PAN-005-KHK-L',40,false,'{"color":"Khaki","size":"L"}'),
+
+-- Product 24
+(24,'CLOTH-JKT-006-BLK-M',140,true,'{"color":"Black","size":"M"}'),
+(24,'CLOTH-JKT-006-BLK-L',140,false,'{"color":"Black","size":"L"}'),
+
+-- Product 25
+(25,'CLOTH-SHN-005-GRN-9',130,true,'{"color":"Green","size":"9"}'),
+(25,'CLOTH-SHN-005-GRN-10',130,false,'{"color":"Green","size":"10"}'),
+
+-- Product 26
+(26,'CLOTH-ACC-005-GRY-STD',28,true,'{"color":"Grey","size":"One Size"}'),
+(26,'CLOTH-ACC-005-BLK-STD',28,false,'{"color":"Black","size":"One Size"}');
 
 -- ====================================
 -- 8. INVENTORY (Stock for each SKU)
 -- ====================================
-INSERT INTO
-    inventory (sku_id, quantity_available)
-VALUES
-    (1, 100),
-    (2, 50),
-    (3, 75),
-    (4, 200),
-    (5, 150),
-    (6, 80),
-    (7, 60),
-    (8, 120),
-    (9, 40),
-    (10, 30),
-    (11, 25),
-    (12, 100),
-    (13, 200),
-    (14, 90),
-    (15, 45),
-    (16, 110),
-    (17, 70),
-    (18, 150),
-    (19, 35),
-    (20, 180);
+INSERT INTO inventory (sku_id, quantity_available) VALUES
+(1, 50),  -- Tee Black M
+(2, 75),  -- Tee Black L
+(3, 30),  -- Tee Black XL
+(4, 20),  -- Cargo S
+(5, 45),  -- Cargo M
+(6, 40),  -- Cargo L
+(7, 15),  -- Jacket M
+(8, 12),  -- Jacket L
+(9, 25),  -- Sneakers 9
+(10, 30), -- Sneakers 10
+(11, 20), -- Sneakers 11
+(12,40),(13,35),
+(14,50),(15,45),
+(16,38),(17,36),
+(18,30),(19,28),
+(20,40),(21,35),
+(22,32),(23,29),
+(24,25),(25,22),
+(26,18),(27,20),
+(28,17),(29,15),
+(30,45),(31,40),
+(32,50),(33,48),
+(34,35),(35,33),
+(36,60),(37,55),
+(38,30),(39,28),
+(40,25),(41,22),
+(42,20),(43,18),
+(44,26),(45,24),
+(46,21),(47,19),
+(48,15),(49,14),
+(50,40),(51,38);
 
 -- ====================================
 -- 9. SAMPLE ORDER
 -- ====================================
-INSERT INTO
-    orders (
-        order_number,
-        user_id,
-        status,
-        subtotal,
-        total_amount,
-        currency
-    )
+INSERT INTO orders (order_number, user_id, status, subtotal, total_amount, currency)
+VALUES 
+    ('ORD-2025-001', 1, 4, 155.00, 155.00, 0);
+-- ====================================
+
+-- ORDER ITEMS (Updated for Clothing)
+-- ====================================
+INSERT INTO order_items (order_id, sku_id, product_name, sku, seller_id, quantity, unit_price, subtotal)
 VALUES
-    ('ORD-2025-001', 1, 4, 100.00, 100.00, 0);
+    (1, 1, 'Vintage Wash Heavyweight Tee', 'VNTG-TEE-BLK-M', 3, 2, 35.00, 70.00),
+    (1, 4, 'Tech-Wear Cargo Pants', 'TECH-CRG-OLV-S', 4, 1, 85.00, 85.00);
 
 -- ====================================
--- 10. ORDER SHIPPING
+-- ORDER SHIPPING
 -- ====================================
-INSERT INTO
-    order_shipping (
-        order_id,
-        recipient_name,
-        phone,
-        address_line1,
-        city,
-        country,
-        shipping_method
-    )
+INSERT INTO order_shipping (order_id,recipient_name,phone,address_line1,city,country,shipping_method)
 VALUES
-    (
-        1,
-        'Cristiano Ronaldo',
-        '0123456789',
-        '1 Nguyen Hue',
-        'Ho Chi Minh',
-        'Vietnam',
-        0
-    );
+    (1,'Cristiano Ronaldo','0123456789','1 Nguyen Hue','Ho Chi Minh','Vietnam',0);
 
 -- ====================================
--- 11. ORDER PAYMENT
+-- ORDER PAYMENT
 -- ====================================
-INSERT INTO
-    order_payments (
-        order_id,
-        payment_method,
-        payment_status,
-        amount,
-        paid_at
-    )
-VALUES
-    (1, 3, 2, 100.00, CURRENT_TIMESTAMP);
+INSERT INTO order_payments (order_id, payment_method, payment_status, amount, paid_at)
+VALUES 
+    (1, 3, 2, 155.00, CURRENT_TIMESTAMP);
 
--- ====================================
--- 12. ORDER ITEMS
--- ====================================
-INSERT INTO
-    order_items (
-        order_id,
-        sku_id,
-        product_name,
-        sku,
-        seller_id,
-        quantity,
-        unit_price,
-        subtotal
-    )
-VALUES
-    (
-        1,
-        1,
-        'Wireless Mouse',
-        'ELEC-001-DEFAULT',
-        3,
-        2,
-        25.00,
-        50.00
-    ),
-    (
-        1,
-        5,
-        'T-Shirt',
-        'CLOTH-001-DEFAULT',
-        4,
-        1,
-        20.00,
-        20.00
-    ),
-    (
-        1,
-        13,
-        'Coffee Mug',
-        'HOME-001-DEFAULT',
-        4,
-        3,
-        10.00,
-        30.00
-    );
 
-INSERT INTO
-    products (
-        seller_id,
-        category_id,
-        product_name,
-        slug,
-        base_sku,
-        status,
-        moderation_status,
-        description
-    )
-VALUES
-    -- ELECTRONICS (Category 1)
-    (
-        3,
-        1,
-        'SonicBlast Pro Noise Cancelling Headphones',
-        'sonicblast-pro',
-        'ELEC-005',
-        1,
-        1,
-        'Experience the ultimate audio immersion with the SonicBlast Pro. These over-ear headphones feature industry-leading Active Noise Cancellation (ANC) that blocks out up to 98% of ambient background noise, making them perfect for travel, office work, or focusing in loud environments. 
-    
-    Equipped with 40mm liquid crystal polymer drivers, they deliver deep, punchy bass and crystal-clear highs. The battery life is exceptional, offering 30 hours of playback with ANC turned on, and up to 40 hours without. Fast charging is supported via USB-C: a 10-minute charge gives you 5 hours of listening time. 
-    
-    Connectivity includes Bluetooth 5.2 for a stable wireless connection and multi-point pairing, allowing you to switch seamlessly between your laptop and phone. Built-in microphones ensure clear call quality even in windy conditions.'
-    ),
-    (
-        3,
-        1,
-        'UltraView 27-inch 4K Gaming Monitor',
-        'ultraview-27-4k',
-        'ELEC-006',
-        1,
-        1,
-        'Elevate your gaming setup with the UltraView 27-inch 4K UHD monitor. Featuring an IPS panel with a resolution of 3840 x 2160, colors are vibrant and accurate, covering 99% of the sRGB color gamut. 
-    
-    Gamers will appreciate the 144Hz refresh rate and 1ms response time (GtG), ensuring smooth, ghosting-free visuals during fast-paced action. It is NVIDIA G-SYNC compatible and supports AMD FreeSync Premium to eliminate screen tearing. 
-    
-    The ergonomic stand allows for tilt, swivel, pivot, and height adjustment to find your perfect viewing angle. Connectivity ports include 2x HDMI 2.1 (perfect for PS5 and Xbox Series X), 1x DisplayPort 1.4, and a USB 3.0 hub.'
-    ),
-    -- CLOTHING (Category 2)
-    (
-        4,
-        2,
-        'Alpine Explorer Waterproof Hiking Jacket',
-        'alpine-explorer-jacket',
-        'CLOTH-005',
-        1,
-        1,
-        'Conquer the elements with the Alpine Explorer jacket. Designed for extreme weather, this shell is constructed from 3-layer Gore-Tex fabric, providing 100% waterproof protection while remaining highly breathable to prevent overheating during strenuous hikes.
-    
-    The jacket features reinforced elbows for durability, a helmet-compatible adjustable hood, and pit zips for rapid ventilation. It includes two waterproof chest pockets, two handwarmer pockets, and an internal media pocket. 
-    
-    All seams are fully taped to prevent water ingress. The fit is athletic but allows room for layering a fleece or puffer underneath. Ideal for mountaineering, skiing, or rainy urban commutes.'
-    ),
-    (
-        4,
-        2,
-        'Vintage Leather Aviator Jacket',
-        'vintage-leather-aviator',
-        'CLOTH-006',
-        1,
-        1,
-        'A timeless classic. This Aviator jacket is crafted from premium full-grain cowhide leather that is designed to age beautifully, developing a unique patina over time. The interior is lined with soft, quilted polyester for warmth and comfort in cooler temperatures.
-    
-    Features include heavy-duty brass zippers, a removable faux-fur collar, and ribbed cuffs and hem to seal out the wind. It has deep snap-button pockets on the front and a hidden secure inner pocket for your wallet or phone. 
-    
-    Whether you are riding a motorcycle or just heading out for a night on the town, this jacket adds instant rugged style to any outfit.'
-    ),
-    -- HOME (Category 4) - Good for distinguishing from "Coffee Mug"
-    (
-        4,
-        4,
-        'BaristaPro Smart Coffee Maker',
-        'baristapro-smart',
-        'HOME-005',
-        1,
-        1,
-        'Wake up to the smell of freshly ground coffee every morning. The BaristaPro is a WiFi-enabled smart coffee maker that you can control via a mobile app or voice commands (Alexa/Google Assistant). 
-    
-    It features a built-in conical burr grinder with 15 grind settings, ensuring your beans are ground seconds before brewing for maximum flavor freshness. The thermal carafe keeps coffee hot for up to 4 hours without burning it.
-    
-    You can schedule brew times, adjust brew strength (Regular, Bold, Gold), and even order replacement beans directly from the app when supplies run low. The water reservoir allows for 12 cups of brewing capacity.'
-    ),
-    (
-        4,
-        4,
-        'ErgoCloud Office Chair',
-        'ergocloud-chair',
-        'HOME-006',
-        1,
-        1,
-        'Say goodbye to back pain with the ErgoCloud Office Chair. Designed for professionals who spend long hours at a desk, this chair features a high-tension mesh backrest that promotes airflow and keeps you cool.
-    
-    The dynamic lumbar support automatically adjusts to your posture as you lean back. It includes 4D adjustable armrests (height, width, depth, and pivot), a seat depth slider, and a headrest that can be adjusted for height and angle. 
-    
-    The heavy-duty aluminum base supports up to 300lbs and rolls smoothly on all floor types. Easy assembly in under 15 minutes.'
-    ),
-    -- SPORTS (Category 5)
-    (
-        3,
-        5,
-        'FlexCore Adjustable Dumbbells (Pair)',
-        'flexcore-dumbbells',
-        'SPORT-005',
-        1,
-        1,
-        'Replace an entire rack of weights with the FlexCore Adjustable Dumbbells. This space-saving solution is perfect for home gyms where floor space is at a premium. 
-    
-    With a simple turn of the handle dial, you can adjust the weight from 5 lbs to 52.5 lbs in 2.5 lb increments. The mechanism is smooth and quiet, locking the weight plates securely into place for safety.
-    
-    The handles are textured for a non-slip grip, and the plates are coated in durable molding to prevent clanging noise and protect your floors. Sold as a pair with storage trays included.'
-    );
-
--- ====================================
--- 14. EXTENDED PRODUCT SKUS
--- ====================================
-INSERT INTO
-    product_skus (product_id, sku, price, is_default)
-VALUES
-    -- Headphones (Product ID: 21 assuming sequence continues)
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'sonicblast-pro'
-        ),
-        'ELEC-005-BLK',
-        299.99,
-        true
-    ),
-    -- Monitor (Product ID: 22)
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'ultraview-27-4k'
-        ),
-        'ELEC-006-STD',
-        450.00,
-        true
-    ),
-    -- Hiking Jacket (Product ID: 23)
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'alpine-explorer-jacket'
-        ),
-        'CLOTH-005-M-RED',
-        180.00,
-        true
-    ),
-    -- Leather Jacket (Product ID: 24)
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'vintage-leather-aviator'
-        ),
-        'CLOTH-006-L-BRN',
-        250.00,
-        true
-    ),
-    -- Coffee Maker (Product ID: 25)
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'baristapro-smart'
-        ),
-        'HOME-005-SS',
-        120.00,
-        true
-    ),
-    -- Office Chair (Product ID: 26)
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'ergocloud-chair'
-        ),
-        'HOME-006-BLK',
-        350.00,
-        true
-    ),
-    -- Dumbbells (Product ID: 27)
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'flexcore-dumbbells'
-        ),
-        'SPORT-005-SET',
-        199.00,
-        true
-    );
-
--- ====================================
--- 15. EXTENDED INVENTORY
--- ====================================
-INSERT INTO
-    inventory (sku_id, quantity_available)
-VALUES
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'ELEC-005-BLK'
-        ),
-        45
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'ELEC-006-STD'
-        ),
-        20
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'CLOTH-005-M-RED'
-        ),
-        100
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'CLOTH-006-L-BRN'
-        ),
-        15
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'HOME-005-SS'
-        ),
-        60
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'HOME-006-BLK'
-        ),
-        30
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'SPORT-005-SET'
-        ),
-        25
-    );
-
--- For 'SonicBlast Pro Noise Cancelling Headphones' (slug: 'sonicblast-pro')
-INSERT INTO
-    product_skus (
-        product_id,
-        sku,
-        price,
-        is_default,
-        variant_attributes
-    )
-VALUES
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'sonicblast-pro'
-        ),
-        'ELEC-005-WHT',
-        309.99,
-        false,
-        '{"color":"white"}'
-    ),
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'sonicblast-pro'
-        ),
-        'ELEC-005-BLU',
-        319.99,
-        false,
-        '{"color":"blue"}'
-    );
-
--- For 'Alpine Explorer Waterproof Hiking Jacket' (slug: 'alpine-explorer-jacket')
-INSERT INTO
-    product_skus (
-        product_id,
-        sku,
-        price,
-        is_default,
-        variant_attributes
-    )
-VALUES
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'alpine-explorer-jacket'
-        ),
-        'CLOTH-005-L-BLK',
-        185.00,
-        false,
-        '{"size":"L","color":"black"}'
-    ),
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'alpine-explorer-jacket'
-        ),
-        'CLOTH-005-XL-RED',
-        190.00,
-        false,
-        '{"size":"XL","color":"red"}'
-    );
-
-INSERT INTO
-    inventory (sku_id, quantity_available)
-VALUES
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'ELEC-005-WHT'
-        ),
-        20
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'ELEC-005-BLU'
-        ),
-        15
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'CLOTH-005-L-BLK'
-        ),
-        40
-    ),
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'CLOTH-005-XL-RED'
-        ),
-        25
-    );

@@ -6,9 +6,7 @@ from pydantic import BaseModel, EmailStr
 from langchain_core.messages import HumanMessage
 
 # Import your graph
-from app.agents.buyer.orchestrator_new import app as buyer_orchestrator_app
-from app.agents.admin.orchestrator import app as admin
-from app.agents.seller.orchestrator import app as seller_orchestrator_app
+from app.agents.buyer.agents import app as buyer_orchestrator_app
 
 
 api = FastAPI(title="AI Microservice - Dev Mode")
@@ -28,11 +26,9 @@ class UserContext(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
-    session_id: str
 
 class ChatResponse(BaseModel):
     response: str
-    session_id: str
 
 # --- 2. MOCK AUTH DEPENDENCY ---
 # We removed HTTPBearer. This function now runs automatically
@@ -53,19 +49,6 @@ async def get_current_user() -> UserContext:
 
 # --- 3. ENDPOINTS ---
 
-@api.post("/api/ai/start-session")
-async def start_session(user: UserContext = Depends(get_current_user)):
-    """
-    Simulates starting a session.
-    """
-    session_id = str(uuid.uuid4())
-    
-    return {
-        "session_id": session_id, 
-        "message": f"Hello {user.username} (Role: {user.role}), how can I help you?",
-        "role_detected": user.role
-    }
-
 @api.post("/api/ai/chat", response_model=ChatResponse)
 async def chat_endpoint(
     request: ChatRequest, 
@@ -73,21 +56,20 @@ async def chat_endpoint(
 ):
     try:
         # 1. Config for thread persistence
-        config = {"configurable": {"thread_id": request.session_id}}
+        config = {"configurable": {"thread_id": user.user_id}}
         
         # 2. Inject Pydantic model as a dict into LangGraph state
-        initial_state = {
-            "messages": [HumanMessage(content=request.message)],
-            "user_context": user.model_dump() 
-        }
-        
+        initial_state = {"user_prompt": request.message,
+                             "log_action":[],
+                             "messages": [HumanMessage(content=request.message)]
+                            }
         # 3. Invoke Agent
         result = await buyer_orchestrator_app.ainvoke(initial_state, config=config)
         
         # 4. Get response
-        ai_message = result["messages"][-1].content
+        ai_message = result["answer"]
         
-        return ChatResponse(response=ai_message, session_id=request.session_id)
+        return ChatResponse(response=ai_message, session_id=user.user_id)
 
     except Exception as e:
         print(f"❌ Error: {e}")

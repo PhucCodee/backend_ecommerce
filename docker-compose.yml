@@ -19,7 +19,7 @@ services:
             # - message_broker
 
     db:
-        image: postgres:15
+        image: postgres:11
         environment:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=123

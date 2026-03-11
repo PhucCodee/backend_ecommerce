@@ -20,7 +20,6 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableConfig
-from IPython.display import Image, display
 from pathlib import Path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -127,6 +126,7 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         - "How long does shipping take?"
         - "Do you accept visa card?"
         - "How can I get help with technical issue"
+        - "Is my personal information privately protected"
     4. "general"
     - Greetings, small talk, compliments, or unrelated questions.
     - Examples:
@@ -355,7 +355,7 @@ class Product(BaseModel):
     """A look up product information before searching in database"""
     name:str = Field(..., description = "Name of the product")
     des:str= Field(..., description = "Description of the product, may have some adjective words")
-    price: Tuple[Literal["less","equal","greater","unknown"],int] = Field(..., description = """The price of the product ("Less",100), ("Unknown",0)""")
+    price: Tuple[Literal["less","equal","greater","unknown","ask"],int] = Field(..., description = """The price of the product ("Less",100), ("Unknown",0), ("ask",0)""")
 
 class ProductRes(BaseModel):
     """Product results after execute sql query"""
@@ -420,6 +420,9 @@ def product_search(state:MasterState) -> MasterState:
     User: "I want to buy a jacket which is waterproof and less than 50 usd"
     -> name: jacket, price: (less,50), des: waterproof
 
+    User: "How much is the Minimal Logo Tee"
+    -> name: Minimal Logo Tee, price: (ask,0), des: Minimal Logo
+
     You may look at the previous query to get the context
 
     Example
@@ -448,16 +451,17 @@ def generate_product_query(state: MasterState) ->MasterState:
         product_model = action.get_product()
 
     unknown_price = product_model.price[0] == "unknown"
+    ask_price = product_model.price[0] == "ask"
 
     convert_prompt = f"""
     Write a sql query to search for product:{product_model.name} 
     """
-    price_prompt =  f"\nwhich has price {product_model.price[0]} {product_model.price[1]} dollar" if not unknown_price else ""
+    price_prompt =  "" if unknown_price else (f"I want to know its price" if ask_price else f"\nwhich has price {product_model.price[0]} {product_model.price[1]} dollar")
     convert_prompt += price_prompt
 
     description_prompt = "\nThe description column must have word {product_model.des} or something semantically similar"
     convert_prompt += description_prompt
-
+    print(f"Sql promtp : {convert_prompt}")
     # 1. We update the prompt to encourage synonym logic
     system_prompt = f"""You are a smart PostgreSQL expert .
     Your goal is generate correct and sufficient SQL query based on user question.
@@ -480,7 +484,25 @@ def generate_product_query(state: MasterState) ->MasterState:
     ORDER BY SIMILARITY(p.product_name, 'waterproof jacket') 
     DESC LIMIT 5 
 
-    CRITICAL NOTE: just only return a full sql query which user can copy paste and plug in to sql (PLAIN SQL TEXT, no \n character)
+    Human: "Write a sql query to seacrh for product: Minimal Logo Tee
+            I want to know its price
+            The description must have word Minimal Logo Tee or something semantically similar
+    --> 
+    AI: SELECT p.product_name, ps.price, p.description, p.status
+    FROM products p JOIN product_skus ps 
+        ON p.product_id = ps.product_id JOIN inventory i 
+        ON ps.sku_id = i.sku_id 
+    WHERE (p.product_name ILIKE '%Minimal Logo Tee%' OR p.product_name ILIKE '%Tee%') 
+        OR p.description ILIKE '%Simple Logo%' 
+        OR p.description ILIKE '%Basic Tee%' 
+        OR p.description ILIKE '%Classic Logo%')
+    ORDER BY SIMILARITY(p.product_name, 'Minimal Logo Tee') 
+    DESC LIMIT 5 
+
+    CRITICAL NOTE: 
+    - For p.description condition always use OR
+    - If user want to retrieve the products price, skip the p.price  condition
+    - Just only return a full sql query which user can copy paste and plug in to sql (PLAIN SQL TEXT, no \n character)
     """
     
     result = llm.invoke([
@@ -550,6 +572,13 @@ def synthesize_product_answer(state: MasterState):
 
     Don't answer like I just found a good product match your query. Its sound like a robot.
     Instead you should answer like a true human seller: We have this product, bla bla bla.... or We currently not having products fit your findings.
+
+    Your answer should be in this format :
+    "We have few options for ...<user query>:
+    _ Product 1: information
+    _ Product 2: information
+    ...
+    _ Product n: information
     """
     
     user_content = f"""
