@@ -1,6 +1,7 @@
 #agent.py
 
 from email import message
+import enum
 from itertools import product
 import os
 from re import S
@@ -18,6 +19,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.tools import tool
+from langchain_core.runnables import RunnableConfig
 from IPython.display import Image, display
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -54,6 +56,7 @@ class MasterState(TypedDict):
     answer: str
     log_action: List[Action]
     intent: str
+    customer_id: str
 
 class IntentOutput(BaseModel):
     """Classify user intent."""
@@ -75,7 +78,8 @@ class GeneralAction(Action):
 
     
 
-def intent_classifier(state: MasterState) -> MasterState:
+def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
+    user_id = config["configurable"].get("thread_id")
     prompt = """
     You are an intent classification engine for a production e-commerce AI system.
     Your ONLY task is to classify the user's latest message into ONE of the predefined intent categories.
@@ -106,6 +110,8 @@ def intent_classifier(state: MasterState) -> MasterState:
         - "Track order #12345"
         - "Has my package shipped?"
         - "I want to cancel my order"
+        - "I just cancle my newest order, is it succesfully canceled"
+        - "Is my newest order on shipping"
 
     3. "policy_question"
     - User is asking about store policies or company rules.
@@ -147,6 +153,7 @@ def intent_classifier(state: MasterState) -> MasterState:
 
     return {
         "intent":response.intent,
+        "customer_id": user_id
     }
 
 
@@ -573,9 +580,186 @@ workflow.add_edge("synthesize_product_answer",END)
 #----------------------------- START ORDER TRACKING--------------------------------------
 
 
+class Order(BaseModel):
+    """A look up order information before searching in database"""
+    des:str = Field(..., description = "Brief description of the order")
+    status:  Literal["done", "shipping", "cancel"]  = Field(..., description = """The status of the order""")
+
+@dataclass
+class OrderTrackingAction(Action):
+    def __init__(self, human_mes :str = "", ai_ans:str= "", order: Order = None):
+        super().__init__(intent = "order_tracking", user_prompt = human_mes, answer=ai_ans)
+        self.order = order
+        self.order_res = None
+    
+    def set_query(self,query):
+        self.query = query
+        return self
+    
+    def set_order(self,order):
+        self.order = order
+        return self
+    
+    def set_order_res(self,orderRes):
+        self.order_res = orderRes
+        return self
+    
+    def get_query(self):
+        return self.query
+    
+    def get_order_res(self): 
+        return self.order_res
+
+    def get_order(self): 
+        return self.order
+    
+
+
+def order_tracking(state:MasterState) -> MasterState:
+    print("\n--- 🔀 Routing to Product search Agent ---")
+
+    product_llm =  llm.with_structured_output(Order)
+    prompt = """
+    You are an AI assistance of ecommerce platform. You are beeing asked about some order to track order information for customer. 
+    For ease of search, you have to define some property base on customer latest query
+
+    Example
+    User: "Is my newest order shipping"
+    -> des: newest, status: shipping
+
+    User: "Is my order on yesterday succesfully set"
+    -> des: yesterday , status: shipping
+
+    User: "I just cancle my newest order, is it succesfully canceled"
+    -> des: newest , status: cancel
+    """
+    response = product_llm.invoke([
+        SystemMessage(content = prompt),
+        HumanMessage(state['user_prompt']),
+    ]
+    )
+    action = OrderTrackingAction().set_order(response)
+    state["log_action"] += [action]
+    print(f"Response: {response}")
+    return {}
+
+def generate_order_query(state: MasterState) ->MasterState:
+    """Node 1: Translate user natural language to SQL with Semantic Expansion."""
+    # query_llm = llm.with_structured_output(SQLQueryGenerator)
+    action = state["log_action"][-1]
+    order_model = None
+    if isinstance(action, OrderTrackingAction):
+        order_model = action.get_order()
+
+
+    convert_prompt = f"""
+    Write a sql query to search for {order_model.des} order 
+    Which has status: {order_model.status}
+    Bought by user whose id is {state['customer_id']}
+    """
+   
+
+    # 1. We update the prompt to encourage synonym logic
+    system_prompt = f"""You are a smart PostgreSQL expert .
+    Your goal is generate correct and sufficient SQL query based on user question.
+
+    Example:
+    Human: "Write a sql query to search for newest order 
+    Which has status: Shipping
+    Bought by user whose id is 1
+    -> AI:
+    SELECT         
+    """
+    
+    result = llm.invoke([
+        SystemMessage(content =  system_prompt),
+        HumanMessage(content = convert_prompt)
+    ]
+    )
+    if isinstance(action, OrderTrackingAction):
+        action.set_query(result.content)
+
+    print(f" Query: {result.content}")
+    return {}
+
+def execute_order_query(state: MasterState) -> MasterState:
+    action = state["log_action"][-1]
+    query = ""
+    if isinstance(action, OrderTrackingAction):
+        query = action.get_query()
+    conn = get_db_connection()
+
+    print(f"Executing query: \n{query}\n")
+    if not conn:
+        return {}
+    
+    try:
+        # RealDictCursor returns results as a dictionary (JSON-friendly)
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            print(f"[Executing SQL]: {query}") # Log for debugging
+            if not query.lower().startswith(("select", "with")):
+                return {}
+
+            cur.execute(query)
+            
+            if cur.description:
+                results = cur.fetchall()
+                # Convert RealDictRow to standard dict
+                clean_results = [dict(row) for row in results]
+            else:
+                clean_results = [{"status": "Query executed successfully (no return data)"}]
+            if isinstance(action,OrderTrackingAction):    
+                action.set_order_res(clean_results)
+            print(f"Data resutls : {clean_results}")
+            conn.commit()
+            return {}
+            
+    except Exception as e:
+        return {}
+    finally:
+        if conn:
+            conn.close()
+    
+def synthesize_order_answer(state: MasterState):
+    """Node 3: Convert SQL results back to natural language."""
+    action = state["log_action"][-1]
+
+    query = action.get_query()
+    results = action.get_order_res()
+    original_question = state["user_prompt"]
+
+    
+    system_prompt = """You are a helpful e-commerce assistant. 
+    Given a user question, the SQL query run, and the data results, formulate a natural language response.
+    
+
+    """
+    
+    user_content = f"""
+    This is the context for answering:
+        Query Run: {query}
+        Data Results: {results}
+    """
+    
+    response = llm.invoke([
+        {"role": "system", "content": system_prompt + user_content},
+        {"role": "user", "content": original_question}
+    ])
+    
+    return {"answer": response.content}
+
+workflow.add_node("order_tracking", order_tracking)
+workflow.add_node("generate_order_query", generate_order_query)
+workflow.add_node("execute_order_query", execute_order_query)
+workflow.add_node("synthesize_order_answer", synthesize_order_answer)
+
+workflow.add_edge("order_tracking","generate_order_query")
+workflow.add_edge("generate_order_query","execute_order_query")
+workflow.add_edge("execute_order_query","synthesize_order_answer")
+workflow.add_edge("synthesize_order_answer",END)
+
 
 #----------------------------- END ORDER TRACKING ---------------------------------------
-
 
 
 checkpointer = MemorySaver()
@@ -601,7 +785,7 @@ if __name__ == "__main__":
             input_payload = {"user_prompt": user_input,
                              "log_action":[],
                              "messages": [HumanMessage(content=user_input)]
-                             }
+                            }
             
             # 3. Invoke with config
             # usage of 'config' is CRITICAL for memory
