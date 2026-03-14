@@ -23,9 +23,9 @@ from langchain_core.runnables import RunnableConfig
 from pathlib import Path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
 load_dotenv()
-if not os.environ.get("GOOGLE_API_KEY"):
-    print("Warning: GOOGLE_API_KEY not found.")
+
 
 llm = init_chat_model(
     "llama-3.3-70b-versatile", 
@@ -532,8 +532,7 @@ def execute_product_query(state: MasterState) -> MasterState:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             print(f"[Executing SQL]: {query}") # Log for debugging
             if not query.lower().startswith(("select", "with")):
-                return {}
-
+                raise ValueError("Only SELECT queries allowed")
             cur.execute(query)
             
             if cur.description:
@@ -794,38 +793,38 @@ workflow.add_edge("synthesize_order_answer",END)
 checkpointer = MemorySaver()
 app = workflow.compile(checkpointer=checkpointer)
 
-if __name__ == "__main__":
-    print("===  AGENT STARTED ===")
-    print("Type 'exit' to quit.\n")
+# if __name__ == "__main__":
+#     print("===  AGENT STARTED ===")
+#     print("Type 'exit' to quit.\n")
 
-    # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
-    thread_id = "user-session-123"
-    config = {"configurable": {"thread_id": thread_id}}
+#     # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
+#     thread_id = "user-session-123"
+#     config = {"configurable": {"thread_id": thread_id}}
 
-    while True:
-        try:
-            user_input = input("User: ")
-            if user_input.lower() in ["exit", "quit"]:
-                break
+#     while True:
+#         try:
+#             user_input = input("User: ")
+#             if user_input.lower() in ["exit", "quit"]:
+#                 break
             
-            # 2. Prepare the input
-            # We ONLY send the new message. LangGraph automatically pulls 
-            # the *old* messages from memory because we provided the thread_id.
-            input_payload = {"user_prompt": user_input,
-                             "log_action":[],
-                             "messages": [HumanMessage(content=user_input)]
-                            }
+#             # 2. Prepare the input
+#             # We ONLY send the new message. LangGraph automatically pulls 
+#             # the *old* messages from memory because we provided the thread_id.
+#             input_payload = {"user_prompt": user_input,
+#                              "log_action":[],
+#                              "messages": [HumanMessage(content=user_input)]
+#                             }
             
-            # 3. Invoke with config
-            # usage of 'config' is CRITICAL for memory
-            result = app.invoke(input_payload, config=config)
+#             # 3. Invoke with config
+#             # usage of 'config' is CRITICAL for memory
+#             result = app.invoke(input_payload, config=config)
             
-            # Extract the final response
-            final_msg = result["answer"]
-            print(f"Assistant: {final_msg}\n")
+#             # Extract the final response
+#             final_msg = result["answer"]
+#             print(f"Assistant: {final_msg}\n")
             
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            # Optional: Print stack trace for debugging
-            import traceback
-            traceback.print_exc()
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             # Optional: Print stack trace for debugging
+#             import traceback
+#             traceback.print_exc()
