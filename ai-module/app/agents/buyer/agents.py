@@ -183,7 +183,7 @@ workflow.add_conditional_edges(
     {
         "product_search": "product_search",
         "policy_question": "policy_faq",
-        "order_track": END,
+        "order_tracking": "order_tracking",
         "general": "general",
         "mixed": END
     }
@@ -644,32 +644,32 @@ class OrderTrackingAction(Action):
 
 
 def order_tracking(state:MasterState) -> MasterState:
-    print("\n--- 🔀 Routing to Product search Agent ---")
+        print("\n--- 🔀 Routing to Order search Agent ---")
 
-    product_llm =  llm.with_structured_output(Order)
-    prompt = """
-    You are an AI assistance of ecommerce platform. You are beeing asked about some order to track order information for customer. 
-    For ease of search, you have to define some property base on customer latest query
+#     product_llm =  llm.with_structured_output(Order)
+#     prompt = """
+#     You are an AI assistance of ecommerce platform. You are beeing asked about some order to track order information for customer. 
+#     For ease of search, you have to define some property base on customer latest query
 
-    Example
-    User: "Is my newest order shipping"
-    -> des: newest, status: shipping
+#     Example
+#     User: "Is my newest order shipping"
+#     -> des: newest, status: shipping
 
-    User: "Is my order on yesterday succesfully set"
-    -> des: yesterday , status: shipping
+#     User: "Is my order on yesterday succesfully set"
+#     -> des: yesterday , status: shipping
 
-    User: "I just cancle my newest order, is it succesfully canceled"
-    -> des: newest , status: cancel
-    """
-    response = product_llm.invoke([
-        SystemMessage(content = prompt),
-        HumanMessage(state['user_prompt']),
-    ]
-    )
-    action = OrderTrackingAction().set_order(response)
-    state["log_action"] += [action]
-    print(f"Response: {response}")
-    return {}
+#     User: "I just cancle my newest order, is it succesfully canceled"
+#     -> des: newest , status: cancel
+#     """
+#     response = product_llm.invoke([
+#         SystemMessage(content = prompt),
+#         HumanMessage(state['user_prompt']),
+#     ]
+#     )
+        action = OrderTrackingAction()
+        state["log_action"] += [action]
+
+        return {}
 
 def generate_order_query(state: MasterState) ->MasterState:
     """Node 1: Translate user natural language to SQL with Semantic Expansion."""
@@ -679,31 +679,74 @@ def generate_order_query(state: MasterState) ->MasterState:
     if isinstance(action, OrderTrackingAction):
         order_model = action.get_order()
 
-
-    convert_prompt = f"""
-    Write a sql query to search for {order_model.des} order 
-    Which has status: {order_model.status}
-    Bought by user whose id is {state['customer_id']}
-    """
    
 
     # 1. We update the prompt to encourage synonym logic
     system_prompt = f"""You are a smart PostgreSQL expert .
     Your goal is generate correct and sufficient SQL query based on user question.
 
-    Example:
-    Human: "Write a sql query to search for newest order 
-    Which has status: Shipping
-    Bought by user whose id is 1
-    -> AI:
-    SELECT         
+    You are gonna return an SQL replace the user id as current user with template:
+        SELECT
+            o.order_id,
+            o.order_number,
+            o.status AS order_status,
+            o.subtotal,
+            o.shipping_fee,
+            o.tax_amount,
+            o.total_amount,
+            o.created_at AS order_created_at,
+
+            oi.order_item_id,
+            oi.product_name,
+            oi.sku,
+            oi.variant_description,
+            oi.quantity,
+            oi.unit_price,
+            oi.subtotal AS item_subtotal,
+
+            os.recipient_name,
+            os.phone,
+            os.address_line1,
+            os.city,
+            os.country,
+
+            op.payment_method,
+            op.payment_status,
+            op.amount AS payment_amount,
+            op.paid_at,
+
+            of.tracking_number,
+            of.carrier,
+            of.shipped_at,
+            of.delivered_at
+
+        FROM orders o
+
+        JOIN order_items oi 
+            ON o.order_id = oi.order_id
+
+        LEFT JOIN order_shipping os 
+            ON o.order_id = os.order_id
+
+        LEFT JOIN order_payments op 
+            ON o.order_id = op.order_id
+
+        LEFT JOIN order_fulfillment of 
+            ON o.order_id = of.order_id
+
+        WHERE o.user_id = 1
+
+        ORDER BY o.created_at DESC;
+    CRITICAL RULES:
+    _ Just return plain sql query, no special chatacter
     """
     
     result = llm.invoke([
-        SystemMessage(content =  system_prompt),
-        HumanMessage(content = convert_prompt)
+        SystemMessage(content = system_prompt)    ,
+        HumanMessage(content = f"I'm user has id = {state["customer_id"]}")
     ]
     )
+
     if isinstance(action, OrderTrackingAction):
         action.set_query(result.content)
 
@@ -793,38 +836,38 @@ workflow.add_edge("synthesize_order_answer",END)
 checkpointer = MemorySaver()
 app = workflow.compile(checkpointer=checkpointer)
 
-# if __name__ == "__main__":
-#     print("===  AGENT STARTED ===")
-#     print("Type 'exit' to quit.\n")
+if __name__ == "__main__":
+    print("===  AGENT STARTED ===")
+    print("Type 'exit' to quit.\n")
 
-#     # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
-#     thread_id = "user-session-123"
-#     config = {"configurable": {"thread_id": thread_id}}
+    # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
+    user_id = "1"
+    config = {"configurable": {"thread_id": user_id}}
 
-#     while True:
-#         try:
-#             user_input = input("User: ")
-#             if user_input.lower() in ["exit", "quit"]:
-#                 break
+    while True:
+        try:
+            user_input = input("User: ")
+            if user_input.lower() in ["exit", "quit"]:
+                break
             
-#             # 2. Prepare the input
-#             # We ONLY send the new message. LangGraph automatically pulls 
-#             # the *old* messages from memory because we provided the thread_id.
-#             input_payload = {"user_prompt": user_input,
-#                              "log_action":[],
-#                              "messages": [HumanMessage(content=user_input)]
-#                             }
+            # 2. Prepare the input
+            # We ONLY send the new message. LangGraph automatically pulls 
+            # the *old* messages from memory because we provided the thread_id.
+            input_payload = {"user_prompt": user_input,
+                             "log_action":[],
+                             "messages": [HumanMessage(content=user_input)]
+                            }
             
-#             # 3. Invoke with config
-#             # usage of 'config' is CRITICAL for memory
-#             result = app.invoke(input_payload, config=config)
+            # 3. Invoke with config
+            # usage of 'config' is CRITICAL for memory
+            result = app.invoke(input_payload, config=config)
             
-#             # Extract the final response
-#             final_msg = result["answer"]
-#             print(f"Assistant: {final_msg}\n")
+            # Extract the final response
+            final_msg = result["answer"]
+            print(f"Assistant: {final_msg}\n")
             
-#         except Exception as e:
-#             print(f"An error occurred: {e}")
-#             # Optional: Print stack trace for debugging
-#             import traceback
-#             traceback.print_exc()
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            # Optional: Print stack trace for debugging
+            import traceback
+            traceback.print_exc()

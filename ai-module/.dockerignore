@@ -40,3 +40,8 @@ yarn-error.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+
+# Testing
+.pytest_cache
+.deepeval
