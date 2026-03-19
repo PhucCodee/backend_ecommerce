@@ -1,10 +1,6 @@
 #agent.py
 
-from email import message
-import enum
-from itertools import product
 import os
-from re import S
 from dotenv import load_dotenv
 from typing import Annotated, Literal, List, Dict, Any, Tuple
 from typing_extensions import TypedDict
@@ -54,12 +50,13 @@ class MasterState(TypedDict):
     user_prompt: str
     answer: str
     log_action: List[Action]
+    notification:str
     intent: str
     customer_id: str
 
 class IntentOutput(BaseModel):
     """Classify user intent."""
-    intent: Literal["policy_question", "product_search", "general", "order_tracking","mixed"] = Field(
+    intent: Literal["policy_question", "product_search", "general", "order_tracking"] = Field(
         ...,
         description="The appropriate expert to handle the query."
     )
@@ -96,7 +93,7 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         - "Find me a keyboard"
         - "Do you have any shirts"
 
-    2. "order_track"
+    2. "order_tracking"
     - User is asking about a specific order.
     - Includes:
         - Order status
@@ -135,13 +132,6 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         - "You're helpful"
         - "What’s your name?"
 
-    5. "mixed"
-    - The message clearly contains more than one of the above intents.
-    - Example:
-        - "Can I return the shoes I bought last week?"
-        (Requires order lookup + return policy)
-
-    -.
     """
     message = state['user_prompt']
     intent_llm = llm.with_structured_output(IntentOutput)
@@ -355,7 +345,7 @@ class Product(BaseModel):
     """A look up product information before searching in database"""
     name:str = Field(..., description = "Name of the product")
     des:str= Field(..., description = "Description of the product, may have some adjective words")
-    price: Tuple[Literal["less","equal","greater","unknown","ask"],int] = Field(..., description = """The price of the product ("Less",100), ("Unknown",0), ("ask",0)""")
+    price: Tuple[Literal["less","equal","greater","unknown","ask"],int] = Field(..., description = """The price of the product ("less",100), ("unknown",0), ("ask",0)""")
 
 class ProductRes(BaseModel):
     """Product results after execute sql query"""
@@ -417,14 +407,13 @@ def product_search(state:MasterState) -> MasterState:
     User: "I want to buy a jacket which is waterproof and less than 50 usd"
     -> name: jacket, price: (less,50), des: waterproof
 
-    User: "I want to buy a jacket which is waterproof and less than 50 usd"
-    -> name: jacket, price: (less,50), des: waterproof
-
     User: "How much is the Minimal Logo Tee"
     -> name: Minimal Logo Tee, price: (ask,0), des: Minimal Logo
 
+    User: "Show me a winter coat exactly $150"
+    -> name: coat, price: (equal,150), des: winter
+    
     You may look at the previous query to get the context
-
     Example
     User: "Do you have any red shirts"
     AI: <some recommendations given>
@@ -439,8 +428,10 @@ def product_search(state:MasterState) -> MasterState:
     )
     action = ProductSearchAction().set_product(response)
     state["log_action"] += [action]
+
     print(f"Response: {response}")
-    return {}
+
+    return {"log_action": state["log_action"]}
 
 def generate_product_query(state: MasterState) ->MasterState:
     """Node 1: Translate user natural language to SQL with Semantic Expansion."""
