@@ -25,7 +25,7 @@ public static class ImageHelper
                 ThumbnailUrl = img.ThumbnailUrl ?? img.ImageUrl,
                 AltText = img.AltText ?? altText,
                 DisplayOrder = img.DisplayOrder ?? i + 1,
-                IsPrimary = false,
+                IsPrimary = (i == 0), // make first image primary
                 IsDeleted = false,
                 UpdatedAt = DateTime.UtcNow
             });

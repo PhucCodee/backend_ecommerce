@@ -11,34 +11,33 @@ post {
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6IjY0YTM5YTZjLWY1YzMtNDQ1MS05MTg0LWM1OWFkYWZmMThiZiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3NzI5MDIyNTYsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.39Tn43k9mmmXpMaYdMPEqxLZvPgg-VeSSfbK4IMuqbI
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6IjUyZDExNTNhLWUyMDItNDM0ZC04NmRmLTJiZWI1MmJiOTQyMCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3NzQxNzQ0NzEsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.kEIv3ykXFKjPQCyCcSEGzGZeu5GoSzwhqYaFC0iTJ6Q
 }
 
 body:json {
   {
-    "productId": 23,
-    "variantAttributes": "{\"color\":\"red\",\"size\":\"L\"}",
-    "price": 99.99,
-    "costPrice": 70.00,
-    "compareAtPrice": 120.00,
-    "stock": 50,
-    "isDefault": false,
-    "weightKg": 0.5,
-    "dimensionsCm": "10x20x5",
+      "productId": 1,
+      "variantAttributes": "{\"size\":\"L\",\"color\":\"black\"}",
+      "price": 24.99,
+      "costPrice": 12.50,
+      "compareAtPrice": 29.99,
+      "weightKg": 0.26,
+      "dimensionsCm": "30x25x2",
+      "stock": 50,
       "images": [
-      {
-        "imageUrl": "https://example.com/image3.jpg",
-        "altText": "Image 3",
-        "isPrimary": true,
-        "displayOrder": 1
-      },
-      {
-        "imageUrl": "https://example.com/image4.jpg",
-        "altText": "Image 4",
-        "isPrimary": false,
-        "displayOrder": 2
-      }
-    ]
+        {
+          "imageUrl": "https://tshirt-front.com",
+          "thumbnailUrl": "https://tshirt-front.com",
+          "altText": "Front view",
+          "displayOrder": 1
+        },
+        {
+          "imageUrl": "https://tshirt-back.com",
+          "thumbnailUrl": null,
+          "altText": "Back view",
+          "displayOrder": 2
+        }
+      ]
   }
 }
 

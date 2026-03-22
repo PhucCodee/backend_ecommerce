@@ -44,7 +44,7 @@ public partial class UserProfile
             UserId = user.UserId,
             FirstName = firstName,
             LastName = lastName,
-            Phone = phone?.Trim() ?? "",
+            Phone = phone,
             Gender = UserGender.male,
             PreferredLanguage = Language.vi,
             PreferredCurrency = Currency.vnd,
