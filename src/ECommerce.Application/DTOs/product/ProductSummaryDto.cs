@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 namespace ECommerce.Application.DTOs.product
 {
     public class ProductSummaryDto
@@ -6,11 +7,12 @@ namespace ECommerce.Application.DTOs.product
         public required string Name { get; set; }
         public required string Slug { get; set; }
         public string? Brand { get; set; }
-        public string? CategoryName { get; set; }
-        public decimal Price { get; set; }           // From default SKU
-        public decimal? CompareAtPrice { get; set; } // For "was $X, now $Y" display
-        public bool InStock { get; set; }            // Simple boolean instead of count
-        public string? ThumbnailUrl { get; set; }    // First image of default SKU
-        public int VariantCount { get; set; }        // "Available in 5 variants"
+        public string? PrimaryCategoryName { get; set; }
+        public List<string> CategoryNames { get; set; } = [];
+        public decimal Price { get; set; }
+        public decimal? CompareAtPrice { get; set; }
+        public bool InStock { get; set; }
+        public string? ThumbnailUrl { get; set; }
+        public int VariantCount { get; set; }
     }
 }

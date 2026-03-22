@@ -10,16 +10,6 @@ namespace ECommerce.Infrastructure.Repositories
 {
     public class CategoryRepository(ApplicationDbContext context) : Repository<Category>(context), ICategoryRepository
     {
-        public async Task<IEnumerable<Category>> GetAllActiveAsync()
-        {
-            return await _context.Categories
-                .Include(c => c.ParentCategory)
-                .Where(c => c.IsActive)
-                .OrderBy(c => c.DisplayOrder)
-                .ThenBy(c => c.CategoryName)
-                .ToListAsync();
-        }
-
         public async Task<Category?> GetBySlugAsync(string slug)
         {
             return await _context.Categories
@@ -40,6 +30,25 @@ namespace ECommerce.Infrastructure.Repositories
         {
             var query = _context.Categories
                 .Include(c => c.ParentCategory)
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.DisplayOrder)
+                .ThenBy(c => c.CategoryName);
+
+            var totalCount = await query.CountAsync();
+
+            var categories = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (categories, totalCount);
+        }
+
+        public async Task<(IEnumerable<Category> Categories, int TotalCount)> GetCoreCategoriesPagedAsync(int pageNumber, int pageSize)
+        {
+            var query = _context.Categories
+                .Include(c => c.ParentCategory)
+                .Where(c => c.IsActive && c.IsCore)
                 .OrderBy(c => c.DisplayOrder)
                 .ThenBy(c => c.CategoryName);
 

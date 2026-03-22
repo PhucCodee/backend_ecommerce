@@ -1,12 +1,13 @@
 using System;
+using System.Collections.Generic;
+using ECommerce.Application.DTOs.category;
 
 namespace ECommerce.Application.DTOs.product
 {
     public class ProductDto
     {
         public int Id { get; set; }
-        public int CategoryId { get; set; }
-        public string? CategoryName { get; set; }
+        public List<CategorySimpleDto> Categories { get; set; } = [];
         public int SellerId { get; set; }
         public string? SellerName { get; set; }
         public required string Name { get; set; }

@@ -11,20 +11,28 @@ put {
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ5ZUBnbWFpbC5jb20iLCJqdGkiOiIxNGNiZjQ3Zi1mNDcyLTQzZWUtOTExNy05OTQ3ZjEzN2FmMjEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImV4cCI6MTc3MjkwMjg1MywiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.hu860-h6xRnRRvd7wdvRzsjzTGSLBtnjcxuq-cyhpyc
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ5ZUBnbWFpbC5jb20iLCJqdGkiOiJmYzEzYzFmYy1hODM3LTQ0NzktYmQ1NS02MWM5ZDBjN2UzNWQiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImV4cCI6MTc3Mjk1NDY0MCwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.d-2XJIPrD3jptnM_rC1TnraB6roBmkbVMcuDssP781M
 }
 
 body:json {
   {
       "images": [
       {
-        "id": 
+        "imageUrl": "https://example.com/image5.jpg",
+        "altText": "Image 5",
+        "isPrimary": true
+      },
+      {      
+        "imageUrl": "https://example.com/image6.jpg",
+        "altText": "Image 6",
+        "isPrimary": true
       },
       {
+        "id": 2,
         "imageUrl": "https://example.com/image4.jpg",
         "altText": "Image 4",
         "isPrimary": false,
-        "displayOrder": 2
+        "displayOrder": 4
       }
     ]
   }

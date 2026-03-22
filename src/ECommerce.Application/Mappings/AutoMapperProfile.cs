@@ -42,7 +42,14 @@ namespace ECommerce.Application.Mappings
             CreateMap<Product, ProductDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProductId))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ProductName))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null))
+                .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>
+                    src.ProductCategories
+                        .Select(pc => new CategorySimpleDto
+                        {
+                            CategoryId = pc.CategoryId,
+                            CategoryName = pc.Category.CategoryName,
+                            IsPrimary = pc.IsPrimary
+                        }).ToList()))
                 .ForMember(dest => dest.SellerName, opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null))
                 .ForMember(dest => dest.Sku, opt => opt.MapFrom(src =>
                     src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null
@@ -72,7 +79,15 @@ namespace ECommerce.Application.Mappings
             CreateMap<Product, ProductSummaryDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProductId))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ProductName))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null))
+                .ForMember(dest => dest.PrimaryCategoryName, opt => opt.MapFrom(src =>
+                    src.ProductCategories
+                        .Where(pc => pc.IsPrimary)
+                        .Select(pc => pc.Category.CategoryName)
+                        .FirstOrDefault()))
+                .ForMember(dest => dest.CategoryNames, opt => opt.MapFrom(src =>
+                    src.ProductCategories
+                        .Select(pc => pc.Category.CategoryName)
+                        .ToList()))
                 .ForMember(dest => dest.VariantCount, opt => opt.MapFrom(src =>
                     src.ProductSkus.Count(ps => !ps.IsDefault)))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
@@ -96,7 +111,11 @@ namespace ECommerce.Application.Mappings
             CreateMap<Product, ProductDetailDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProductId))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ProductName))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src =>
+                    src.ProductCategories
+                        .Where(pc => pc.IsPrimary)
+                        .Select(pc => pc.Category.CategoryName)
+                        .FirstOrDefault()))
                 .ForMember(dest => dest.SellerName, opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null))
                 .ForMember(dest => dest.VariantCount, opt => opt.MapFrom(src =>
                     src.ProductSkus.Count(ps => !ps.IsDefault)))

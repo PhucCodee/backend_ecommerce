@@ -48,7 +48,10 @@ namespace ECommerce.Application.Services
                     Name = p.ProductName,
                     Slug = p.Slug,
                     Brand = p.Brand,
-                    CategoryName = p.Category != null ? p.Category.CategoryName : null,
+                    PrimaryCategoryName = p.ProductCategories
+                        .Where(pc => pc.IsPrimary)
+                        .Select(pc => pc.Category.CategoryName)
+                        .FirstOrDefault(),
                     Price = p.ProductSkus
                         .Where(s => s.IsDefault)
                         .Select(s => s.Price)
@@ -78,7 +81,8 @@ namespace ECommerce.Application.Services
             _context.Products
                 .AsNoTracking()
                 .Where(p => p.RemovedAt == null)
-                .Include(p => p.Category)
+                .Include(p => p.ProductCategories)
+                    .ThenInclude(pc => pc.Category)
                 .Include(p => p.Seller)
                 .Include(p => p.ProductSkus)
                     .ThenInclude(sku => sku.Inventory)
@@ -96,7 +100,7 @@ namespace ECommerce.Application.Services
                 query = query.Where(x => x.ProductSkus.Any(s => s.IsDefault && s.Price <= p.MaxPrice.Value));
 
             if (p.CategoryId.HasValue)
-                query = query.Where(x => x.CategoryId == p.CategoryId.Value);
+                query = query.Where(x => x.ProductCategories.Any(pc => pc.CategoryId == p.CategoryId.Value));
 
             if (!string.IsNullOrWhiteSpace(p.Brand))
                 query = query.Where(x => x.Brand != null && x.Brand.ToLower().Contains(p.Brand.ToLower()));

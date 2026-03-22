@@ -4,6 +4,7 @@ using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
@@ -14,7 +15,8 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context.Products
                 .Where(p => p.RemovedAt == null)
-                .Include(p => p.Category)
+                .Include(p => p.ProductCategories)
+                    .ThenInclude(pc => pc.Category)
                 .Include(p => p.Seller)
                 .Include(p => p.ProductSkus)
                     .ThenInclude(sku => sku.Inventory)

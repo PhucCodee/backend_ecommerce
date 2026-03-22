@@ -8,10 +8,9 @@ namespace ECommerce.Application.Interfaces
     public interface ICategoryService
     {
         Task<CategoryDto> GetByIdAsync(int categoryId);
-        Task<CategoryDto?> GetBySlugAsync(string slug);
-        Task<IEnumerable<CategoryDto>> GetAllAsync();
-        Task<IEnumerable<CategoryDto>> GetAllActiveAsync();
+        Task<CategoryDto> GetBySlugAsync(string slug);
         Task<PagedResult<CategoryDto>> GetAllPagedAsync(PaginationParams paginationParams);
+        Task<PagedResult<CategoryDto>> GetCoreCategoriesPagedAsync(PaginationParams paginationParams);
         Task<IEnumerable<CategoryDto>> GetChildCategoriesAsync(int parentId);
         Task<CategoryDto> CreateAsync(CategoryCreateDto createDto);
         Task<CategoryDto> UpdateAsync(int categoryId, CategoryUpdateDto updateDto);

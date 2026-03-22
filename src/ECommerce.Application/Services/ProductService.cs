@@ -31,11 +31,19 @@ namespace ECommerce.Application.Services
                 slug: slug,
                 baseSku: baseSku,
                 sellerId: sellerId,
-                categoryId: createDto.CategoryId == 0 ? 1 : createDto.CategoryId,
                 description: createDto.Description,
                 brand: createDto.Brand,
                 weightKg: createDto.WeightKg,
                 dimensionsCm: createDto.DimensionsCm);
+
+            foreach (var (catId, index) in createDto.CategoryIds.Select((id, i) => (id, i)))
+            {
+                product.ProductCategories.Add(new ProductCategory
+                {
+                    CategoryId = catId,
+                    IsPrimary = index == 0  // first one is primary
+                });
+            }
 
             var defaultSku = ProductSku.CreateDefault(product, $"{baseSku}-DEFAULT", createDto.DefaultSkuPrice);
             defaultSku.Inventory = Inventory.CreateDefault(defaultSku, createDto.DefaultSkuStock);
@@ -44,7 +52,10 @@ namespace ECommerce.Application.Services
             await _productRepository.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<ProductDto>(product);
+            var created = await _productRepository.GetByIdWithDetailsAsync(product.ProductId)
+                ?? throw new NotFoundException("Product not found");
+
+            return _mapper.Map<ProductDto>(created);
         }
 
         public async Task<ProductDto> UpdateAsync(int productId, ProductUpdateDto updateDto, int? sellerId = null)
@@ -57,8 +68,15 @@ namespace ECommerce.Application.Services
             var uniqueSlug = await ResolveSlugAsync(updateDto, productId);
             ApplyUpdates(product, updateDto, uniqueSlug);
 
+            if (updateDto.CategoryIds != null)
+                ReplaceProductCategories(product, updateDto.CategoryIds);
+
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<ProductDto>(product);
+
+            var loaded = await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            return _mapper.Map<ProductDto>(loaded);
         }
 
         public async Task<bool> DeleteAsync(int productId, int? sellerId = null)
@@ -118,13 +136,36 @@ namespace ECommerce.Application.Services
             if (!string.IsNullOrWhiteSpace(updateDto.Name)) product.ProductName = updateDto.Name;
             if (uniqueSlug != null) product.Slug = uniqueSlug;
             if (updateDto.Description != null) product.Description = updateDto.Description;
-            if (updateDto.CategoryId is > 0) product.CategoryId = updateDto.CategoryId.Value;
             if (updateDto.Brand != null) product.Brand = updateDto.Brand;
             if (updateDto.WeightKg.HasValue) product.WeightKg = updateDto.WeightKg;
             if (updateDto.DimensionsCm != null) product.DimensionsCm = updateDto.DimensionsCm;
             if (Enum.TryParse<ProductStatus>(updateDto.Status, true, out var status)) product.Status = status;
 
             product.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private static void ReplaceProductCategories(Product product, List<int> categoryIds)
+        {
+            if (categoryIds.Count == 0)
+                throw new BadRequestException("At least one category is required");
+
+            var orderedDistinctIds = categoryIds.Distinct().ToList();
+            var primaryId = orderedDistinctIds[0];
+            var desired = orderedDistinctIds.ToHashSet();
+
+            // remove missing (deletes join rows)
+            var toRemove = product.ProductCategories.Where(pc => !desired.Contains(pc.CategoryId)).ToList();
+            foreach (var pc in toRemove) product.ProductCategories.Remove(pc);
+
+            // add new
+            var existing = product.ProductCategories.Select(pc => pc.CategoryId).ToHashSet();
+            foreach (var id in orderedDistinctIds)
+                if (!existing.Contains(id))
+                    product.ProductCategories.Add(new ProductCategory { CategoryId = id });
+
+            // enforce primary
+            foreach (var pc in product.ProductCategories)
+                pc.IsPrimary = pc.CategoryId == primaryId;
         }
 
         #endregion

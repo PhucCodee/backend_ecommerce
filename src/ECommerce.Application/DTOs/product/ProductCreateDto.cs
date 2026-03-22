@@ -13,8 +13,9 @@ namespace ECommerce.Application.DTOs.product
         [MaxLength(1000)]
         public string? Description { get; set; }
 
-        [Range(1, int.MaxValue)]
-        public int CategoryId { get; set; }
+        [Required]
+        [MinLength(1, ErrorMessage = "At least one category is required")]
+        public List<int> CategoryIds { get; set; } = [];
 
         [MaxLength(100)]
         public string? Brand { get; set; }

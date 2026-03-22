@@ -15,7 +15,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(p => p.ProductId).HasColumnName("product_id");
 
             builder.Property(p => p.SellerId).HasColumnName("seller_id");
-            builder.Property(p => p.CategoryId).HasColumnName("category_id");
 
             builder.Property(p => p.ProductName)
                 .IsRequired()
@@ -96,7 +95,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.HasIndex(p => p.Slug).IsUnique();
             builder.HasIndex(p => p.BaseSku).IsUnique();
             builder.HasIndex(p => p.SellerId);
-            builder.HasIndex(p => p.CategoryId);
             builder.HasIndex(p => p.Status);
             builder.HasIndex(p => p.ProductName);
             builder.HasIndex(p => p.Brand);
@@ -105,11 +103,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.HasOne(p => p.Seller)
                 .WithMany(u => u.Products)
                 .HasForeignKey(p => p.SellerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(p => p.Category)
-                .WithMany(c => c.Products)
-                .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(p => p.ProductSkus)

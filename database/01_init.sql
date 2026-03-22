@@ -205,6 +205,7 @@ CREATE TABLE
         description TEXT,
         image_url VARCHAR(500),
         display_order INTEGER NOT NULL DEFAULT 0,
+        is_core BOOLEAN NOT NULL DEFAULT TRUE,
         is_active BOOLEAN NOT NULL DEFAULT TRUE,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -222,7 +223,6 @@ CREATE TABLE
     products (
         product_id SERIAL PRIMARY KEY,
         seller_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-        category_id INTEGER NOT NULL REFERENCES categories (category_id) ON DELETE RESTRICT,
         product_name VARCHAR(255) NOT NULL,
         slug VARCHAR(255) UNIQUE NOT NULL,
         base_sku VARCHAR(100) UNIQUE NOT NULL,
@@ -256,6 +256,13 @@ CREATE INDEX trgm_idx_products_name ON products USING gin (product_name gin_trgm
 
 -- (Optional) Add this if you want to fuzzy search descriptions too
 CREATE INDEX trgm_idx_products_desc ON products USING gin (description gin_trgm_ops);
+
+CREATE TABLE product_categories (
+    product_id INTEGER NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES categories(category_id) ON DELETE RESTRICT,
+    is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (product_id, category_id)
+);
 
 -- Product SKUs table (actual sellable items)
 -- Represents individual sellable variations of a product

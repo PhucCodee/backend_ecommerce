@@ -29,27 +29,32 @@ namespace ECommerce.Application.Services
             return _mapper.Map<CategoryDto>(category);
         }
 
-        public async Task<CategoryDto?> GetBySlugAsync(string slug)
+        public async Task<CategoryDto> GetBySlugAsync(string slug)
         {
-            var category = await _categoryRepository.GetBySlugAsync(slug);
-            return category != null ? _mapper.Map<CategoryDto>(category) : null;
-        }
+            var category = await _categoryRepository.GetBySlugAsync(slug)
+                ?? throw new NotFoundException("Category not found");
 
-        public async Task<IEnumerable<CategoryDto>> GetAllAsync()
-        {
-            var categories = await _categoryRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories);
-        }
-
-        public async Task<IEnumerable<CategoryDto>> GetAllActiveAsync()
-        {
-            var categories = await _categoryRepository.GetAllActiveAsync();
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories);
+            return _mapper.Map<CategoryDto>(category);
         }
 
         public async Task<PagedResult<CategoryDto>> GetAllPagedAsync(PaginationParams paginationParams)
         {
             var (categories, totalCount) = await _categoryRepository.GetPagedAsync(
+                paginationParams.PageNumber,
+                paginationParams.PageSize);
+
+            var categoryDtos = _mapper.Map<IEnumerable<CategoryDto>>(categories);
+
+            return PagedResult<CategoryDto>.Create(
+                categoryDtos,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount);
+        }
+
+        public async Task<PagedResult<CategoryDto>> GetCoreCategoriesPagedAsync(PaginationParams paginationParams)
+        {
+            var (categories, totalCount) = await _categoryRepository.GetCoreCategoriesPagedAsync(
                 paginationParams.PageNumber,
                 paginationParams.PageSize);
 
@@ -93,6 +98,7 @@ namespace ECommerce.Application.Services
                 description: createDto.Description,
                 imageUrl: createDto.ImageUrl,
                 displayOrder: createDto.DisplayOrder,
+                isCore: createDto.IsCore,
                 isActive: createDto.IsActive);
 
             await _categoryRepository.AddAsync(category);
@@ -161,6 +167,9 @@ namespace ECommerce.Application.Services
 
             if (updateDto.DisplayOrder.HasValue)
                 category.DisplayOrder = updateDto.DisplayOrder.Value;
+
+            if (updateDto.IsCore.HasValue)
+                category.IsCore = updateDto.IsCore.Value;
 
             if (updateDto.IsActive.HasValue)
                 category.IsActive = updateDto.IsActive.Value;

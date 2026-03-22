@@ -11,15 +11,19 @@ post {
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6IjY4NmRmMzZkLTNlNzEtNDU2OC04MjEzLTkwZGJjMDA1ODVjYSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3NzI5MDA3NDUsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.PO_nOqirCc607ktVfh_jO2LGNQdaxuGSSang3faH0yk
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6ImFlMGIwMjkyLWM3NzYtNGMzNC1iY2I1LWZlMzZkOWNjNjRlOSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3NzQxNjU5MjQsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.-0gJH87gVozmgCi1PBaqggCRG_KWGrhExbt9c6Z1TvM
 }
 
 body:json {
   {
-    "name": "Seller Product",
-    "description": "Seller's product description",
-    "categoryId": 2,
-    "defaultSkuPrice": 100
+      "name": "Classic Crew T-Shirt",
+      "description": "Everyday cotton crew tee",
+      "categoryIds": [1, 12],
+      "brand": "CurryWear",
+      "weightKg": 0.25,
+      "defaultSkuPrice": 19.99,
+      "defaultSkuStock": 200,
+      "dimensionsCm": "30x25x2"
   }
 }
 
