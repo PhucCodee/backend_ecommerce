@@ -1,0 +1,33 @@
+﻿# --- Web Framework & Server ---
+fastapi
+uvicorn
+pydantic
+python-multipart
+
+# --- LangChain & AI Core ---
+langchain
+langchain-core
+langchain-community
+langgraph
+python-dotenv
+typing-extensions
+
+# --- AI Model Providers ---
+langchain-groq           # Chạy llama-3.3-70b-versatile
+langchain-google-genai   # Chạy text-embedding-004
+
+# --- Database & Vector Search ---
+psycopg2-binary          # Kết nối PostgreSQL (SQL Agent)
+chromadb                 # Vector database (RAG Agent)
+langchain-chroma         # Tích hợp Chroma với LangChain
+
+# --- Utilities ---
+uuid                     # (Thư viện chuẩn, nhưng liệt kê để đảm bảo)
+
+
+jwt
+
+email-validator
+
+pypdf
+

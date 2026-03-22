@@ -13,8 +13,8 @@ from pydantic import BaseModel, Field
 
 # --- Import your compiled graphs ---
 # Make sure sql_agent.py and rag_agent.py represent the filenames exactly
-from sql_agent import sql_graph
-from rag_agent import rag_agent as rag_graph 
+from .sql_agent import sql_graph
+from .rag_agent import rag_agent as rag_graph 
 
 from langgraph.checkpoint.memory import MemorySaver
 
