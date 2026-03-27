@@ -19,6 +19,7 @@ from langchain_core.runnables import RunnableConfig
 from pathlib import Path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import operator
 
 load_dotenv()
 
@@ -30,7 +31,7 @@ llm = init_chat_model(
 )
 
 class Action(ABC):
-    def __init__(self, intent: Literal["policy_question", "product_search", "general", "order_tracking","mixed"],
+    def __init__(self, intent: Literal["policy_question", "product_search", "general", "order_tracking"],
                  user_prompt: str = "",
                  answer:str = ""):
         self.intent = intent
@@ -49,7 +50,7 @@ class MasterState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     user_prompt: str
     answer: str
-    log_action: List[Action]
+    log_action: Annotated[List[Action], operator.add]
     notification:str
     intent: str
     customer_id: str
@@ -81,9 +82,31 @@ class GeneralAction(Action):
 
 def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
     user_id = config["configurable"].get("thread_id")
+
+    chat_history = [
+        msg for msg in state["messages"] 
+        if isinstance(msg, (HumanMessage, AIMessage))
+    ]
+    # Lấy 5 tin nhắn gần nhất để tránh tràn token và giảm nhiễu
+    recent_history = chat_history[-5:] 
+    
+    # Format lịch sử thành một chuỗi text dễ đọc cho LLM
+    history_text = "\n".join([
+        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" 
+        for msg in recent_history[:-1] # Trừ câu cuối cùng (câu hiện tại) ra
+    ])
+    
+    if not history_text:
+        history_text = "This is the start of conversation"
+
     prompt = """
     You are an intent classification engine for a production e-commerce AI system.
-    Your ONLY task is to classify the user's latest message into ONE of the predefined intent categories.
+    Your ONLY task is to classify the user's LATEST message into ONE of the predefined intent categories based on the conversation context.
+
+    ---------------------------------------
+    CONVERSATION CONTEXT (Recent History):
+    {history_text}
+    ---------------------------------------
 
     ---------------------------------------
     INTENT CATEGORIES
@@ -137,6 +160,20 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         - "You're helpful"
         - "What’s your name?"
 
+    CRITICAL RULE:
+    If the latest message is a short follow-up (e.g., "what about blue?", "cheaper", "how much is it?"), you MUST infer the intent from the CONVERSATION CONTEXT.
+    Example: 
+    - Context: User asked for jackets -> AI recommended jackets.
+    - Latest message: "do you have them in black?"
+    - Intent: "product_search"
+
+    ---------------------------------------
+    INTENT CATEGORIES
+    ---------------------------------------
+    1. "product_search": Looking for products, specific items, or modifying a previous product search.
+    2. "order_tracking": Asking about order status, shipping updates, cancellations, or refunds for a specific order.
+    3. "policy_question": Asking about store policies, rules, returns, payments, or general support.
+    4. "general": Greetings, small talk, compliments, or unrelated questions.    
     """
     message = state['user_prompt']
     intent_llm = llm.with_structured_output(IntentOutput)
@@ -179,8 +216,7 @@ workflow.add_conditional_edges(
         "product_search": "product_search",
         "policy_question": "policy_faq",
         "order_tracking": "order_tracking",
-        "general": "general",
-        "mixed": END
+        "general": "general"
     }
 )
 
@@ -339,12 +375,14 @@ def get_db_connection():
     except Exception as e:
         print(f"Database Connection Failed: {e}")
         return None
+    
 DB_HOST = os.getenv("DB_HOST", "localhost") 
 DB_NAME = os.getenv("DB_NAME", "database")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASS = os.getenv("DB_PASSWORD", "123")
+DB_USER = os.getenv("DB_USER", "chatbot_user")
+DB_PASS = os.getenv("DB_PASSWORD", "chatbot")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
+conn = get_db_connection()
 
 class Product(BaseModel):
     """A look up product information before searching in database"""
@@ -400,30 +438,52 @@ class ProductSearchAction(Action):
 def product_search(state:MasterState) -> MasterState:
     print("\n--- 🔀 Routing to Product search Agent ---")
 
+    chat_history = [
+        msg for msg in state["messages"] 
+        if isinstance(msg, (HumanMessage, AIMessage))
+    ]
+    # Lấy 5 tin nhắn gần nhất để làm context
+    recent_history = chat_history[-5:] 
+    
+    history_text = "\n".join([
+        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" 
+        for msg in recent_history[:-1] # Bỏ câu hiện tại ra
+    ])
+    
+    if not history_text:
+        history_text = "This is the start of the conversation."
+
     product_llm =  llm.with_structured_output(Product)
     prompt = """
     You are an AI assistance of ecommerce platform. You are beeing asked about some product search to recommend for customer. 
     For ease of search, you have to define some property base on customer latest query
 
-    Example
-    User: "Do you have any red shirts"
-    -> name: shirt, price: (unknown,0), des: red
+   ---------------------------------------
+    CONVERSATION CONTEXT (Recent History):
+    {history_text}
+    ---------------------------------------
 
+    CRITICAL INSTRUCTIONS:
+    - If the user's latest query is a continuation or modification (e.g., "how about blue?", "cheaper ones", "waterproof please"), you MUST look at the CONTEXT to determine the base product name and merge it with the new requirements.
+
+    Example 1 (Direct Query):
+    User: "Do you have any red shirts"
+    -> name: shirt, price: ("unknown",0), des: red
+
+    Example 2 (Price Condition):
     User: "I want to buy a jacket which is waterproof and less than 50 usd"
-    -> name: jacket, price: (less,50), des: waterproof
+    -> name: jacket, price: ("less",50), des: waterproof
 
+    Example 3 (Contextual Follow-up):
+    Context: 
+    User: "Do you have any shirts?"
+    AI: "We have basic tees and crew shirts."
+    Latest Query: "But i want them in blue and cheaper than $20"
+    -> name: shirt, price: ("less",20), des: blue
+
+    Example 4 (Ask Price):
     User: "How much is the Minimal Logo Tee"
-    -> name: Minimal Logo Tee, price: (ask,0), des: Minimal Logo
-
-    User: "Show me a winter coat exactly $150"
-    -> name: coat, price: (equal,150), des: winter
-    
-    You may look at the previous query to get the context
-    Example
-    User: "Do you have any red shirts"
-    AI: <some recommendations given>
-    User: "But i want them in blue and cheaper"
-    -> name: shirt, price: (less,<price of last recommendation>), des: blue
+    -> name: Minimal Logo Tee, price: ("ask",0), des: Minimal Logo
 
     """
     response = product_llm.invoke([
@@ -517,7 +577,7 @@ def execute_product_query(state: MasterState) -> MasterState:
     query = ""
     if isinstance(action, ProductSearchAction):
         query = action.get_query()
-    conn = get_db_connection()
+    
 
     print(f"Executing query: \n{query}\n")
     if not conn:
@@ -537,6 +597,7 @@ def execute_product_query(state: MasterState) -> MasterState:
                 clean_results = [dict(row) for row in results]
             else:
                 clean_results = [{"status": "Query executed successfully (no return data)"}]
+            print(f"Clean result: {clean_results}")
             if isinstance(action,ProductSearchAction):    
                 action.set_product_res(clean_results)
             print(f"Data resutls : {clean_results}")
@@ -739,7 +800,7 @@ def generate_order_query(state: MasterState) ->MasterState:
     
     result = llm.invoke([
         SystemMessage(content = system_prompt)    ,
-        HumanMessage(content = f"I'm user has id = {state["customer_id"]}")
+        HumanMessage(content = f"I'm user has id = {state['customer_id']} ")
     ]
     )
 
@@ -754,7 +815,7 @@ def execute_order_query(state: MasterState) -> MasterState:
     query = ""
     if isinstance(action, OrderTrackingAction):
         query = action.get_query()
-    conn = get_db_connection()
+    
 
     print(f"Executing query: \n{query}\n")
     if not conn:

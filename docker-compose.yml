@@ -39,11 +39,11 @@ services:
     #     volumes:
     #         - redis_data:/data
 
-    message_broker:
-        image: rabbitmq:3-management
-        ports:
-            - "5672:5672"
-            - "15672:15672"
+    # message_broker:
+    #     image: rabbitmq:3-management
+    #     ports:
+    #         - "5672:5672"
+    #         - "15672:15672"
             
     chatbot_api:
         build:
@@ -57,7 +57,7 @@ services:
         environment:
         - DB_HOST=db
         - DB_NAME=database
-        - DB_USER=postgres
+        - DB_USER=chatbot_user
         - DB_PASSWORD=123
         - DB_PORT=5432
         - CHROMA_DB_PATH=/app/chroma_db
@@ -74,5 +74,4 @@ services:
 
 volumes:
     postgres_data:
-    redis_data:
     uploads_data:

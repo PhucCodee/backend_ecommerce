@@ -197,31 +197,9 @@ VALUES
         'America/Los_Angeles',
         0
     ),
-    (
-        9,
-        'Beyoncé',
-        'Knowles',
-        '+17185550123',
-        '1981-09-04',
-        1,
-        'https://example.com/avatars/beyonce.jpg',
-        'Queen Bey. Singer, actress, icon.',
-        0,
-        'America/Chicago',
-        0
+    ( 9, 'Beyoncé', 'Knowles', '+17185550123', '1981-09-04', 1, 'https://example.com/avatars/beyonce.jpg', 'Queen Bey. Singer, actress, icon.', 0, 'America/Chicago', 0
     ),
-    (
-        10,
-        'Aubrey',
-        'Graham',
-        '+14165550123',
-        '1986-10-24',
-        0,
-        'https://example.com/avatars/drake.jpg',
-        'Rapper, singer, and global superstar.',
-        0,
-        'America/Toronto',
-        0
+    ( 10, 'Aubrey', 'Graham', '+14165550123', '1986-10-24', 0, 'https://example.com/avatars/drake.jpg', 'Rapper, singer, and global superstar.', 0, 'America/Toronto', 0
     );
 
 -- ====================================
@@ -245,228 +223,209 @@ VALUES
 
 -- ====================================
 -- 5. CATEGORIES
+-- - is_core = true  => core browsing categories
+-- - is_core = false => limited collections
+-- - parent_category_id NULL => root
 -- ====================================
-INSERT INTO categories (category_name, slug, description) VALUES
-('Tops', 'tops', 'T-shirts, hoodies, and shirts'),
-('Bottoms', 'bottoms', 'Jeans, joggers, and trousers'),
-('Outerwear', 'outerwear', 'Jackets, coats, and blazers'),
-('Footwear', 'footwear', 'Sneakers, boots, and formal shoes'),
-('Accessories', 'accessories', 'Hats, bags, and jewelry');
-    
 
+-- Root categories
+INSERT INTO categories (category_name, slug, parent_category_id, description, display_order, is_core, is_active)
+VALUES
+  ('Clothing', 'clothing', NULL, 'All apparel & fashion', 1, TRUE, TRUE),
+  ('Limited Collection', 'limited-collection', NULL, 'Limited drops / curated collections', 2, FALSE, TRUE);
+
+-- Core children under Clothing
+INSERT INTO categories (category_name, slug, parent_category_id, description, display_order, is_core, is_active)
+VALUES
+  ('Men',        'clothing-men',        (SELECT category_id FROM categories WHERE slug='clothing'), 'Menswear', 10, TRUE, TRUE),
+  ('Women',      'clothing-women',      (SELECT category_id FROM categories WHERE slug='clothing'), 'Womenswear', 20, TRUE, TRUE),
+  ('Kids',       'clothing-kids',       (SELECT category_id FROM categories WHERE slug='clothing'), 'Kidswear', 30, TRUE, TRUE),
+  ('Accessories','clothing-accessories',(SELECT category_id FROM categories WHERE slug='clothing'), 'Caps, belts, beanies, etc.', 40, TRUE, TRUE),
+  ('Footwear',   'clothing-footwear',   (SELECT category_id FROM categories WHERE slug='clothing'), 'Shoes & sneakers', 50, TRUE, TRUE),
+  ('Outerwear',  'clothing-outerwear',  (SELECT category_id FROM categories WHERE slug='clothing'), 'Jackets & coats', 60, TRUE, TRUE),
+  ('Activewear', 'clothing-activewear', (SELECT category_id FROM categories WHERE slug='clothing'), 'Training & sportswear', 70, TRUE, TRUE),
+  ('Basics',     'clothing-basics',     (SELECT category_id FROM categories WHERE slug='clothing'), 'Everyday essentials', 80, TRUE, TRUE);
+
+-- Limited collection children
+INSERT INTO categories (category_name, slug, parent_category_id, description, display_order, is_core, is_active)
+VALUES
+  ('Summer Drop 2026', 'limited-summer-drop-2026', (SELECT category_id FROM categories WHERE slug='limited-collection'), 'Seasonal limited drop', 10, FALSE, TRUE),
+  ('Curry Collab',     'limited-curry-collab',     (SELECT category_id FROM categories WHERE slug='limited-collection'), 'Special collaboration pieces', 20, FALSE, TRUE);
 
 -- ====================================
 -- 6. PRODUCTS
 -- ====================================
+INSERT INTO products (
+  seller_id,
+  product_name,
+  slug,
+  base_sku,
+  description,
+  status,
+  moderation_status
+)
+VALUES
+(4, 'Classic Crew T-Shirt',          'classic-crew-tshirt',          'CLOTH-101', 'Everyday cotton crew tee', 1, 1),
+(4, 'Oversized Graphic Tee',         'oversized-graphic-tee',         'CLOTH-102', 'Relaxed fit graphic tee', 1, 1),
+(4, 'Slim Fit Jeans',                'slim-fit-jeans',                'CLOTH-103', 'Stretch denim slim fit', 1, 1),
+(4, 'High-Rise Straight Jeans',      'high-rise-straight-jeans',      'CLOTH-104', 'High-rise straight leg denim', 1, 1),
+(4, 'Pleated Midi Skirt',            'pleated-midi-skirt',            'CLOTH-105', 'Light pleated midi skirt', 1, 1),
+(4, 'Fleece Pullover Hoodie',        'fleece-pullover-hoodie',        'CLOTH-106', 'Warm fleece hoodie', 1, 1),
+(4, 'Bomber Jacket',                 'bomber-jacket',                 'CLOTH-107', 'Classic bomber outerwear', 1, 1),
+(4, 'Trench Coat',                   'trench-coat',                   'CLOTH-108', 'Long trench coat with belt', 1, 1),
+(4, 'Performance Running Sneakers',  'performance-running-sneakers',  'CLOTH-109', 'Cushioned running sneakers', 1, 1),
+(4, 'Canvas Low-Top Sneakers',       'canvas-lowtop-sneakers',        'CLOTH-110', 'Everyday canvas sneakers', 1, 1),
+(4, 'Leather Belt',                  'leather-belt',                  'CLOTH-111', 'Genuine leather belt', 1, 1),
+(4, 'Baseball Cap',                  'baseball-cap',                  'CLOTH-112', 'Adjustable cotton cap', 1, 1),
+(4, 'Knit Beanie',                   'knit-beanie',                   'CLOTH-113', 'Warm knit beanie', 1, 1),
+(4, 'Yoga Leggings',                 'yoga-leggings',                 'CLOTH-114', 'High-stretch leggings', 1, 1),
+(4, 'Sports Bra',                    'sports-bra',                    'CLOTH-115', 'Medium support sports bra', 1, 1),
+(4, 'Kids Hoodie',                   'kids-hoodie',                   'CLOTH-116', 'Soft kids hoodie', 1, 1),
+(4, 'Kids Sneakers',                 'kids-sneakers',                 'CLOTH-117', 'Durable kids sneakers', 1, 1),
+(4, 'Lightweight Windbreaker',       'lightweight-windbreaker',       'CLOTH-118', 'Packable windbreaker jacket', 1, 1),
+(4, 'Puffer Vest',                   'puffer-vest',                   'CLOTH-119', 'Warm insulated vest', 1, 1),
+(4, 'Linen Short-Sleeve Shirt',      'linen-shortsleeve-shirt',       'CLOTH-120', 'Breathable linen shirt', 1, 1);
 
-INSERT INTO products (seller_id, category_id, product_name, slug, base_sku, description) VALUES
--- ID 1: Tops
-(3, 1, 'Vintage Wash Heavyweight Tee', 'vintage-wash-tee', 'CLOTH-TEE-001', 'Boxy fit, garment-dyed t-shirt with a vintage feel.'),
--- ID 2: Bottoms
-(4, 2, 'Tech-Wear Cargo Pants', 'tech-cargo-pants', 'CLOTH-PAN-001', 'Water-repellent cargo pants with 6 functional pockets.' ),
--- ID 3: Outerwear
-(3, 3, 'Sherpa Lined Denim Jacket', 'sherpa-denim-jacket', 'CLOTH-JKT-001', 'Classic blue denim jacket with warm faux-shearling lining.'),
--- ID 4: Footwear
-(4, 4, 'Urban Nomad Knit Sneakers', 'urban-nomad-sneakers', 'CLOTH-SHN-001', 'Breathable knit upper with responsive foam cushioning.'),
--- ID 5: Accessories
-(3, 5, 'Signature Embroidered Beanie', 'signature-beanie', 'CLOTH-ACC-001', 'Tight-knit acrylic beanie with fold-over cuff.'),
--- ID 6: High Performance (Category 3 - Outerwear)
-(4, 3, 'Alpine Explorer Hiking Jacket', 'alpine-explorer-jacket', 'CLOTH-JKT-002', '3-layer Gore-Tex shell, 100% waterproof and breathable.'),
-(3, 1, 'Oversized Street Tee', 'oversized-street-tee', 'CLOTH-TEE-002', 'Heavy cotton oversized streetwear t-shirt.'),
-(4, 1, 'Minimal Logo Tee', 'minimal-logo-tee', 'CLOTH-TEE-003', 'Clean minimalist t-shirt with small embroidered logo.'),
-(3, 1, 'Vintage Graphic Tee', 'vintage-graphic-tee', 'CLOTH-TEE-004', 'Retro graphic print cotton t-shirt.'),
-(4, 2, 'Slim Fit Denim Jeans', 'slim-fit-denim-jeans', 'CLOTH-PAN-002', 'Stretch slim-fit denim jeans.'),
-(3, 2, 'Relaxed Fit Sweatpants', 'relaxed-sweatpants', 'CLOTH-PAN-003', 'Comfortable fleece sweatpants for daily wear.'),
-(4, 2, 'Urban Jogger Pants', 'urban-jogger-pants', 'CLOTH-PAN-004', 'Tapered joggers with elastic ankle cuffs.'),
-(3, 3, 'Lightweight Windbreaker', 'lightweight-windbreaker', 'CLOTH-JKT-003', 'Ultra lightweight windbreaker jacket.'),
-(4, 3, 'Puffer Winter Jacket', 'puffer-winter-jacket', 'CLOTH-JKT-004', 'Insulated puffer jacket for cold weather.'),
-(3, 3, 'Utility Field Jacket', 'utility-field-jacket', 'CLOTH-JKT-005', 'Military inspired field jacket with pockets.'),
-(4, 4, 'Runner Pro Sneakers', 'runner-pro-sneakers', 'CLOTH-SHN-002', 'Lightweight running sneakers with mesh upper.'),
-(3, 4, 'Classic Canvas Sneakers', 'canvas-sneakers', 'CLOTH-SHN-003', 'Timeless canvas sneakers with rubber sole.'),
-(4, 4, 'Street Skate Shoes', 'street-skate-shoes', 'CLOTH-SHN-004', 'Durable skateboarding shoes.'),
-(3, 5, 'Classic Baseball Cap', 'classic-baseball-cap', 'CLOTH-ACC-002', 'Adjustable cotton baseball cap.'),
-(4, 5, 'Minimalist Leather Belt', 'leather-belt', 'CLOTH-ACC-003', 'Premium leather belt with metal buckle.'),
-(3, 5, 'Urban Sling Bag', 'urban-sling-bag', 'CLOTH-ACC-004', 'Compact sling bag for everyday carry.'),
-(4, 1, 'Performance Training Tee', 'training-performance-tee', 'CLOTH-TEE-005', 'Moisture-wicking training shirt.'),
-(3, 2, 'Cargo Utility Shorts', 'cargo-utility-shorts', 'CLOTH-PAN-005', 'Functional cargo shorts with multiple pockets.'),
-(4, 3, 'Softshell Tactical Jacket', 'softshell-tactical-jacket', 'CLOTH-JKT-006', 'Durable tactical jacket with softshell fabric.'),
-(3, 4, 'Trail Running Shoes', 'trail-running-shoes', 'CLOTH-SHN-005', 'Trail running shoes with rugged outsole.'),
-(4, 5, 'Winter Knit Scarf', 'winter-knit-scarf', 'CLOTH-ACC-005', 'Warm knitted scarf for winter.');
+-- ====================================
+-- Product ↔ Category links
+-- Each product has 1 primary category (is_primary=TRUE)
+-- Some products also tagged into limited collections (is_primary=FALSE)
+-- ====================================
+
+INSERT INTO product_categories (product_id, category_id, is_primary)
+VALUES
+-- Basics
+((SELECT product_id FROM products WHERE slug='classic-crew-tshirt'),     (SELECT category_id FROM categories WHERE slug='clothing-basics'), TRUE),
+
+-- Men
+((SELECT product_id FROM products WHERE slug='slim-fit-jeans'),          (SELECT category_id FROM categories WHERE slug='clothing-men'), TRUE),
+((SELECT product_id FROM products WHERE slug='linen-shortsleeve-shirt'), (SELECT category_id FROM categories WHERE slug='clothing-men'), TRUE),
+((SELECT product_id FROM products WHERE slug='bomber-jacket'),           (SELECT category_id FROM categories WHERE slug='clothing-men'), TRUE),
+
+-- Women
+((SELECT product_id FROM products WHERE slug='high-rise-straight-jeans'),(SELECT category_id FROM categories WHERE slug='clothing-women'), TRUE),
+((SELECT product_id FROM products WHERE slug='pleated-midi-skirt'),      (SELECT category_id FROM categories WHERE slug='clothing-women'), TRUE),
+((SELECT product_id FROM products WHERE slug='trench-coat'),             (SELECT category_id FROM categories WHERE slug='clothing-women'), TRUE),
+((SELECT product_id FROM products WHERE slug='yoga-leggings'),           (SELECT category_id FROM categories WHERE slug='clothing-women'), TRUE),
+((SELECT product_id FROM products WHERE slug='sports-bra'),              (SELECT category_id FROM categories WHERE slug='clothing-women'), TRUE),
+
+-- Kids
+((SELECT product_id FROM products WHERE slug='kids-hoodie'),             (SELECT category_id FROM categories WHERE slug='clothing-kids'), TRUE),
+((SELECT product_id FROM products WHERE slug='kids-sneakers'),           (SELECT category_id FROM categories WHERE slug='clothing-kids'), TRUE),
+
+-- Accessories
+((SELECT product_id FROM products WHERE slug='leather-belt'),            (SELECT category_id FROM categories WHERE slug='clothing-accessories'), TRUE),
+((SELECT product_id FROM products WHERE slug='baseball-cap'),            (SELECT category_id FROM categories WHERE slug='clothing-accessories'), TRUE),
+((SELECT product_id FROM products WHERE slug='knit-beanie'),             (SELECT category_id FROM categories WHERE slug='clothing-accessories'), TRUE),
+
+-- Footwear
+((SELECT product_id FROM products WHERE slug='performance-running-sneakers'), (SELECT category_id FROM categories WHERE slug='clothing-footwear'), TRUE),
+((SELECT product_id FROM products WHERE slug='canvas-lowtop-sneakers'),       (SELECT category_id FROM categories WHERE slug='clothing-footwear'), TRUE),
+
+-- Outerwear
+((SELECT product_id FROM products WHERE slug='fleece-pullover-hoodie'),  (SELECT category_id FROM categories WHERE slug='clothing-outerwear'), TRUE),
+((SELECT product_id FROM products WHERE slug='lightweight-windbreaker'), (SELECT category_id FROM categories WHERE slug='clothing-outerwear'), TRUE),
+((SELECT product_id FROM products WHERE slug='puffer-vest'),             (SELECT category_id FROM categories WHERE slug='clothing-outerwear'), TRUE),
+
+-- Activewear
+((SELECT product_id FROM products WHERE slug='performance-running-sneakers'), (SELECT category_id FROM categories WHERE slug='clothing-activewear'), FALSE),
+((SELECT product_id FROM products WHERE slug='yoga-leggings'),                (SELECT category_id FROM categories WHERE slug='clothing-activewear'), FALSE),
+((SELECT product_id FROM products WHERE slug='sports-bra'),                   (SELECT category_id FROM categories WHERE slug='clothing-activewear'), FALSE),
+((SELECT product_id FROM products WHERE slug='lightweight-windbreaker'),      (SELECT category_id FROM categories WHERE slug='clothing-activewear'), FALSE),
+
+-- Limited tags
+((SELECT product_id FROM products WHERE slug='oversized-graphic-tee'),    (SELECT category_id FROM categories WHERE slug='clothing-men'), TRUE),
+((SELECT product_id FROM products WHERE slug='oversized-graphic-tee'),    (SELECT category_id FROM categories WHERE slug='limited-summer-drop-2026'), FALSE),
+
+((SELECT product_id FROM products WHERE slug='linen-shortsleeve-shirt'),  (SELECT category_id FROM categories WHERE slug='limited-summer-drop-2026'), FALSE),
+
+((SELECT product_id FROM products WHERE slug='knit-beanie'),              (SELECT category_id FROM categories WHERE slug='limited-curry-collab'), FALSE),
+((SELECT product_id FROM products WHERE slug='lightweight-windbreaker'),  (SELECT category_id FROM categories WHERE slug='limited-curry-collab'), FALSE)
+ON CONFLICT DO NOTHING;
 
 -- ====================================
 -- 7. PRODUCT SKUs
 -- ====================================
-INSERT INTO product_skus (product_id, sku, price, is_default, variant_attributes) VALUES
-
--- Product 1
-(1, 'CLOTH-TEE-001-BLK-M', 35.00, true,  '{"color": "Charcoal Black", "size": "M"}'),
-(1, 'CLOTH-TEE-001-BLK-L', 35.00, false, '{"color": "Charcoal Black", "size": "L"}'),
-(1, 'CLOTH-TEE-001-BLK-XL', 38.00, false, '{"color": "Charcoal Black", "size": "XL"}'),
-
--- Product 2
-(2, 'CLOTH-PAN-001-OLV-S', 85.00, true,  '{"color": "Olive Drab", "size": "S"}'),
-(2, 'CLOTH-PAN-001-OLV-M', 85.00, false, '{"color": "Olive Drab", "size": "M"}'),
-(2, 'CLOTH-PAN-001-OLV-L', 85.00, false, '{"color": "Olive Drab", "size": "L"}'),
-
--- Product 3
-(3, 'CLOTH-JKT-001-BLU-M', 120.00, true,  '{"color": "Indio Blue", "size": "M"}'),
-(3, 'CLOTH-JKT-001-BLU-L', 120.00, false, '{"color": "Indio Blue", "size": "L"}'),
-
--- Product 4
-(4, 'CLOTH-SHN-001-WHT-9', 110.00, true,  '{"color": "Triple White", "size": "9"}'),
-(4, 'CLOTH-SHN-001-WHT-10',110.00, false, '{"color": "Triple White", "size": "10"}'),
-(4, 'CLOTH-SHN-001-WHT-11',110.00, false, '{"color": "Triple White", "size": "11"}'),
-
--- Product 5
-(5,'CLOTH-ACC-001-BLK-STD',25,true,'{"color":"Black","size":"One Size"}'),
-
--- Product 6
-(6,'CLOTH-JKT-002-RED-M',220,true,'{"color":"Red","size":"M"}'),
-(6,'CLOTH-JKT-002-RED-L',220,false,'{"color":"Red","size":"L"}'),
-
--- Product 7
-(7,'CLOTH-TEE-002-BLK-M',32,true,'{"color":"Black","size":"M"}'),
-(7,'CLOTH-TEE-002-BLK-L',32,false,'{"color":"Black","size":"L"}'),
-
--- Product 8
-(8,'CLOTH-TEE-003-WHT-M',30,true,'{"color":"White","size":"M"}'),
-(8,'CLOTH-TEE-003-WHT-L',30,false,'{"color":"White","size":"L"}'),
-
--- Product 9
-(9,'CLOTH-TEE-004-GRY-M',34,true,'{"color":"Grey","size":"M"}'),
-(9,'CLOTH-TEE-004-GRY-L',34,false,'{"color":"Grey","size":"L"}'),
-
--- Product 10
-(10,'CLOTH-PAN-002-BLU-30',70,true,'{"color":"Blue","size":"30"}'),
-(10,'CLOTH-PAN-002-BLU-32',70,false,'{"color":"Blue","size":"32"}'),
-
--- Product 11
-(11,'CLOTH-PAN-003-GRY-M',55,true,'{"color":"Grey","size":"M"}'),
-(11,'CLOTH-PAN-003-GRY-L',55,false,'{"color":"Grey","size":"L"}'),
-
--- Product 12
-(12,'CLOTH-PAN-004-BLK-M',60,true,'{"color":"Black","size":"M"}'),
-(12,'CLOTH-PAN-004-BLK-L',60,false,'{"color":"Black","size":"L"}'),
-
--- Product 13
-(13,'CLOTH-JKT-003-NVY-M',95,true,'{"color":"Navy","size":"M"}'),
-(13,'CLOTH-JKT-003-NVY-L',95,false,'{"color":"Navy","size":"L"}'),
-
--- Product 14
-(14,'CLOTH-JKT-004-BLK-M',150,true,'{"color":"Black","size":"M"}'),
-(14,'CLOTH-JKT-004-BLK-L',150,false,'{"color":"Black","size":"L"}'),
-
--- Product 15
-(15,'CLOTH-JKT-005-OLV-M',130,true,'{"color":"Olive","size":"M"}'),
-(15,'CLOTH-JKT-005-OLV-L',130,false,'{"color":"Olive","size":"L"}'),
-
--- Product 16
-(16,'CLOTH-SHN-002-WHT-9',120,true,'{"color":"White","size":"9"}'),
-(16,'CLOTH-SHN-002-WHT-10',120,false,'{"color":"White","size":"10"}'),
-
--- Product 17
-(17,'CLOTH-SHN-003-BLK-9',65,true,'{"color":"Black","size":"9"}'),
-(17,'CLOTH-SHN-003-BLK-10',65,false,'{"color":"Black","size":"10"}'),
-
--- Product 18
-(18,'CLOTH-SHN-004-BLK-9',90,true,'{"color":"Black","size":"9"}'),
-(18,'CLOTH-SHN-004-BLK-10',90,false,'{"color":"Black","size":"10"}'),
-
--- Product 19
-(19,'CLOTH-ACC-002-BLK-STD',25,true,'{"color":"Black","size":"One Size"}'),
-(19,'CLOTH-ACC-002-NVY-STD',25,false,'{"color":"Navy","size":"One Size"}'),
-
--- Product 20
-(20,'CLOTH-ACC-003-BRN-M',45,true,'{"color":"Brown","size":"M"}'),
-(20,'CLOTH-ACC-003-BRN-L',45,false,'{"color":"Brown","size":"L"}'),
-
--- Product 21
-(21,'CLOTH-ACC-004-BLK-STD',50,true,'{"color":"Black","size":"One Size"}'),
-(21,'CLOTH-ACC-004-GRY-STD',50,false,'{"color":"Grey","size":"One Size"}'),
-
--- Product 22
-(22,'CLOTH-TEE-005-BLK-M',38,true,'{"color":"Black","size":"M"}'),
-(22,'CLOTH-TEE-005-BLK-L',38,false,'{"color":"Black","size":"L"}'),
-
--- Product 23
-(23,'CLOTH-PAN-005-KHK-M',40,true,'{"color":"Khaki","size":"M"}'),
-(23,'CLOTH-PAN-005-KHK-L',40,false,'{"color":"Khaki","size":"L"}'),
-
--- Product 24
-(24,'CLOTH-JKT-006-BLK-M',140,true,'{"color":"Black","size":"M"}'),
-(24,'CLOTH-JKT-006-BLK-L',140,false,'{"color":"Black","size":"L"}'),
-
--- Product 25
-(25,'CLOTH-SHN-005-GRN-9',130,true,'{"color":"Green","size":"9"}'),
-(25,'CLOTH-SHN-005-GRN-10',130,false,'{"color":"Green","size":"10"}'),
-
--- Product 26
-(26,'CLOTH-ACC-005-GRY-STD',28,true,'{"color":"Grey","size":"One Size"}'),
-(26,'CLOTH-ACC-005-BLK-STD',28,false,'{"color":"Black","size":"One Size"}');
-
--- ====================================
--- 8. INVENTORY (Stock for each SKU)
--- ====================================
-INSERT INTO inventory (sku_id, quantity_available) VALUES
-(1, 50),  -- Tee Black M
-(2, 75),  -- Tee Black L
-(3, 30),  -- Tee Black XL
-(4, 20),  -- Cargo S
-(5, 45),  -- Cargo M
-(6, 40),  -- Cargo L
-(7, 15),  -- Jacket M
-(8, 12),  -- Jacket L
-(9, 25),  -- Sneakers 9
-(10, 30), -- Sneakers 10
-(11, 20), -- Sneakers 11
-(12,40),(13,35),
-(14,50),(15,45),
-(16,38),(17,36),
-(18,30),(19,28),
-(20,40),(21,35),
-(22,32),(23,29),
-(24,25),(25,22),
-(26,18),(27,20),
-(28,17),(29,15),
-(30,45),(31,40),
-(32,50),(33,48),
-(34,35),(35,33),
-(36,60),(37,55),
-(38,30),(39,28),
-(40,25),(41,22),
-(42,20),(43,18),
-(44,26),(45,24),
-(46,21),(47,19),
-(48,15),(49,14),
-(50,40),(51,38);
-
--- ====================================
--- 9. SAMPLE ORDER
--- ====================================
-INSERT INTO orders (order_number, user_id, status, subtotal, total_amount, currency)
-VALUES 
-    ('ORD-2025-001', 1, 4, 155.00, 155.00, 0);
--- ====================================
-
--- ORDER ITEMS (Updated for Clothing)
--- ====================================
-INSERT INTO order_items (order_id, sku_id, product_name, sku, seller_id, quantity, unit_price, subtotal)
+INSERT INTO product_skus (product_id, sku, price, is_default)
 VALUES
-    (1, 1, 'Vintage Wash Heavyweight Tee', 'VNTG-TEE-BLK-M', 3, 2, 35.00, 70.00),
-    (1, 4, 'Tech-Wear Cargo Pants', 'TECH-CRG-OLV-S', 4, 1, 85.00, 85.00);
+((SELECT product_id FROM products WHERE slug='classic-crew-tshirt'),         'CLOTH-101-DEFAULT', 19.99, TRUE),
+((SELECT product_id FROM products WHERE slug='oversized-graphic-tee'),        'CLOTH-102-DEFAULT', 29.99, TRUE),
+((SELECT product_id FROM products WHERE slug='slim-fit-jeans'),               'CLOTH-103-DEFAULT', 59.99, TRUE),
+((SELECT product_id FROM products WHERE slug='high-rise-straight-jeans'),     'CLOTH-104-DEFAULT', 64.99, TRUE),
+((SELECT product_id FROM products WHERE slug='pleated-midi-skirt'),           'CLOTH-105-DEFAULT', 44.99, TRUE),
+((SELECT product_id FROM products WHERE slug='fleece-pullover-hoodie'),       'CLOTH-106-DEFAULT', 49.99, TRUE),
+((SELECT product_id FROM products WHERE slug='bomber-jacket'),                'CLOTH-107-DEFAULT', 79.99, TRUE),
+((SELECT product_id FROM products WHERE slug='trench-coat'),                  'CLOTH-108-DEFAULT', 99.99, TRUE),
+((SELECT product_id FROM products WHERE slug='performance-running-sneakers'), 'CLOTH-109-DEFAULT', 89.99, TRUE),
+((SELECT product_id FROM products WHERE slug='canvas-lowtop-sneakers'),       'CLOTH-110-DEFAULT', 54.99, TRUE),
+((SELECT product_id FROM products WHERE slug='leather-belt'),                 'CLOTH-111-DEFAULT', 24.99, TRUE),
+((SELECT product_id FROM products WHERE slug='baseball-cap'),                 'CLOTH-112-DEFAULT', 18.99, TRUE),
+((SELECT product_id FROM products WHERE slug='knit-beanie'),                  'CLOTH-113-DEFAULT', 16.99, TRUE),
+((SELECT product_id FROM products WHERE slug='yoga-leggings'),                'CLOTH-114-DEFAULT', 39.99, TRUE),
+((SELECT product_id FROM products WHERE slug='sports-bra'),                   'CLOTH-115-DEFAULT', 29.99, TRUE),
+((SELECT product_id FROM products WHERE slug='kids-hoodie'),                  'CLOTH-116-DEFAULT', 34.99, TRUE),
+((SELECT product_id FROM products WHERE slug='kids-sneakers'),                'CLOTH-117-DEFAULT', 39.99, TRUE),
+((SELECT product_id FROM products WHERE slug='lightweight-windbreaker'),      'CLOTH-118-DEFAULT', 59.99, TRUE),
+((SELECT product_id FROM products WHERE slug='puffer-vest'),                  'CLOTH-119-DEFAULT', 69.99, TRUE),
+((SELECT product_id FROM products WHERE slug='linen-shortsleeve-shirt'),      'CLOTH-120-DEFAULT', 42.99, TRUE);
 
 -- ====================================
--- ORDER SHIPPING
+-- 8. INVENTORY
 -- ====================================
-INSERT INTO order_shipping (order_id,recipient_name,phone,address_line1,city,country,shipping_method)
+INSERT INTO inventory (sku_id, quantity_available)
 VALUES
-    (1,'Cristiano Ronaldo','0123456789','1 Nguyen Hue','Ho Chi Minh','Vietnam',0);
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-101-DEFAULT'), 200),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-102-DEFAULT'), 120),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-103-DEFAULT'), 80),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-104-DEFAULT'), 75),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-105-DEFAULT'), 90),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-106-DEFAULT'), 110),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-107-DEFAULT'), 60),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-108-DEFAULT'), 50),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-109-DEFAULT'), 70),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-110-DEFAULT'), 95),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-111-DEFAULT'), 140),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-112-DEFAULT'), 160),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-113-DEFAULT'), 130),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-114-DEFAULT'), 100),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-115-DEFAULT'), 100),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-116-DEFAULT'), 85),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-117-DEFAULT'), 80),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-118-DEFAULT'), 65),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-119-DEFAULT'), 55),
+((SELECT sku_id FROM product_skus WHERE sku='CLOTH-120-DEFAULT'), 90);
 
--- ====================================
--- ORDER PAYMENT
--- ====================================
-INSERT INTO order_payments (order_id, payment_method, payment_status, amount, paid_at)
-VALUES 
-    (1, 3, 2, 155.00, CURRENT_TIMESTAMP);
 
+---------------------------------DATABASE USER-------------------------------------------
+-- 1. Tạo user mới dành riêng cho chatbot (đổi mật khẩu cho bảo mật nhé)
+CREATE USER chatbot_user WITH PASSWORD 'chatbot';
 
+-- 2. Cấp quyền kết nối vào database (thay 'database' bằng tên DB thực tế của bạn)
+GRANT CONNECT ON DATABASE "database" TO chatbot_user;
+
+-- 3. Cấp quyền sử dụng schema public
+GRANT USAGE ON SCHEMA public TO chatbot_user;
+
+-- 4. CHỈ cấp quyền SELECT (Đọc) trên các bảng cần thiết cho Product Search & Order Tracking
+GRANT SELECT ON 
+    categories, 
+    products, 
+    product_categories, 
+    product_skus, 
+    inventory,
+    -- Giả sử hệ thống của bạn có các bảng order như code python hôm trước:
+    orders, 
+    order_items, 
+    order_shipping, 
+    order_payments, 
+    order_fulfillment 
+TO chatbot_user;
+
+-- 5. Cấp quyền Đọc một phần thông tin User (nếu cần để chào tên khách, hiển thị profile)
+GRANT SELECT ON users, user_profiles TO chatbot_user;
+
+-- 6. CHẶN ĐỨT ĐƯỜNG truy cập vào bảng mật khẩu (Phòng hờ rủi ro)
+REVOKE ALL ON user_credentials FROM chatbot_user;
+
+-- 7. Thiết lập Default Privileges: Nếu sau này bạn tạo thêm bảng mới, chatbot cũng sẽ KHÔNG tự động có quyền đọc (phải cấp tay)
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM chatbot_user;
