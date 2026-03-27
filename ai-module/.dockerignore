@@ -45,3 +45,4 @@ Thumbs.db
 # Testing
 .pytest_cache
 .deepeval
+test/

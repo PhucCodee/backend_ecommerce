@@ -65,7 +65,12 @@ class IntentOutput(BaseModel):
 class PolicyAction(Action):
     def __init__(self, human_mes :str = "", ai_ans:str= ""):
         super().__init__(intent = "policy_question", user_prompt = human_mes, answer=ai_ans)
+    
+    def set_context(self,context):
+        self.context = context
 
+    def get_context(self,context):
+        self.context = context
 
 @dataclass
 class GeneralAction(Action):

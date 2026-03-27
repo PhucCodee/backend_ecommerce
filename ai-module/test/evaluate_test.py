@@ -1,12 +1,14 @@
 import pytest
 import json
+from deepeval.models import LiteLLMModel
 from deepeval import assert_test
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric
 from deepeval.models import GeminiModel
 from langchain_core.messages import HumanMessage
 from app.agents.buyer.agents import app 
-
+from dotenv import load_dotenv
+import os
 # --- 1. Cấu hình Model ---
 # eval_model = GeminiModel(model="gemini-1.5-flash")
 # --- 2. Danh sách Test Cases đầy đủ ---
@@ -45,6 +47,17 @@ FULL_TEST_SUITE = [
     # ("What’s your name?", ["relevancy"], "general")
 ]
 
+
+load_dotenv()
+GROQ_API = os.getenv("GROQ_API_KEY")
+
+if not GROQ_API:
+    raise ValueError("Không tìm thấy GROQ_API_KEY trong file .env")
+
+eval_model = LiteLLMModel(
+    model="groq/llama-3.1-8b-instant",
+    api_key=GROQ_API
+)
 # --- 3. Hàm Wrapper để lọc test case theo category ---
 def get_test_cases(category=None):
     if category:
@@ -54,9 +67,7 @@ def get_test_cases(category=None):
 # --- 4. Test Function ---
 @pytest.mark.parametrize("user_input, metrics_to_run, category", FULL_TEST_SUITE)
 def test_customer_agent(user_input, metrics_to_run, category):
-    # Gắn mark động cho pytest để lọc bằng lệnh -m
-    pytest.mark.add_marker(getattr(pytest.mark, category))
-
+    
     # --- A. Gọi Agent ---
     config = {"configurable": {"thread_id": f"test_{category}"}}
     input_payload = {
@@ -69,25 +80,27 @@ def test_customer_agent(user_input, metrics_to_run, category):
     
     # --- B. Trích xuất dữ liệu ---
     actual_output = result.get("answer", "No answer provided")
-    # Lưu ý: 'retrieved_docs' phải có trong state của LangGraph/Agent của bạn
+    # Đảm bảo retrieved_docs là một list các strings (List[str])
     retrieval_context = result.get("retrieved_docs", []) 
-
-    # --- C. Khởi tạo Metrics ---
-    relevancy_metric = AnswerRelevancyMetric(threshold=0.7, model = "llama-3.1-8b-instant", provider="groq")
-    faithfulness_metric = FaithfulnessMetric(threshold=0.7, model = "llama-3.1-8b-instant", provider="groq")
-
-    # --- D. Tạo Test Case ---
+    
+    # --- C. Khởi tạo Test Case ---
     test_case = LLMTestCase(
         input=user_input,
         actual_output=actual_output,
         retrieval_context=retrieval_context
     )
 
-    # --- E. Chạy Metrics tương ứng ---
+    # --- D. Chọn & Chạy Metrics tương ứng ---
     active_metrics = []
+    
     if "relevancy" in metrics_to_run:
+        # Khởi tạo metric (mỗi metric instance chạy 1 lần)
+        relevancy_metric = AnswerRelevancyMetric(threshold=0.7, model=eval_model)
         active_metrics.append(relevancy_metric)
+        
     if "faithfulness" in metrics_to_run:
+        faithfulness_metric = FaithfulnessMetric(threshold=0.7, model=eval_model)
         active_metrics.append(faithfulness_metric)
 
+    # Thực thi test
     assert_test(test_case, active_metrics)

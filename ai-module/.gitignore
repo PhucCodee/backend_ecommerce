@@ -17,4 +17,4 @@ chroma_db_data/
 
 # Testing
 .pytest_cache
-.deepeval
+.deepeval/

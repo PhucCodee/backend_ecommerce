@@ -1,0 +1,18 @@
+[tool.pytest.ini_options]
+# Adds the root directory to the python path so 'import app' works
+pythonpath = ["."]
+
+# Tells pytest to look for tests specifically in the 'tests' folder
+testpaths = ["test"]
+
+# Standard patterns for finding test files
+python_files = "test_*.py *_test.py unit_test.py"
+
+# Custom markers to avoid "Unknown marker" warnings
+markers = [
+    "intent: tests for intent classification",
+    "product: tests for product search logic"
+]
+
+# Verbose output and clear console colors
+addopts = "-v --tb=short"
