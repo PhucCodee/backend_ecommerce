@@ -233,7 +233,8 @@ def policy_faq(state:MasterState):
 embeddings = GoogleGenerativeAIEmbeddings(
     model="models/gemini-embedding-001",
 )
-default_path = Path(__file__).resolve().parents[3] / "data" / "vector"
+# default_path = Path(__file__).resolve().parents[3] / "data" / "vector"
+default_path = Path(__file__).resolve().parents[3] / "main" / "chroma_db_data1"
 persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
 
 
@@ -382,7 +383,6 @@ DB_USER = os.getenv("DB_USER", "chatbot_user")
 DB_PASS = os.getenv("DB_PASSWORD", "chatbot")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
-conn = get_db_connection()
 
 class Product(BaseModel):
     """A look up product information before searching in database"""
@@ -492,11 +492,10 @@ def product_search(state:MasterState) -> MasterState:
     ]
     )
     action = ProductSearchAction().set_product(response)
-    state["log_action"] += [action]
 
     print(f"Response: {response}")
 
-    return {"log_action": state["log_action"]}
+    return {"log_action": [action]}
 
 def generate_product_query(state: MasterState) ->MasterState:
     """Node 1: Translate user natural language to SQL with Semantic Expansion."""
@@ -578,7 +577,7 @@ def execute_product_query(state: MasterState) -> MasterState:
     if isinstance(action, ProductSearchAction):
         query = action.get_query()
     
-
+    conn = get_db_connection()
     print(f"Executing query: \n{query}\n")
     if not conn:
         return {}
@@ -605,6 +604,7 @@ def execute_product_query(state: MasterState) -> MasterState:
             return {}
             
     except Exception as e:
+        print(f"Lỗi SQL: {e}")
         return {}
     finally:
         if conn:
@@ -635,6 +635,12 @@ def synthesize_product_answer(state: MasterState):
     _ Product 2: information
     ...
     _ Product n: information
+    CRITICAL ENUM MAPPING:
+    - The `status` column in results is an integer: 0=draft, 1=active, 2=inactive, 3=removed, 4=archived. Translate this to text when answering.
+
+    - If the result list is empty, politely say you couldn't find that information.
+    - Do not expose database IDs or technical SQL terms to the user.
+    - Format currency (USD) appropriately based on the data.
     """
     
     user_content = f"""
@@ -667,8 +673,9 @@ workflow.add_edge("synthesize_product_answer",END)
 
 class Order(BaseModel):
     """A look up order information before searching in database"""
-    des:str = Field(..., description = "Brief description of the order")
-    status:  Literal["done", "shipping", "cancel"]  = Field(..., description = """The status of the order""")
+    order_number: str = Field(default="", description="The specific order number if user provides one (e.g., 12345, ORD-123)")
+    time_context: str = Field(default="newest", description="Time reference (e.g., 'newest', 'yesterday', 'last week')")
+    status: Literal["any", "done", "shipping", "cancel"] = Field(default="any", description="The status of the order")
 
 @dataclass
 class OrderTrackingAction(Action):
@@ -701,113 +708,84 @@ class OrderTrackingAction(Action):
 
 
 def order_tracking(state:MasterState) -> MasterState:
-        print("\n--- 🔀 Routing to Order search Agent ---")
+    print("\n--- 🔀 Routing to Order search Agent ---")
+    chat_history = [
+        msg for msg in state["messages"] 
+        if isinstance(msg, (HumanMessage, AIMessage))
+    ]
+    recent_history = chat_history[-5:] 
+    history_text = "\n".join([
+        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" 
+        for msg in recent_history[:-1]
+    ])
+    if not history_text:
+        history_text = "This is the start of the conversation."
 
-#     product_llm =  llm.with_structured_output(Order)
-#     prompt = """
-#     You are an AI assistance of ecommerce platform. You are beeing asked about some order to track order information for customer. 
-#     For ease of search, you have to define some property base on customer latest query
+    order_llm = llm.with_structured_output(Order)
+    prompt = f"""
+    You are an AI assistant for an e-commerce platform. Your task is to extract order tracking properties based on the customer's LATEST query and the CONVERSATION CONTEXT.
 
-#     Example
-#     User: "Is my newest order shipping"
-#     -> des: newest, status: shipping
+    ---------------------------------------
+    CONVERSATION CONTEXT:
+    {history_text}
+    ---------------------------------------
 
-#     User: "Is my order on yesterday succesfully set"
-#     -> des: yesterday , status: shipping
+    Examples:
+    User: "Is my newest order shipping?"
+    -> order_number: "", time_context: "newest", status: "shipping"
 
-#     User: "I just cancle my newest order, is it succesfully canceled"
-#     -> des: newest , status: cancel
-#     """
-#     response = product_llm.invoke([
-#         SystemMessage(content = prompt),
-#         HumanMessage(state['user_prompt']),
-#     ]
-#     )
-        action = OrderTrackingAction()
-        state["log_action"] += [action]
+    User: "Track my order #ORD-9876"
+    -> order_number: "ORD-9876", time_context: "any", status: "any"
 
-        return {}
+    User: "I just canceled my order yesterday, was it successful?"
+    -> order_number: "", time_context: "yesterday", status: "cancel"
+    """
+    response = order_llm.invoke([
+        SystemMessage(content=prompt),
+        HumanMessage(content=state['user_prompt']),
+    ])
+    
+    action = OrderTrackingAction(order=response)
+    print(f"Order Entity Extracted: {response}")
 
-def generate_order_query(state: MasterState) ->MasterState:
-    """Node 1: Translate user natural language to SQL with Semantic Expansion."""
-    # query_llm = llm.with_structured_output(SQLQueryGenerator)
+    return {"log_action": [action]}
+
+
+def generate_order_query(state: MasterState) -> MasterState:
     action = state["log_action"][-1]
-    order_model = None
-    if isinstance(action, OrderTrackingAction):
-        order_model = action.get_order()
+    order_model = action.get_order() if isinstance(action, OrderTrackingAction) else Order()
 
-   
+    system_prompt = f"""You are a smart PostgreSQL expert.
+    I will provide you with a BASE SQL query that joins all necessary order tables.
+    Your task is to add the appropriate WHERE, ORDER BY, and LIMIT clauses based on the user's request.
 
-    # 1. We update the prompt to encourage synonym logic
-    system_prompt = f"""You are a smart PostgreSQL expert .
-    Your goal is generate correct and sufficient SQL query based on user question.
+    BASE SQL:
+    SELECT o.order_id, o.order_number, o.status AS order_status, o.total_amount, o.created_at,
+           oi.product_name, oi.quantity, oi.unit_price,
+           os.address_line1, os.city,
+           of.tracking_number, of.carrier, of.shipped_at
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    LEFT JOIN order_shipping os ON o.order_id = os.order_id
+    LEFT JOIN order_fulfillment of ON o.order_id = of.order_id
 
-    You are gonna return an SQL replace the user id as current user with template:
-        SELECT
-            o.order_id,
-            o.order_number,
-            o.status AS order_status,
-            o.subtotal,
-            o.shipping_fee,
-            o.tax_amount,
-            o.total_amount,
-            o.created_at AS order_created_at,
-
-            oi.order_item_id,
-            oi.product_name,
-            oi.sku,
-            oi.variant_description,
-            oi.quantity,
-            oi.unit_price,
-            oi.subtotal AS item_subtotal,
-
-            os.recipient_name,
-            os.phone,
-            os.address_line1,
-            os.city,
-            os.country,
-
-            op.payment_method,
-            op.payment_status,
-            op.amount AS payment_amount,
-            op.paid_at,
-
-            of.tracking_number,
-            of.carrier,
-            of.shipped_at,
-            of.delivered_at
-
-        FROM orders o
-
-        JOIN order_items oi 
-            ON o.order_id = oi.order_id
-
-        LEFT JOIN order_shipping os 
-            ON o.order_id = os.order_id
-
-        LEFT JOIN order_payments op 
-            ON o.order_id = op.order_id
-
-        LEFT JOIN order_fulfillment of 
-            ON o.order_id = of.order_id
-
-        WHERE o.user_id = 1
-
-        ORDER BY o.created_at DESC;
     CRITICAL RULES:
-    _ Just return plain sql query, no special chatacter
+    1. You MUST ALWAYS include: WHERE o.user_id = {state['customer_id']}
+    2. If order_number is provided ({order_model.order_number}), filter by o.order_number.
+    3. If status is specific ({order_model.status}), filter by o.status (map 'done' to 'delivered', 'shipping' to 'shipped', etc., based on standard ecommerce statuses).
+    4. If time_context is 'newest', add ORDER BY o.created_at DESC LIMIT 1.
+    5. Return ONLY the plain SQL text, no markdown formatting, no explanations.
     """
     
     result = llm.invoke([
-        SystemMessage(content = system_prompt)    ,
-        HumanMessage(content = f"I'm user has id = {state['customer_id']} ")
-    ]
-    )
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=f"User's raw prompt: {state['user_prompt']}")
+    ])
 
     if isinstance(action, OrderTrackingAction):
-        action.set_query(result.content)
+        action.set_query(result.content.strip())
 
-    print(f" Query: {result.content}")
+    print(f"Order SQL Query: {result.content}")
     return {}
 
 def execute_order_query(state: MasterState) -> MasterState:
@@ -816,7 +794,7 @@ def execute_order_query(state: MasterState) -> MasterState:
     if isinstance(action, OrderTrackingAction):
         query = action.get_query()
     
-
+    conn = get_db_connection()
     print(f"Executing query: \n{query}\n")
     if not conn:
         return {}
@@ -843,6 +821,7 @@ def execute_order_query(state: MasterState) -> MasterState:
             return {}
             
     except Exception as e:
+        print(f"Lỗi SQL: {e}")
         return {}
     finally:
         if conn:
@@ -851,26 +830,37 @@ def execute_order_query(state: MasterState) -> MasterState:
 def synthesize_order_answer(state: MasterState):
     """Node 3: Convert SQL results back to natural language."""
     action = state["log_action"][-1]
-
-    query = action.get_query()
     results = action.get_order_res()
+
+    context = f"Data Results from Database: {results}"
     original_question = state["user_prompt"]
 
     
-    system_prompt = """You are a helpful e-commerce assistant. 
-    Given a user question, the SQL query run, and the data results, formulate a natural language response.
-    
+    system_prompt = """You are a professional and empathetic customer service agent for an e-commerce platform.
+    Your task is to read the database results of the customer's order and explain it to them naturally.
 
-    """
+    GUIDELINES:
+    1. If the results are empty `[]` or contain an error, politely inform the customer that you cannot find the order. Ask them to verify the order number.
+    2. Do NOT show technical IDs, SQL queries, or database jargon.
+    3. Format the response clearly using bullet points for items if necessary.
+    4. Highlight important information like Order Status, Tracking Number, and Total Amount.
     
-    user_content = f"""
-    This is the context for answering:
-        Query Run: {query}
-        Data Results: {results}
+    Format Example:
+    "Here is the information for your order **#ORD-123**:
+    - **Status:** Shipped
+    - **Total:** $150.00
+    - **Tracking Number:** [Carrier] 1Z9999999999
+    
+    Items in this order:
+    - 1x Blue Jacket ($150.00)"
+
+    CRITICAL DB SCHEMA INFO - ENUMS:
+    - Order status is stored as INTEGER: 0=created, 1=confirmed, 2=processing, 3=shipped, 4=delivered, 5=cancelled, 6=failed.
+    - You MUST map the natural language status requested by the user into the corresponding integer in the WHERE clause (e.g., "shipped" -> o.status = 3, "cancelled" -> o.status = 5).
     """
     
     response = llm.invoke([
-        {"role": "system", "content": system_prompt + user_content},
+        {"role": "system", "content": system_prompt + context},
         {"role": "user", "content": original_question}
     ])
     
