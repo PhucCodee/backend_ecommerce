@@ -654,7 +654,10 @@ def synthesize_product_answer(state: MasterState):
         {"role": "user", "content": original_question}
     ])
     
-    return {"answer": response.content}
+    return {
+        "answer": response.content,
+        "messages": [AIMessage(content=response.content)] # THÊM DÒNG NÀY
+    }
 
 workflow.add_node("product_search", product_search)
 workflow.add_node("generate_product_query", generate_product_query)
@@ -856,7 +859,7 @@ def synthesize_order_answer(state: MasterState):
 
     CRITICAL DB SCHEMA INFO - ENUMS:
     - Order status is stored as INTEGER: 0=created, 1=confirmed, 2=processing, 3=shipped, 4=delivered, 5=cancelled, 6=failed.
-    - You MUST map the natural language status requested by the user into the corresponding integer in the WHERE clause (e.g., "shipped" -> o.status = 3, "cancelled" -> o.status = 5).
+    - he DB returns status as an integer (0=created, 3=shipped, etc.). You MUST translate this integer into a natural language word when replying to the user.
     """
     
     response = llm.invoke([
