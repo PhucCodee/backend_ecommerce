@@ -26,8 +26,6 @@ public class Cart
 
     public DateTime UpdatedAt { get; set; }
 
-    public DateTime? ExpiresAt { get; set; }
-
     public virtual User? User { get; set; }
 
     public virtual ICollection<CartItem> CartItems { get; set; } = [];
@@ -43,8 +41,7 @@ public class Cart
             TotalItems = 0,
             IpAddress = ipAddress,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddDays(30)
+            UpdatedAt = DateTime.UtcNow
         };
     }
 

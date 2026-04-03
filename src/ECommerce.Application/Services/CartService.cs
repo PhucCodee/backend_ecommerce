@@ -59,7 +59,6 @@ namespace ECommerce.Application.Services
             {
                 var cartItem = CartItem.CreateDefault(cart, sku, addDto.Quantity);
                 await _cartRepository.AddCartItemAsync(cartItem);
-                cart.CartItems.Add(cartItem);
             }
 
             cart.RecalculateTotals();
@@ -181,7 +180,6 @@ namespace ECommerce.Application.Services
                         UpdatedAt = DateTime.UtcNow
                     };
                     await _cartRepository.AddCartItemAsync(newItem);
-                    userCart.CartItems.Add(newItem);
                 }
             }
 
@@ -192,7 +190,9 @@ namespace ECommerce.Application.Services
             userCart.RecalculateTotals();
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<CartDto>(userCart);
+            // Reload the cart to get clean state after merge
+            var mergedCart = await _cartRepository.GetByUserIdWithDetailsAsync(userId);
+            return _mapper.Map<CartDto>(mergedCart!);
         }
 
         private async Task<Cart> GetOrCreateCartAsync(int? userId, string? sessionId, string? ipAddress = null)

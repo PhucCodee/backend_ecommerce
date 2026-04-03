@@ -371,7 +371,6 @@ CREATE TABLE
         abandoned_at TIMESTAMP,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        expires_at TIMESTAMP, -- Auto-clear old carts after 90 days
         CONSTRAINT cart_owner_check CHECK (
             (
                 user_id IS NOT NULL
@@ -399,8 +398,6 @@ WHERE
 COMMENT ON TABLE carts IS 'Multiple carts per user for historical tracking. Only ONE active cart enforced by partial unique index. Converted carts preserved for analytics.';
 
 COMMENT ON COLUMN carts.status IS '0=active (current shopping), 1=abandoned (inactive 24hrs), 2=converted (became an order)';
-
-COMMENT ON COLUMN carts.expires_at IS 'Cleanup timestamp - abandoned carts auto-deleted after 90 days';
 
 -- Shopping cart items table
 CREATE TABLE

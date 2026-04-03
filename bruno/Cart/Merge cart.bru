@@ -1,0 +1,24 @@
+meta {
+  name: Merge cart
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/api/cart/merge
+  body: json
+  auth: bearer
+}
+
+headers {
+  X-Session-Id: 43597585-b008-4a8a-9417-bfec4cddd8c1
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ5ZUBnbWFpbC5jb20iLCJqdGkiOiIyNWYxZGEzYi1lZDU0LTQ3MjctOThhYS0yOGVlODc2NTE2MzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImV4cCI6MTc3NDk4MTI1NiwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.4sPZFXYiDrEPnssjxRHHfRery-bUZGhl9YAihK59-kI
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
