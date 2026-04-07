@@ -1,18 +1,26 @@
 import uvicorn
-import uuid
-from typing import Optional
+import json
+from typing import Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr, Field
 from langchain_core.messages import HumanMessage
 
-# Import your graph
-from app.agents.buyer.agents import app as buyer_orchestrator_app
+# Import Graph từ module của bạn
+from app.agents.buyer.agent import app as buyer_orchestrator_app
 
+api = FastAPI(title="AI Microservice - E-commerce")
 
-api = FastAPI(title="AI Microservice - Dev Mode")
+# --- MỞ CORS ĐỂ FRONTEND GỌI ĐƯỢC ---
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Môi trường Dev mở *, lên Prod nhớ đưa domain React/Vue vào
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- 1. DATA MODELS ---
-
 class UserContext(BaseModel):
     user_id: str
     username: str
@@ -27,18 +35,15 @@ class UserContext(BaseModel):
 class ChatRequest(BaseModel):
     message: str
 
+# THIẾT KẾ OUTPUT CHUẨN PRODUCTION
 class ChatResponse(BaseModel):
-    response: str
+    text: str = Field(description="Nội dung AI chat với người dùng")
+    intent: str = Field(default="general", description="Phân loại luồng xử lý (general, product_search, order_tracking...)")
+    data: Dict[str, Any] = Field(default_factory=dict, description="Payload dữ liệu động cho Frontend (VD: product_ids)")
+    session_id: str = Field(description="ID của phiên chat")
 
 # --- 2. MOCK AUTH DEPENDENCY ---
-# We removed HTTPBearer. This function now runs automatically
-# without checking for Authorization headers.
-
 async def get_current_user() -> UserContext:
-    """
-    DEV MODE: Always returns the hardcoded 'Ronaldo' user.
-    No security libraries (jwt/HTTPBearer) are involved.
-    """
     return UserContext(
         user_id="1",
         username="goat",
@@ -48,35 +53,42 @@ async def get_current_user() -> UserContext:
     )
 
 # --- 3. ENDPOINTS ---
-
 @api.post("/api/ai/chat", response_model=ChatResponse)
 async def chat_endpoint(
     request: ChatRequest, 
     user: UserContext = Depends(get_current_user)
 ):
     try:
-        # 1. Config for thread persistence
         config = {"configurable": {"thread_id": user.user_id}}
+        initial_state = {
+            "user_prompt": request.message,
+            "log_action": [],
+            "messages": [HumanMessage(content=request.message)]
+        }
         
-        # 2. Inject Pydantic model as a dict into LangGraph state
-        initial_state = {"user_prompt": request.message,
-                             "log_action":[],
-                             "messages": [HumanMessage(content=request.message)]
-                            }
-        # 3. Invoke Agent
+        # 1. Gọi Graph (Sử dụng RESTful ainvoke trước mắt)
+        # ... (đoạn đầu gọi ainvoke giữ nguyên)
         result = await buyer_orchestrator_app.ainvoke(initial_state, config=config)
         
-        # 4. Get response
-        ai_message = result["answer"]
-        
-        return ChatResponse(response=ai_message, session_id=user.user_id)
+        # Lấy dữ liệu rành mạch từ MasterState
+        response_text = result.get("answer", "Done.")
+        response_data = result.get("ui_data", {}) # Lấy dictionary ra cực dễ dàng
+        current_intent = result.get("intent", "general")
+
+        # Trả thẳng về cho Frontend
+        return ChatResponse(
+            text=response_text,
+            intent=current_intent,
+            data=response_data,
+            session_id=user.user_id
+        )
 
     except Exception as e:
         print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    # Ensure you have 'email-validator' installed for EmailStr:
-    # pip install email-validator
     print("🚀 Dev Server running on http://0.0.0.0:8000")
     uvicorn.run(api, host="0.0.0.0", port=8000)
