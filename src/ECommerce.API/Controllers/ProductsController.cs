@@ -78,12 +78,12 @@ namespace ECommerce.API.Controllers
 
         [HttpGet("seller")]
         [Authorize(Policy = Policies.SellerOnly)]
-        public async Task<IActionResult> GetSellerProducts([FromQuery] ProductQueryParams query)
+        public async Task<IActionResult> GetSellerProducts([FromQuery] ProductQueryParams productQueryParams)
         {
             var sellerId = GetCurrentUserId();
-            query.SellerId = sellerId;
-            query.CategoryId = null;
-            var products = await _productQueryService.GetFilteredAsync(query);
+            productQueryParams.SellerId = sellerId;
+            productQueryParams.CategoryId = null;
+            var products = await _productQueryService.GetFilteredAsync(productQueryParams);
             return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));
         }
 

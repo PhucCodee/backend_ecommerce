@@ -605,7 +605,7 @@ COMMENT ON COLUMN processed_events.event_id IS 'UUID v4 - ensures global uniquen
 -- Event log table
 -- Complete audit trail of all event processing
 CREATE TABLE
-    event_log (
+    event_logs (
         log_id SERIAL PRIMARY KEY,
         event_id UUID NOT NULL,
         event_type VARCHAR(100) NOT NULL, -- enum?
@@ -622,9 +622,9 @@ CREATE TABLE
         processing_time_ms INTEGER
     );
 
-COMMENT ON TABLE event_log IS 'Complete audit trail of ALL event processing attempts (successes and failures). Critical for debugging distributed systems.';
+COMMENT ON TABLE event_logs IS 'Complete audit trail of ALL event processing attempts (successes and failures). Critical for debugging distributed systems.';
 
-COMMENT ON COLUMN event_log.attempt_number IS 'Retry attempt number - increments with each retry';
+COMMENT ON COLUMN event_logs.attempt_number IS 'Retry attempt number - increments with each retry';
 
 -- Dead letter queue table
 -- Failed events requiring manual intervention

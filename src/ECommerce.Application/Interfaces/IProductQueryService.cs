@@ -7,6 +7,6 @@ namespace ECommerce.Application.Interfaces
     public interface IProductQueryService
     {
         Task<ProductDetailDto> GetByIdAsync(int productId);
-        Task<PagedResult<ProductSummaryDto>> GetFilteredAsync(ProductQueryParams queryParams);
+        Task<PagedResult<ProductSummaryDto>> GetFilteredAsync(ProductQueryParams productQueryParams);
     }
 }

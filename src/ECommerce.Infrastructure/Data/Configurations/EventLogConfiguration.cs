@@ -40,6 +40,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("order_id");
 
             builder.Property(e => e.Payload)
+                .HasColumnType("jsonb")
                 .HasColumnName("payload");
 
             builder.Property(e => e.ErrorMessage)

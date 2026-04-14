@@ -8,6 +8,6 @@ namespace ECommerce.Domain.Repositories
     public interface IOrderRepository : IRepository<Order>
     {
         Task<Order?> GetOrderWithDetailsAsync(int orderId);
-        Task<IEnumerable<Order>> GetOrdersByUserIdAsync(int userId);
+        Task<(IEnumerable<Order> Orders, int TotalCount)> GetOrdersByUserIdAsync(int userId, int pageNumber, int pageSize);
     }
 }

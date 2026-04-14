@@ -1,25 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommerce.Application.DTOs;
+using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.DTOs.order;
 
-namespace ECommerce.Application.Interfaces
+namespace ECommerce.Application.Interfaces;
+
+public interface IOrderService
 {
-    public interface IOrderService
-    {
-        // Method to create a new order
-        Task<OrderDto> CreateOrderAsync(OrderDto orderDto);
-
-        // Method to retrieve an order by its ID
-        Task<OrderDto> GetOrderByIdAsync(Guid orderId);
-
-        // Method to retrieve all orders for a specific user
-        Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(Guid userId);
-
-        // Method to update an existing order
-        Task<OrderDto> UpdateOrderAsync(OrderDto orderDto);
-
-        // Method to delete an order by its ID
-        Task<bool> DeleteOrderAsync(Guid orderId);
-    }
+    Task<OrderDto> CreateAsync(int userId, CreateOrderRequest request);
+    Task<OrderDto?> GetByIdAsync(int userId, int orderId);
+    Task<PagedResult<OrderSummaryDto>> GetUserOrdersAsync(int userId, PaginationParams paginationParams);
+    Task<OrderDto?> CancelAsync(int userId, int orderId);
 }

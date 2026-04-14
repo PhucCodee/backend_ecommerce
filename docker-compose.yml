@@ -16,7 +16,7 @@ services:
         depends_on:
             - db
             # - cache
-            # - message_broker
+            - message_broker
 
     db:
         image: postgres:15
@@ -39,11 +39,11 @@ services:
     #     volumes:
     #         - redis_data:/data
 
-    # message_broker:
-    #     image: rabbitmq:3-management
-    #     ports:
-    #         - "5672:5672"
-    #         - "15672:15672"
+    message_broker:
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"
+            - "15672:15672"
 
     # chatbot_api:
     #     build:

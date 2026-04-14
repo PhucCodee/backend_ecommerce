@@ -31,4 +31,33 @@ public partial class OrderShipping
     public DateTime CreatedAt { get; set; }
 
     public required virtual Order Order { get; set; }
+
+    public static OrderShipping CreateDefault(
+        Order order,
+        string recipientName,
+        string phone,
+        string addressLine1,
+        string city,
+        string stateProvince,
+        string postalCode,
+        string country,
+        ShippingMethod method = ShippingMethod.standard,
+        string? addressLine2 = null)
+    {
+        return new OrderShipping
+        {
+            OrderId = order.OrderId,
+            RecipientName = recipientName,
+            Phone = phone,
+            AddressLine1 = addressLine1,
+            AddressLine2 = addressLine2,
+            City = city,
+            StateProvince = stateProvince,
+            PostalCode = postalCode,
+            Country = country,
+            Method = method,
+            CreatedAt = DateTime.UtcNow,
+            Order = order
+        };
+    }
 }

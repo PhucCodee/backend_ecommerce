@@ -27,21 +27,21 @@ namespace ECommerce.Application.Services
             return _mapper.Map<ProductDetailDto>(product);
         }
 
-        public async Task<PagedResult<ProductSummaryDto>> GetFilteredAsync(ProductQueryParams query)
+        public async Task<PagedResult<ProductSummaryDto>> GetFilteredAsync(ProductQueryParams productQueryParams)
         {
             var dbQuery = _context.Products
                 .AsNoTracking()
                 .Where(p => p.RemovedAt == null);
 
-            dbQuery = ApplyFilters(dbQuery, query);
+            dbQuery = ApplyFilters(dbQuery, productQueryParams);
 
             var totalCount = await dbQuery.CountAsync();
 
-            dbQuery = ApplySorting(dbQuery, query.SortBy, query.Desc);
+            dbQuery = ApplySorting(dbQuery, productQueryParams.SortBy, productQueryParams.Desc);
 
             var products = await dbQuery
-                .Skip((query.PageNumber - 1) * query.PageSize)
-                .Take(query.PageSize)
+                .Skip((productQueryParams.PageNumber - 1) * productQueryParams.PageSize)
+                .Take(productQueryParams.PageSize)
                 .Select(p => new ProductSummaryDto
                 {
                     Id = p.ProductId,
@@ -72,7 +72,7 @@ namespace ECommerce.Application.Services
                 })
                 .ToListAsync();
 
-            return PagedResult<ProductSummaryDto>.Create(products, query.PageNumber, query.PageSize, totalCount);
+            return PagedResult<ProductSummaryDto>.Create(products, productQueryParams.PageNumber, productQueryParams.PageSize, totalCount);
         }
 
         #region Private Helpers

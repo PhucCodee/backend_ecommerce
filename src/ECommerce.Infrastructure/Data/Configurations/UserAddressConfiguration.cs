@@ -48,11 +48,11 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(ua => ua.AddressLine1)
                 .IsRequired()
                 .HasMaxLength(255)
-                .HasColumnName("address_line_1");
+                .HasColumnName("address_line1");
 
             builder.Property(ua => ua.AddressLine2)
                 .HasMaxLength(255)
-                .HasColumnName("address_line_2");
+                .HasColumnName("address_line2");
 
             builder.Property(ua => ua.City)
                 .IsRequired()

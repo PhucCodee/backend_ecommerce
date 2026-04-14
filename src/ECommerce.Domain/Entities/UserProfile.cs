@@ -36,7 +36,7 @@ public partial class UserProfile
 
     public required virtual User User { get; set; }
 
-    public static UserProfile CreateDefault(User user, string firstName, string lastName, string? phone = null)
+    public static UserProfile CreateDefault(User user, string firstName, string lastName, string phone)
     {
         return new UserProfile
         {

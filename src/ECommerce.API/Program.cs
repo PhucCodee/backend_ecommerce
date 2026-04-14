@@ -12,13 +12,20 @@ using ECommerce.API.Middleware;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using ECommerce.Domain.Repositories;
+using ECommerce.Domain.Interfaces;
 using ECommerce.Application.Helpers;
 using ECommerce.Application.Mappings;
 using ECommerce.Application.Common.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 using System.Text;
 using System;
+using System.Collections;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.EntityFrameworkCore.Metadata;
+using IModel = RabbitMQ.Client.IModel;
+using ECommerce.Infrastructure.Worker;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,6 +95,7 @@ builder.Services.AddScoped<UserValidationHelper>();
 // Infrastructure services
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 
 // Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -99,6 +107,27 @@ builder.Services.AddScoped<IProductSkuService, ProductSkuService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var factory = new ConnectionFactory
+    {
+        HostName = builder.Configuration["RabbitMQ:Host"] ?? "message_broker",
+        UserName = builder.Configuration["RabbitMQ:User"] ?? "guest",
+        Password = builder.Configuration["RabbitMQ:Pass"] ?? "guest"
+    };
+    return factory.CreateConnection();
+});
+
+builder.Services.AddScoped<IModel>(sp =>
+{
+    var conn = sp.GetRequiredService<IConnection>();
+    var ch = conn.CreateModel();
+    ch.ExchangeDeclare("order.events", ExchangeType.Topic, durable: true);
+    return ch;
+});
+
+builder.Services.AddHostedService<OutboxWorker>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
