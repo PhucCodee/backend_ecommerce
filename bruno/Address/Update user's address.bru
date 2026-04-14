@@ -1,0 +1,37 @@
+meta {
+  name: Update user's address
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8080/api/addresses/13
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyb25hbGRvQGdtYWlsLmNvbSIsImp0aSI6ImNmY2IyNTU2LTcwMjctNDJjMi1hNzZhLTAyNDkyZmJlZjU2OSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6ImJ1eWVyIiwiZXhwIjoxNzc2MTc4MjgwLCJpc3MiOiJFQ29tbWVyY2UuQVBJIiwiYXVkIjoiRUNvbW1lcmNlLkNsaWVudCJ9.hYDX1pk6PqaGsXqLFOu0Old5xGQs_QIZ7NajfsYbgoE
+}
+
+body:json {
+  {
+    "type": 0,
+    "label": "Home 3",
+    "recipientName": "Cristiano Ronaldo Jr.",
+    "phone": "+3511234567",
+    "addressLine1": "123 Madrid Street",
+    "addressLine2": "Apt 10",
+    "city": "Madrid",
+    "stateProvince": "Madrid",
+    "postalCode": "1000-001",
+    "country": "Spain",
+    "isDefaultShipping": true,
+    "isDefaultBilling": true
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

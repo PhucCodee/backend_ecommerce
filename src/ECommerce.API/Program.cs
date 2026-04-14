@@ -87,6 +87,7 @@ builder.Services.AddScoped<IProductSkuRepository, ProductSkuRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Helpers
@@ -107,6 +108,7 @@ builder.Services.AddScoped<IProductSkuService, ProductSkuService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 
 builder.Services.AddSingleton<IConnection>(sp =>
 {

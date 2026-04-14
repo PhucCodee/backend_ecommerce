@@ -1,5 +1,6 @@
 using AutoMapper;
 using ECommerce.Application.DTOs;
+using ECommerce.Application.DTOs.address;
 using ECommerce.Application.DTOs.cart;
 using ECommerce.Application.DTOs.category;
 using ECommerce.Application.DTOs.order;
@@ -172,6 +173,8 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.PreferredCurrency.ToString()))
                 .ForMember(dest => dest.TotalItems, opt => opt.MapFrom(src => src.OrderItems.Sum(i => i.Quantity)));
+
+            CreateMap<UserAddress, AddressDto>();
         }
     }
 }
