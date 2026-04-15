@@ -16,7 +16,6 @@ namespace ECommerce.API.Controllers
     {
         private readonly ICategoryService _categoryService = categoryService;
 
-        // Get all categories (public)
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
         {
@@ -24,15 +23,13 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<CategoryDto>>.Ok(categories));
         }
 
-        // Get all active categories for dropdown (public)
-        [HttpGet("active")]
-        public async Task<IActionResult> GetActiveCategories()
+        [HttpGet("core")]
+        public async Task<IActionResult> GetCoreCategories([FromQuery] PaginationParams paginationParams)
         {
-            var categories = await _categoryService.GetAllActiveAsync();
-            return Ok(ApiResponse<object>.Ok(categories));
+            var categories = await _categoryService.GetCoreCategoriesPagedAsync(paginationParams);
+            return Ok(ApiResponse<PagedResult<CategoryDto>>.Ok(categories));
         }
 
-        // Get category by ID (public)
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -40,18 +37,13 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<CategoryDto>.Ok(category));
         }
 
-        // Get category by slug (public)
         [HttpGet("slug/{slug}")]
         public async Task<IActionResult> GetBySlug(string slug)
         {
             var category = await _categoryService.GetBySlugAsync(slug);
-            if (category == null)
-                return NotFound(ApiResponse<object>.Fail("Category not found"));
-
             return Ok(ApiResponse<CategoryDto>.Ok(category));
         }
 
-        // Get child categories (public)
         [HttpGet("{id:int}/children")]
         public async Task<IActionResult> GetChildren(int id)
         {
@@ -59,7 +51,6 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<object>.Ok(categories));
         }
 
-        // Create a new category (Admin only)
         [HttpPost]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Create([FromBody] CategoryCreateDto createDto)
@@ -70,7 +61,6 @@ namespace ECommerce.API.Controllers
                 ApiResponse<CategoryDto>.Ok(category, "Category created successfully"));
         }
 
-        // Update category (Admin only)
         [HttpPut("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Update(int id, [FromBody] CategoryUpdateDto updateDto)
@@ -79,7 +69,6 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<CategoryDto>.Ok(category, "Category updated successfully"));
         }
 
-        // Delete category (Admin only)
         [HttpDelete("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Delete(int id)

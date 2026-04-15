@@ -1,0 +1,20 @@
+meta {
+  name: Get cart (no JWT = guest)
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/cart
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

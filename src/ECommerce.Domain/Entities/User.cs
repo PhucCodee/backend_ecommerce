@@ -80,7 +80,7 @@ public partial class User
     public void SoftDelete()
     {
         DeletedAt = DateTime.UtcNow;
-        Status = UserStatus.suspended;
+        Status = UserStatus.deleted;
         UpdatedAt = DateTime.UtcNow;
     }
 

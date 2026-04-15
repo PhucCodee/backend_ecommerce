@@ -40,6 +40,8 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
             .HasColumnName("updated_at")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+        builder.HasIndex(ci => new { ci.CartId, ci.SkuId }).IsUnique();
+
         // Relationships
         builder.HasOne(ci => ci.Cart)
             .WithMany(c => c.CartItems)

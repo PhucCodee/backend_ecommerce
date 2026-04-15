@@ -36,7 +36,7 @@ public partial class UserProfile
 
     public required virtual User User { get; set; }
 
-    public static UserProfile CreateDefault(User user, string firstName, string lastName, string? phone = null)
+    public static UserProfile CreateDefault(User user, string firstName, string lastName, string phone)
     {
         return new UserProfile
         {
@@ -44,7 +44,7 @@ public partial class UserProfile
             UserId = user.UserId,
             FirstName = firstName,
             LastName = lastName,
-            Phone = phone?.Trim() ?? "",
+            Phone = phone,
             Gender = UserGender.male,
             PreferredLanguage = Language.vi,
             PreferredCurrency = Currency.vnd,

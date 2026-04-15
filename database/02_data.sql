@@ -6,26 +6,53 @@
 -- ====================================
 INSERT INTO
     users (email, username, status)
-VALUES
-    ('ronaldo@gmail.com', 'goat', 0),
+VALUES (
+        'ronaldo@gmail.com',
+        'goat',
+        0
+    ),
     ('messi@gmail.com', 'messi', 0),
     ('lebron@gmail.com', 'king', 0),
-    ('stephen@gmail.com', 'curry', 0),
+    (
+        'stephen@gmail.com',
+        'curry',
+        0
+    ),
     ('ye@gmail.com', 'west', 0),
-    ('taylor@gmail.com', 'taylorswift', 0),
-    ('elon@gmail.com', 'elonmusk', 0),
-    ('bill@gmail.com', 'billgates', 0),
-    ('beyonce@gmail.com', 'beyonce', 0),
+    (
+        'taylor@gmail.com',
+        'taylorswift',
+        0
+    ),
+    (
+        'elon@gmail.com',
+        'elonmusk',
+        0
+    ),
+    (
+        'bill@gmail.com',
+        'billgates',
+        0
+    ),
+    (
+        'beyonce@gmail.com',
+        'beyonce',
+        0
+    ),
     ('drake@gmail.com', 'drake', 0);
 
 -- ====================================
 -- 2. USER CREDENTIALS
 -- ====================================
 INSERT INTO
-    user_credentials (user_id, password_hash, password_salt)
-VALUES
-    (
-        1, -- Default password: Phuc123
+    user_credentials (
+        user_id,
+        password_hash,
+        password_salt
+    )
+VALUES (
+        1,
+        -- Default password: Phuc123
         'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
         'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
     ),
@@ -92,8 +119,7 @@ INSERT INTO
         timezone,
         currency
     )
-VALUES
-    (
+VALUES (
         1,
         'Cristiano',
         'Ronaldo',
@@ -225,17 +251,217 @@ VALUES
     );
 
 -- ====================================
+-- 3.1 USER ADDRESSES (multiple addresses per user)
+-- address_type_enum values: house, apartment, office, other
+-- ====================================
+INSERT INTO
+    user_addresses (
+        user_id,
+        address_type,
+        is_default_shipping,
+        is_default_billing,
+        label,
+        recipient_name,
+        phone,
+        address_line1,
+        address_line2,
+        city,
+        state_province,
+        postal_code,
+        country,
+        latitude,
+        longitude
+    )
+VALUES
+    -- User 1: 3 addresses
+    (
+        1,
+        0,
+        TRUE,
+        TRUE,
+        'Home',
+        'Cristiano Ronaldo',
+        '+351123456789',
+        '123 Lisbon Street',
+        'Apt 10',
+        'Lisbon',
+        'Lisbon',
+        '1000-001',
+        'Portugal',
+        38.722300,
+        -9.139300
+    ),
+    (
+        1,
+        2,
+        FALSE,
+        FALSE,
+        'Office',
+        'Cristiano Ronaldo',
+        '+351123456789',
+        '45 Business Park',
+        NULL,
+        'Lisbon',
+        'Lisbon',
+        '1000-002',
+        'Portugal',
+        38.716900,
+        -9.142700
+    ),
+    (
+        1,
+        1,
+        FALSE,
+        FALSE,
+        'Parents House',
+        'Maria Ronaldo',
+        '+351987654321',
+        '7 Family Avenue',
+        NULL,
+        'Funchal',
+        'Madeira',
+        '9000-001',
+        'Portugal',
+        32.666900,
+        -16.924100
+    ),
+    -- User 2: 2 addresses
+    (
+        2,
+        1,
+        TRUE,
+        TRUE,
+        'Main Apartment',
+        'Lionel Messi',
+        '+5491123456789',
+        '88 Palermo Blvd',
+        'Floor 12',
+        'Buenos Aires',
+        'CABA',
+        'C1425',
+        'Argentina',
+        -34.603700,
+        -58.381600
+    ),
+    (
+        2,
+        0,
+        FALSE,
+        FALSE,
+        'Family Home',
+        'Lionel Messi',
+        '+5491123456789',
+        '12 Rosario Road',
+        NULL,
+        'Rosario',
+        'Santa Fe',
+        'S2000',
+        'Argentina',
+        -32.944200,
+        -60.650500
+    ),
+    -- User 3: 2 addresses (different default shipping/billing)
+    (
+        3,
+        0,
+        TRUE,
+        FALSE,
+        'LA Home',
+        'LeBron James',
+        '+12135551234',
+        '23 Beverly Hills',
+        NULL,
+        'Los Angeles',
+        'California',
+        '90210',
+        'USA',
+        34.073600,
+        -118.400400
+    ),
+    (
+        3,
+        2,
+        FALSE,
+        TRUE,
+        'Business HQ',
+        'LeBron James',
+        '+12135551234',
+        '500 Downtown Plaza',
+        'Suite 800',
+        'Los Angeles',
+        'California',
+        '90015',
+        'USA',
+        34.040700,
+        -118.246800
+    ),
+    -- User 4: 2 addresses
+    (
+        4,
+        0,
+        TRUE,
+        TRUE,
+        'Home',
+        'Stephen Curry',
+        '+19255551234',
+        '30 Bay Area Lane',
+        NULL,
+        'San Francisco',
+        'California',
+        '94105',
+        'USA',
+        37.774900,
+        -122.419400
+    ),
+    (
+        4,
+        3,
+        FALSE,
+        FALSE,
+        'Warehouse',
+        'Stephen Curry',
+        '+19255551234',
+        '990 Storage Street',
+        NULL,
+        'Oakland',
+        'California',
+        '94607',
+        'USA',
+        37.804400,
+        -122.271200
+    ),
+    -- User 5: 1 address
+    (
+        5,
+        0,
+        TRUE,
+        TRUE,
+        'Home',
+        'Kanye West',
+        '+13105551234',
+        '1 Chicago Ave',
+        NULL,
+        'Chicago',
+        'Illinois',
+        '60601',
+        'USA',
+        41.878100,
+        -87.629800
+    );
+
+-- ====================================
 -- 4. USER ROLES
 -- ====================================
 INSERT INTO
     user_roles (user_id, role)
-VALUES
-    (1, 0),
+VALUES (1, 0),
     (2, 0),
     (3, 1),
-    (3, 0), -- Seller can also buy
+    (3, 0),
+    -- Seller can also buy
     (4, 1),
-    (4, 0), -- Seller can also buy
+    (4, 0),
+    -- Seller can also buy
     (5, 2),
     (6, 2),
     (7, 2),
@@ -245,19 +471,203 @@ VALUES
 
 -- ====================================
 -- 5. CATEGORIES
+-- - is_core = true  => core browsing categories
+-- - is_core = false => limited collections
+-- - parent_category_id NULL => root
 -- ====================================
+-- Root categories
 INSERT INTO
-    categories (category_name, slug, description)
-VALUES
-    (
-        'Electronics',
-        'electronics',
-        'Electronic devices'
+    categories (
+        category_name,
+        slug,
+        parent_category_id,
+        description,
+        display_order,
+        is_core,
+        is_active
+    )
+VALUES (
+        'Clothing',
+        'clothing',
+        NULL,
+        'All apparel & fashion',
+        1,
+        TRUE,
+        TRUE
     ),
-    ('Clothing', 'clothing', 'Apparel and fashion'),
-    ('Books', 'books', 'Books and reading'),
-    ('Home', 'home', 'Home goods'),
-    ('Sports', 'sports', 'Sports equipment');
+    (
+        'Limited Collection',
+        'limited-collection',
+        NULL,
+        'Limited drops / curated collections',
+        2,
+        FALSE,
+        TRUE
+    );
+
+-- Core children under Clothing
+INSERT INTO
+    categories (
+        category_name,
+        slug,
+        parent_category_id,
+        description,
+        display_order,
+        is_core,
+        is_active
+    )
+VALUES (
+        'Men',
+        'clothing-men',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Menswear',
+        10,
+        TRUE,
+        TRUE
+    ),
+    (
+        'Women',
+        'clothing-women',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Womenswear',
+        20,
+        TRUE,
+        TRUE
+    ),
+    (
+        'Kids',
+        'clothing-kids',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Kidswear',
+        30,
+        TRUE,
+        TRUE
+    ),
+    (
+        'Accessories',
+        'clothing-accessories',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Caps, belts, beanies, etc.',
+        40,
+        TRUE,
+        TRUE
+    ),
+    (
+        'Footwear',
+        'clothing-footwear',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Shoes & sneakers',
+        50,
+        TRUE,
+        TRUE
+    ),
+    (
+        'Outerwear',
+        'clothing-outerwear',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Jackets & coats',
+        60,
+        TRUE,
+        TRUE
+    ),
+    (
+        'Activewear',
+        'clothing-activewear',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Training & sportswear',
+        70,
+        TRUE,
+        TRUE
+    ),
+    (
+        'Basics',
+        'clothing-basics',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing'
+        ),
+        'Everyday essentials',
+        80,
+        TRUE,
+        TRUE
+    );
+
+-- Limited collection children
+INSERT INTO
+    categories (
+        category_name,
+        slug,
+        parent_category_id,
+        description,
+        display_order,
+        is_core,
+        is_active
+    )
+VALUES (
+        'Summer Drop 2026',
+        'limited-summer-drop-2026',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'limited-collection'
+        ),
+        'Seasonal limited drop',
+        10,
+        FALSE,
+        TRUE
+    ),
+    (
+        'Curry Collab',
+        'limited-curry-collab',
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'limited-collection'
+        ),
+        'Special collaboration pieces',
+        20,
+        FALSE,
+        TRUE
+    );
 
 -- ====================================
 -- 6. PRODUCTS
@@ -265,7 +675,6 @@ VALUES
 INSERT INTO
     products (
         seller_id,
-        category_id,
         product_name,
         slug,
         base_sku,
@@ -273,792 +682,1042 @@ INSERT INTO
         status,
         moderation_status
     )
-VALUES
-    -- Electronics
-    (
-        3,
-        1,
-        'Wireless Mouse',
-        'wireless-mouse',
-        'ELEC-001',
-        'Comfortable wireless mouse',
-        1,
-        1
-    ),
-    (
-        3,
-        1,
-        'USB Keyboard',
-        'usb-keyboard',
-        'ELEC-002',
-        'Mechanical keyboard',
-        1,
-        1
-    ),
-    (
-        3,
-        1,
-        'Laptop Stand',
-        'laptop-stand',
-        'ELEC-003',
-        'Adjustable laptop stand',
-        1,
-        1
-    ),
-    (
-        3,
-        1,
-        'Phone Charger',
-        'phone-charger',
-        'ELEC-004',
-        'Fast charging cable',
-        1,
-        1
-    ),
-    -- Clothing
-    (
+VALUES (
         4,
-        2,
-        'T-Shirt',
-        't-shirt',
-        'CLOTH-001',
-        'Cotton t-shirt',
+        'Classic Crew T-Shirt',
+        'classic-crew-tshirt',
+        'CLOTH-101',
+        'Everyday cotton crew tee',
         1,
         1
     ),
     (
         4,
-        2,
-        'Jeans',
-        'jeans',
-        'CLOTH-002',
-        'Blue denim jeans',
+        'Oversized Graphic Tee',
+        'oversized-graphic-tee',
+        'CLOTH-102',
+        'Relaxed fit graphic tee',
         1,
         1
     ),
     (
         4,
-        2,
-        'Sneakers',
-        'sneakers',
-        'CLOTH-003',
-        'Running shoes',
+        'Slim Fit Jeans',
+        'slim-fit-jeans',
+        'CLOTH-103',
+        'Stretch denim slim fit',
         1,
         1
     ),
     (
         4,
-        2,
-        'Hat',
-        'hat',
-        'CLOTH-004',
-        'Baseball cap',
-        1,
-        1
-    ),
-    -- Books
-    (
-        3,
-        3,
-        'Novel',
-        'novel',
-        'BOOK-001',
-        'Fiction book',
-        1,
-        1
-    ),
-    (
-        3,
-        3,
-        'Cookbook',
-        'cookbook',
-        'BOOK-002',
-        'Recipe collection',
-        1,
-        1
-    ),
-    (
-        3,
-        3,
-        'Programming Guide',
-        'programming-guide',
-        'BOOK-003',
-        'Learn to code',
-        1,
-        1
-    ),
-    (
-        3,
-        3,
-        'Magazine',
-        'magazine',
-        'BOOK-004',
-        'Monthly magazine',
-        1,
-        1
-    ),
-    -- Home
-    (
-        4,
-        4,
-        'Coffee Mug',
-        'coffee-mug',
-        'HOME-001',
-        'Ceramic mug',
+        'High-Rise Straight Jeans',
+        'high-rise-straight-jeans',
+        'CLOTH-104',
+        'High-rise straight leg denim',
         1,
         1
     ),
     (
         4,
-        4,
-        'Pillow',
-        'pillow',
-        'HOME-002',
-        'Soft pillow',
+        'Pleated Midi Skirt',
+        'pleated-midi-skirt',
+        'CLOTH-105',
+        'Light pleated midi skirt',
         1,
         1
     ),
     (
         4,
-        4,
-        'Lamp',
-        'lamp',
-        'HOME-003',
-        'Desk lamp',
+        'Fleece Pullover Hoodie',
+        'fleece-pullover-hoodie',
+        'CLOTH-106',
+        'Warm fleece hoodie',
         1,
         1
     ),
     (
         4,
+        'Bomber Jacket',
+        'bomber-jacket',
+        'CLOTH-107',
+        'Classic bomber outerwear',
+        1,
+        1
+    ),
+    (
         4,
-        'Plant Pot',
-        'plant-pot',
-        'HOME-004',
-        'Decorative pot',
-        1,
-        1
-    ),
-    -- Sports
-    (
-        3,
-        5,
-        'Yoga Mat',
-        'yoga-mat',
-        'SPORT-001',
-        'Exercise mat',
+        'Trench Coat',
+        'trench-coat',
+        'CLOTH-108',
+        'Long trench coat with belt',
         1,
         1
     ),
     (
-        3,
-        5,
-        'Water Bottle',
-        'water-bottle',
-        'SPORT-002',
-        'Sports bottle',
+        4,
+        'Performance Running Sneakers',
+        'performance-running-sneakers',
+        'CLOTH-109',
+        'Cushioned running sneakers',
         1,
         1
     ),
     (
-        3,
-        5,
-        'Dumbbells',
-        'dumbbells',
-        'SPORT-003',
-        'Weight training',
+        4,
+        'Canvas Low-Top Sneakers',
+        'canvas-lowtop-sneakers',
+        'CLOTH-110',
+        'Everyday canvas sneakers',
         1,
         1
     ),
     (
-        3,
-        5,
-        'Jump Rope',
-        'jump-rope',
-        'SPORT-004',
-        'Cardio equipment',
+        4,
+        'Leather Belt',
+        'leather-belt',
+        'CLOTH-111',
+        'Genuine leather belt',
+        1,
+        1
+    ),
+    (
+        4,
+        'Baseball Cap',
+        'baseball-cap',
+        'CLOTH-112',
+        'Adjustable cotton cap',
+        1,
+        1
+    ),
+    (
+        4,
+        'Knit Beanie',
+        'knit-beanie',
+        'CLOTH-113',
+        'Warm knit beanie',
+        1,
+        1
+    ),
+    (
+        4,
+        'Yoga Leggings',
+        'yoga-leggings',
+        'CLOTH-114',
+        'High-stretch leggings',
+        1,
+        1
+    ),
+    (
+        4,
+        'Sports Bra',
+        'sports-bra',
+        'CLOTH-115',
+        'Medium support sports bra',
+        1,
+        1
+    ),
+    (
+        4,
+        'Kids Hoodie',
+        'kids-hoodie',
+        'CLOTH-116',
+        'Soft kids hoodie',
+        1,
+        1
+    ),
+    (
+        4,
+        'Kids Sneakers',
+        'kids-sneakers',
+        'CLOTH-117',
+        'Durable kids sneakers',
+        1,
+        1
+    ),
+    (
+        4,
+        'Lightweight Windbreaker',
+        'lightweight-windbreaker',
+        'CLOTH-118',
+        'Packable windbreaker jacket',
+        1,
+        1
+    ),
+    (
+        4,
+        'Puffer Vest',
+        'puffer-vest',
+        'CLOTH-119',
+        'Warm insulated vest',
+        1,
+        1
+    ),
+    (
+        4,
+        'Linen Short-Sleeve Shirt',
+        'linen-shortsleeve-shirt',
+        'CLOTH-120',
+        'Breathable linen shirt',
         1,
         1
     );
+
+-- ====================================
+-- Product ↔ Category links
+-- Each product has 1 primary category (is_primary=TRUE)
+-- Some products also tagged into limited collections (is_primary=FALSE)
+-- ====================================
+INSERT INTO
+    product_categories (
+        product_id,
+        category_id,
+        is_primary
+    )
+VALUES
+    -- Basics
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'classic-crew-tshirt'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-basics'
+        ),
+        TRUE
+    ),
+    -- Men
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'slim-fit-jeans'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-men'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'linen-shortsleeve-shirt'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-men'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'bomber-jacket'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-men'
+        ),
+        TRUE
+    ),
+    -- Women
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'high-rise-straight-jeans'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-women'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'pleated-midi-skirt'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-women'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'trench-coat'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-women'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'yoga-leggings'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-women'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'sports-bra'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-women'
+        ),
+        TRUE
+    ),
+    -- Kids
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'kids-hoodie'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-kids'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'kids-sneakers'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-kids'
+        ),
+        TRUE
+    ),
+    -- Accessories
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'leather-belt'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-accessories'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'baseball-cap'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-accessories'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'knit-beanie'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-accessories'
+        ),
+        TRUE
+    ),
+    -- Footwear
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'performance-running-sneakers'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-footwear'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'canvas-lowtop-sneakers'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-footwear'
+        ),
+        TRUE
+    ),
+    -- Outerwear
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'fleece-pullover-hoodie'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-outerwear'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'lightweight-windbreaker'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-outerwear'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'puffer-vest'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-outerwear'
+        ),
+        TRUE
+    ),
+    -- Activewear
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'performance-running-sneakers'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-activewear'
+        ),
+        FALSE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'yoga-leggings'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-activewear'
+        ),
+        FALSE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'sports-bra'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-activewear'
+        ),
+        FALSE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'lightweight-windbreaker'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-activewear'
+        ),
+        FALSE
+    ),
+    -- Limited tags
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'oversized-graphic-tee'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'clothing-men'
+        ),
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'oversized-graphic-tee'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'limited-summer-drop-2026'
+        ),
+        FALSE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'linen-shortsleeve-shirt'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'limited-summer-drop-2026'
+        ),
+        FALSE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'knit-beanie'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'limited-curry-collab'
+        ),
+        FALSE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'lightweight-windbreaker'
+        ),
+        (
+            SELECT category_id
+            FROM categories
+            WHERE
+                slug = 'limited-curry-collab'
+        ),
+        FALSE
+    ) ON CONFLICT DO NOTHING;
 
 -- ====================================
 -- 7. PRODUCT SKUs
 -- ====================================
 INSERT INTO
-    product_skus (product_id, sku, price, is_default)
-VALUES
-    (1, 'ELEC-001-DEFAULT', 25.00, true),
-    (2, 'ELEC-002-DEFAULT', 75.00, true),
-    (3, 'ELEC-003-DEFAULT', 40.00, true),
-    (4, 'ELEC-004-DEFAULT', 15.00, true),
-    (5, 'CLOTH-001-DEFAULT', 20.00, true),
-    (6, 'CLOTH-002-DEFAULT', 50.00, true),
-    (7, 'CLOTH-003-DEFAULT', 80.00, true),
-    (8, 'CLOTH-004-DEFAULT', 15.00, true),
-    (9, 'BOOK-001-DEFAULT', 12.00, true),
-    (10, 'BOOK-002-DEFAULT', 18.00, true),
-    (11, 'BOOK-003-DEFAULT', 35.00, true),
-    (12, 'BOOK-004-DEFAULT', 8.00, true),
-    (13, 'HOME-001-DEFAULT', 10.00, true),
-    (14, 'HOME-002-DEFAULT', 25.00, true),
-    (15, 'HOME-003-DEFAULT', 30.00, true),
-    (16, 'HOME-004-DEFAULT', 12.00, true),
-    (17, 'SPORT-001-DEFAULT', 20.00, true),
-    (18, 'SPORT-002-DEFAULT', 15.00, true),
-    (19, 'SPORT-003-DEFAULT', 45.00, true),
-    (20, 'SPORT-004-DEFAULT', 10.00, true);
-
--- ====================================
--- 8. INVENTORY (Stock for each SKU)
--- ====================================
-INSERT INTO
-    inventory (sku_id, quantity_available)
-VALUES
-    (1, 100),
-    (2, 50),
-    (3, 75),
-    (4, 200),
-    (5, 150),
-    (6, 80),
-    (7, 60),
-    (8, 120),
-    (9, 40),
-    (10, 30),
-    (11, 25),
-    (12, 100),
-    (13, 200),
-    (14, 90),
-    (15, 45),
-    (16, 110),
-    (17, 70),
-    (18, 150),
-    (19, 35),
-    (20, 180);
-
--- ====================================
--- 9. SAMPLE ORDER
--- ====================================
-INSERT INTO
-    orders (
-        order_number,
-        user_id,
-        status,
-        subtotal,
-        total_amount,
-        currency
-    )
-VALUES
-    ('ORD-2025-001', 1, 4, 100.00, 100.00, 0);
-
--- ====================================
--- 10. ORDER SHIPPING
--- ====================================
-INSERT INTO
-    order_shipping (
-        order_id,
-        recipient_name,
-        phone,
-        address_line1,
-        city,
-        country,
-        shipping_method
-    )
-VALUES
-    (
-        1,
-        'Cristiano Ronaldo',
-        '0123456789',
-        '1 Nguyen Hue',
-        'Ho Chi Minh',
-        'Vietnam',
-        0
-    );
-
--- ====================================
--- 11. ORDER PAYMENT
--- ====================================
-INSERT INTO
-    order_payments (
-        order_id,
-        payment_method,
-        payment_status,
-        amount,
-        paid_at
-    )
-VALUES
-    (1, 3, 2, 100.00, CURRENT_TIMESTAMP);
-
--- ====================================
--- 12. ORDER ITEMS
--- ====================================
-INSERT INTO
-    order_items (
-        order_id,
-        sku_id,
-        product_name,
+    product_skus (
+        product_id,
         sku,
-        seller_id,
-        quantity,
-        unit_price,
-        subtotal
+        price,
+        is_default
     )
-VALUES
-    (
-        1,
-        1,
-        'Wireless Mouse',
-        'ELEC-001-DEFAULT',
-        3,
-        2,
-        25.00,
-        50.00
+VALUES (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'classic-crew-tshirt'
+        ),
+        'CLOTH-101-DEFAULT',
+        19.99,
+        TRUE
     ),
-    (
-        1,
-        5,
-        'T-Shirt',
-        'CLOTH-001-DEFAULT',
-        4,
-        1,
-        20.00,
-        20.00
-    ),
-    (
-        1,
-        13,
-        'Coffee Mug',
-        'HOME-001-DEFAULT',
-        4,
-        3,
-        10.00,
-        30.00
-    );
-
-INSERT INTO
-    products (
-        seller_id,
-        category_id,
-        product_name,
-        slug,
-        base_sku,
-        status,
-        moderation_status,
-        description
-    )
-VALUES
-    -- ELECTRONICS (Category 1)
-    (
-        3,
-        1,
-        'SonicBlast Pro Noise Cancelling Headphones',
-        'sonicblast-pro',
-        'ELEC-005',
-        1,
-        1,
-        'Experience the ultimate audio immersion with the SonicBlast Pro. These over-ear headphones feature industry-leading Active Noise Cancellation (ANC) that blocks out up to 98% of ambient background noise, making them perfect for travel, office work, or focusing in loud environments. 
-    
-    Equipped with 40mm liquid crystal polymer drivers, they deliver deep, punchy bass and crystal-clear highs. The battery life is exceptional, offering 30 hours of playback with ANC turned on, and up to 40 hours without. Fast charging is supported via USB-C: a 10-minute charge gives you 5 hours of listening time. 
-    
-    Connectivity includes Bluetooth 5.2 for a stable wireless connection and multi-point pairing, allowing you to switch seamlessly between your laptop and phone. Built-in microphones ensure clear call quality even in windy conditions.'
-    ),
-    (
-        3,
-        1,
-        'UltraView 27-inch 4K Gaming Monitor',
-        'ultraview-27-4k',
-        'ELEC-006',
-        1,
-        1,
-        'Elevate your gaming setup with the UltraView 27-inch 4K UHD monitor. Featuring an IPS panel with a resolution of 3840 x 2160, colors are vibrant and accurate, covering 99% of the sRGB color gamut. 
-    
-    Gamers will appreciate the 144Hz refresh rate and 1ms response time (GtG), ensuring smooth, ghosting-free visuals during fast-paced action. It is NVIDIA G-SYNC compatible and supports AMD FreeSync Premium to eliminate screen tearing. 
-    
-    The ergonomic stand allows for tilt, swivel, pivot, and height adjustment to find your perfect viewing angle. Connectivity ports include 2x HDMI 2.1 (perfect for PS5 and Xbox Series X), 1x DisplayPort 1.4, and a USB 3.0 hub.'
-    ),
-    -- CLOTHING (Category 2)
-    (
-        4,
-        2,
-        'Alpine Explorer Waterproof Hiking Jacket',
-        'alpine-explorer-jacket',
-        'CLOTH-005',
-        1,
-        1,
-        'Conquer the elements with the Alpine Explorer jacket. Designed for extreme weather, this shell is constructed from 3-layer Gore-Tex fabric, providing 100% waterproof protection while remaining highly breathable to prevent overheating during strenuous hikes.
-    
-    The jacket features reinforced elbows for durability, a helmet-compatible adjustable hood, and pit zips for rapid ventilation. It includes two waterproof chest pockets, two handwarmer pockets, and an internal media pocket. 
-    
-    All seams are fully taped to prevent water ingress. The fit is athletic but allows room for layering a fleece or puffer underneath. Ideal for mountaineering, skiing, or rainy urban commutes.'
-    ),
-    (
-        4,
-        2,
-        'Vintage Leather Aviator Jacket',
-        'vintage-leather-aviator',
-        'CLOTH-006',
-        1,
-        1,
-        'A timeless classic. This Aviator jacket is crafted from premium full-grain cowhide leather that is designed to age beautifully, developing a unique patina over time. The interior is lined with soft, quilted polyester for warmth and comfort in cooler temperatures.
-    
-    Features include heavy-duty brass zippers, a removable faux-fur collar, and ribbed cuffs and hem to seal out the wind. It has deep snap-button pockets on the front and a hidden secure inner pocket for your wallet or phone. 
-    
-    Whether you are riding a motorcycle or just heading out for a night on the town, this jacket adds instant rugged style to any outfit.'
-    ),
-    -- HOME (Category 4) - Good for distinguishing from "Coffee Mug"
-    (
-        4,
-        4,
-        'BaristaPro Smart Coffee Maker',
-        'baristapro-smart',
-        'HOME-005',
-        1,
-        1,
-        'Wake up to the smell of freshly ground coffee every morning. The BaristaPro is a WiFi-enabled smart coffee maker that you can control via a mobile app or voice commands (Alexa/Google Assistant). 
-    
-    It features a built-in conical burr grinder with 15 grind settings, ensuring your beans are ground seconds before brewing for maximum flavor freshness. The thermal carafe keeps coffee hot for up to 4 hours without burning it.
-    
-    You can schedule brew times, adjust brew strength (Regular, Bold, Gold), and even order replacement beans directly from the app when supplies run low. The water reservoir allows for 12 cups of brewing capacity.'
-    ),
-    (
-        4,
-        4,
-        'ErgoCloud Office Chair',
-        'ergocloud-chair',
-        'HOME-006',
-        1,
-        1,
-        'Say goodbye to back pain with the ErgoCloud Office Chair. Designed for professionals who spend long hours at a desk, this chair features a high-tension mesh backrest that promotes airflow and keeps you cool.
-    
-    The dynamic lumbar support automatically adjusts to your posture as you lean back. It includes 4D adjustable armrests (height, width, depth, and pivot), a seat depth slider, and a headrest that can be adjusted for height and angle. 
-    
-    The heavy-duty aluminum base supports up to 300lbs and rolls smoothly on all floor types. Easy assembly in under 15 minutes.'
-    ),
-    -- SPORTS (Category 5)
-    (
-        3,
-        5,
-        'FlexCore Adjustable Dumbbells (Pair)',
-        'flexcore-dumbbells',
-        'SPORT-005',
-        1,
-        1,
-        'Replace an entire rack of weights with the FlexCore Adjustable Dumbbells. This space-saving solution is perfect for home gyms where floor space is at a premium. 
-    
-    With a simple turn of the handle dial, you can adjust the weight from 5 lbs to 52.5 lbs in 2.5 lb increments. The mechanism is smooth and quiet, locking the weight plates securely into place for safety.
-    
-    The handles are textured for a non-slip grip, and the plates are coated in durable molding to prevent clanging noise and protect your floors. Sold as a pair with storage trays included.'
-    );
-
--- ====================================
--- 14. EXTENDED PRODUCT SKUS
--- ====================================
-INSERT INTO
-    product_skus (product_id, sku, price, is_default)
-VALUES
-    -- Headphones (Product ID: 21 assuming sequence continues)
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT product_id
+            FROM products
             WHERE
-                slug = 'sonicblast-pro'
+                slug = 'oversized-graphic-tee'
         ),
-        'ELEC-005-BLK',
-        299.99,
-        true
+        'CLOTH-102-DEFAULT',
+        29.99,
+        TRUE
     ),
-    -- Monitor (Product ID: 22)
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT product_id
+            FROM products
             WHERE
-                slug = 'ultraview-27-4k'
+                slug = 'slim-fit-jeans'
         ),
-        'ELEC-006-STD',
-        450.00,
-        true
+        'CLOTH-103-DEFAULT',
+        59.99,
+        TRUE
     ),
-    -- Hiking Jacket (Product ID: 23)
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT product_id
+            FROM products
             WHERE
-                slug = 'alpine-explorer-jacket'
+                slug = 'high-rise-straight-jeans'
         ),
-        'CLOTH-005-M-RED',
-        180.00,
-        true
+        'CLOTH-104-DEFAULT',
+        64.99,
+        TRUE
     ),
-    -- Leather Jacket (Product ID: 24)
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT product_id
+            FROM products
             WHERE
-                slug = 'vintage-leather-aviator'
+                slug = 'pleated-midi-skirt'
         ),
-        'CLOTH-006-L-BRN',
-        250.00,
-        true
+        'CLOTH-105-DEFAULT',
+        44.99,
+        TRUE
     ),
-    -- Coffee Maker (Product ID: 25)
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT product_id
+            FROM products
             WHERE
-                slug = 'baristapro-smart'
+                slug = 'fleece-pullover-hoodie'
         ),
-        'HOME-005-SS',
-        120.00,
-        true
+        'CLOTH-106-DEFAULT',
+        49.99,
+        TRUE
     ),
-    -- Office Chair (Product ID: 26)
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT product_id
+            FROM products
             WHERE
-                slug = 'ergocloud-chair'
+                slug = 'bomber-jacket'
         ),
-        'HOME-006-BLK',
-        350.00,
-        true
+        'CLOTH-107-DEFAULT',
+        79.99,
+        TRUE
     ),
-    -- Dumbbells (Product ID: 27)
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT product_id
+            FROM products
             WHERE
-                slug = 'flexcore-dumbbells'
+                slug = 'trench-coat'
         ),
-        'SPORT-005-SET',
-        199.00,
-        true
+        'CLOTH-108-DEFAULT',
+        99.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'performance-running-sneakers'
+        ),
+        'CLOTH-109-DEFAULT',
+        89.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'canvas-lowtop-sneakers'
+        ),
+        'CLOTH-110-DEFAULT',
+        54.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'leather-belt'
+        ),
+        'CLOTH-111-DEFAULT',
+        24.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'baseball-cap'
+        ),
+        'CLOTH-112-DEFAULT',
+        18.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'knit-beanie'
+        ),
+        'CLOTH-113-DEFAULT',
+        16.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'yoga-leggings'
+        ),
+        'CLOTH-114-DEFAULT',
+        39.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'sports-bra'
+        ),
+        'CLOTH-115-DEFAULT',
+        29.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'kids-hoodie'
+        ),
+        'CLOTH-116-DEFAULT',
+        34.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'kids-sneakers'
+        ),
+        'CLOTH-117-DEFAULT',
+        39.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'lightweight-windbreaker'
+        ),
+        'CLOTH-118-DEFAULT',
+        59.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'puffer-vest'
+        ),
+        'CLOTH-119-DEFAULT',
+        69.99,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'linen-shortsleeve-shirt'
+        ),
+        'CLOTH-120-DEFAULT',
+        42.99,
+        TRUE
     );
 
 -- ====================================
--- 15. EXTENDED INVENTORY
+-- 8. INVENTORY
 -- ====================================
 INSERT INTO
     inventory (sku_id, quantity_available)
-VALUES
-    (
+VALUES (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'ELEC-005-BLK'
+                sku = 'CLOTH-101-DEFAULT'
         ),
-        45
+        200
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'ELEC-006-STD'
+                sku = 'CLOTH-102-DEFAULT'
         ),
-        20
+        120
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'CLOTH-005-M-RED'
+                sku = 'CLOTH-103-DEFAULT'
         ),
-        100
+        80
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'CLOTH-006-L-BRN'
+                sku = 'CLOTH-104-DEFAULT'
         ),
-        15
+        75
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'HOME-005-SS'
+                sku = 'CLOTH-105-DEFAULT'
+        ),
+        90
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-106-DEFAULT'
+        ),
+        110
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-107-DEFAULT'
         ),
         60
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'HOME-006-BLK'
+                sku = 'CLOTH-108-DEFAULT'
         ),
-        30
+        50
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'SPORT-005-SET'
+                sku = 'CLOTH-109-DEFAULT'
         ),
-        25
-    );
-
--- For 'SonicBlast Pro Noise Cancelling Headphones' (slug: 'sonicblast-pro')
-INSERT INTO
-    product_skus (
-        product_id,
-        sku,
-        price,
-        is_default,
-        variant_attributes
-    )
-VALUES
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'sonicblast-pro'
-        ),
-        'ELEC-005-WHT',
-        309.99,
-        false,
-        '{"color":"white"}'
+        70
     ),
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                slug = 'sonicblast-pro'
+                sku = 'CLOTH-110-DEFAULT'
         ),
-        'ELEC-005-BLU',
-        319.99,
-        false,
-        '{"color":"blue"}'
-    );
-
--- For 'Alpine Explorer Waterproof Hiking Jacket' (slug: 'alpine-explorer-jacket')
-INSERT INTO
-    product_skus (
-        product_id,
-        sku,
-        price,
-        is_default,
-        variant_attributes
-    )
-VALUES
-    (
-        (
-            SELECT
-                product_id
-            FROM
-                products
-            WHERE
-                slug = 'alpine-explorer-jacket'
-        ),
-        'CLOTH-005-L-BLK',
-        185.00,
-        false,
-        '{"size":"L","color":"black"}'
+        95
     ),
     (
         (
-            SELECT
-                product_id
-            FROM
-                products
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                slug = 'alpine-explorer-jacket'
+                sku = 'CLOTH-111-DEFAULT'
         ),
-        'CLOTH-005-XL-RED',
-        190.00,
-        false,
-        '{"size":"XL","color":"red"}'
-    );
-
-INSERT INTO
-    inventory (sku_id, quantity_available)
-VALUES
-    (
-        (
-            SELECT
-                sku_id
-            FROM
-                product_skus
-            WHERE
-                sku = 'ELEC-005-WHT'
-        ),
-        20
+        140
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'ELEC-005-BLU'
+                sku = 'CLOTH-112-DEFAULT'
         ),
-        15
+        160
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'CLOTH-005-L-BLK'
+                sku = 'CLOTH-113-DEFAULT'
         ),
-        40
+        130
     ),
     (
         (
-            SELECT
-                sku_id
-            FROM
-                product_skus
+            SELECT sku_id
+            FROM product_skus
             WHERE
-                sku = 'CLOTH-005-XL-RED'
+                sku = 'CLOTH-114-DEFAULT'
         ),
-        25
+        100
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-115-DEFAULT'
+        ),
+        100
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-116-DEFAULT'
+        ),
+        85
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-117-DEFAULT'
+        ),
+        80
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-118-DEFAULT'
+        ),
+        65
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-119-DEFAULT'
+        ),
+        55
+    ),
+    (
+        (
+            SELECT sku_id
+            FROM product_skus
+            WHERE
+                sku = 'CLOTH-120-DEFAULT'
+        ),
+        90
     );

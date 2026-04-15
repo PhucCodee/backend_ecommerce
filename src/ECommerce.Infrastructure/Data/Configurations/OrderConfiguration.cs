@@ -83,7 +83,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.HasIndex(o => o.OrderNumber).IsUnique();
             builder.HasIndex(o => o.UserId);
             builder.HasIndex(o => o.Status);
-            builder.HasIndex(o => o.CouponId);
 
             // Relationships
             builder.HasOne(o => o.User)

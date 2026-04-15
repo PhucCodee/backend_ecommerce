@@ -1,69 +1,77 @@
-# Build outputs
+# =============================
+# BUILD OUTPUTS (.NET)
+# =============================
 bin/
 obj/
+Debug/
+Release/
+x64/
+x86/
+ARM/
+ARM64/
+publish/
+TestResults/
+
+# =============================
+# BINARIES
+# =============================
 *.dll
 *.exe
 *.pdb
-*.cache
 
-# NuGet
+# =============================
+# NUGET
+# =============================
 *.nupkg
 *.snupkg
 .nuget/
 packages/
 
-# User-specific files
+# =============================
+# USER / IDE FILES
+# =============================
+.vs/
+.vscode/
+.idea/
 *.user
 *.suo
-*.userosscache
-*.sln.docstates
-
-# Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-[Aa]rm/
-[Aa]rm64/
-bld/
-[Bb]in/
-[Oo]bj/
-
-# Visual Studio / Rider
-.vs/
-.idea/
 *.swp
+*.code-workspace
 *~
 .DS_Store
 
-# Project-specific
+# =============================
+# LOGS / CACHE
+# =============================
 *.log
-appsettings.Development.json
-appsettings.Local.json
-
-# Database
-*.db
-*.db-shm
-*.db-wal
-
-# Docker
-docker-compose.override.yml
-
-# Environment
-chatbot.env
-
-# Editor config
-.editorconfig
-
-# Cache files
 .cache/
 *.cache
 
-# Dependency graph spec
-*.dgspec.json
+# =============================
+# LOCAL APP SETTINGS
+# =============================
+appsettings.Development.json
+appsettings.Local.json
+chatbot.env
 
-# MSBuild targets
-*.g.targets
+# =============================
+# DATABASE / LOCALDB
+# =============================
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
 
-# Asset files
-assets.json
+# =============================
+# DOCKER
+# =============================
+docker-compose.override.yml
+
+# =============================
+# FRONTEND (future proof)
+# =============================
+node_modules/
+dist/
+build/
+coverage/

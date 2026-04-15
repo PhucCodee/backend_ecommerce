@@ -1,0 +1,31 @@
+meta {
+  name: Add item to cart
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/cart/items
+  body: json
+  auth: bearer
+}
+
+headers {
+  X-Session-Id: 43597585-b008-4a8a-9417-bfec4cddd8c1
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "skuId": 1,
+    "quantity": 1 // mặc định là 1, dùng put để thay đổi số lượng
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

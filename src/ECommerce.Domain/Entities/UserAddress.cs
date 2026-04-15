@@ -43,4 +43,40 @@ public partial class UserAddress
     public DateTime UpdatedAt { get; set; }
 
     public required virtual User User { get; set; }
+
+    public static UserAddress CreateDefault(
+    User user,
+    AddressType type,
+    string label,
+    string recipientName,
+    string phone,
+    string addressLine1,
+    string city,
+    string stateProvince,
+    string postalCode,
+    string country,
+    string? addressLine2 = null,
+    bool isDefaultShipping = false,
+    bool isDefaultBilling = false)
+    {
+        return new UserAddress
+        {
+            User = user,
+            UserId = user.UserId,
+            Type = type,
+            Label = label,
+            RecipientName = recipientName,
+            Phone = phone,
+            AddressLine1 = addressLine1,
+            AddressLine2 = addressLine2,
+            City = city,
+            StateProvince = stateProvince,
+            PostalCode = postalCode,
+            Country = country,
+            IsDefaultShipping = isDefaultShipping,
+            IsDefaultBilling = isDefaultBilling,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
 }

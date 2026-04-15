@@ -1,6 +1,7 @@
 using ECommerce.Infrastructure.Data;
 using ECommerce.Domain.Entities;
 using System.Threading.Tasks;
+using System.Threading;
 using System;
 using ECommerce.Domain.Repositories;
 
@@ -36,6 +37,22 @@ namespace ECommerce.Infrastructure.Repositories
             }
 
             return await _context.SaveChangesAsync();
+        }
+
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken = default)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var result = await action();
+                await transaction.CommitAsync(cancellationToken);
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
         public void Dispose()

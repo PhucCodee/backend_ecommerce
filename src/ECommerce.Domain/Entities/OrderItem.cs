@@ -34,4 +34,32 @@ public partial class OrderItem
     public required virtual ProductSku SkuNavigation { get; set; }
 
     public virtual ICollection<Review> Reviews { get; set; } = [];
+
+    public static OrderItem CreateDefault(
+        Order order,
+        int skuId,
+        string productName,
+        string sku,
+        int sellerId,
+        int quantity,
+        decimal unitPrice,
+        string? variantDescription = null)
+    {
+        return new OrderItem
+        {
+            OrderId = order.OrderId,
+            SkuId = skuId,
+            ProductName = productName,
+            Sku = sku,
+            VariantDescription = variantDescription,
+            SellerId = sellerId,
+            Quantity = quantity,
+            UnitPrice = unitPrice,
+            Subtotal = unitPrice * quantity,
+            CreatedAt = DateTime.UtcNow,
+            Order = order,
+            Seller = null!,
+            SkuNavigation = null!
+        };
+    }
 }

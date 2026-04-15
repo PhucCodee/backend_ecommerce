@@ -10,8 +10,6 @@ public partial class Product
 
     public int SellerId { get; set; }
 
-    public int CategoryId { get; set; }
-
     public required string ProductName { get; set; } = string.Empty;
 
     public required string Slug { get; set; } = string.Empty;
@@ -50,7 +48,7 @@ public partial class Product
 
     public DateTime? RemovedAt { get; set; }
 
-    public virtual ICollection<ProductImage> ProductImages { get; set; } = [];
+    public virtual ICollection<ProductCategory> ProductCategories { get; set; } = [];
 
     public virtual ICollection<ProductMetric> ProductMetrics { get; set; } = [];
 
@@ -60,8 +58,6 @@ public partial class Product
 
     public virtual ICollection<UserItemInteraction> UserItemInteractions { get; set; } = [];
 
-    public required virtual Category Category { get; set; }
-
     public required virtual User Seller { get; set; }
 
     public static Product CreateDefault(
@@ -69,7 +65,6 @@ public partial class Product
         string slug,
         string baseSku,
         int sellerId,
-        int categoryId,
         string? description = null,
         string? brand = null,
         decimal? weightKg = null,
@@ -81,7 +76,6 @@ public partial class Product
             Slug = slug,
             BaseSku = baseSku,
             SellerId = sellerId,
-            CategoryId = categoryId,
             Description = description,
             Brand = brand,
             WeightKg = weightKg,
@@ -91,7 +85,6 @@ public partial class Product
             Moderation = ModerationStatus.approved,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            Category = null!,
             Seller = null!
         };
     }

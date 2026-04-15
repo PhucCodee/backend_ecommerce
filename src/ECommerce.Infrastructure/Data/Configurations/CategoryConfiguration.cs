@@ -39,6 +39,10 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(c => c.DisplayOrder)
                 .HasColumnName("display_order");
 
+            builder.Property(c => c.IsCore)
+                .HasColumnName("is_core")
+                .HasDefaultValue(true);
+
             builder.Property(c => c.IsActive)
                 .HasColumnName("is_active")
                 .HasDefaultValue(true);
@@ -55,10 +59,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .WithMany(c => c.ChildCategories)
                 .HasForeignKey(c => c.ParentCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany(c => c.Products)
-                .WithOne(p => p.Category)
-                .HasForeignKey(p => p.CategoryId);
         }
     }
 }

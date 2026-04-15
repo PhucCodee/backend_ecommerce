@@ -1,0 +1,51 @@
+meta {
+  name: Create order
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/orders
+  body: json
+  auth: bearer
+}
+
+headers {
+  X-Session-Id: df754bba-3564-4342-8aa1-4ec1b4a974a6
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  { // dùng khi muốn tạo address mới
+    "newShippingAddress": {
+      "type": 0, // house
+      "label": "Home",
+      "recipientName": "Nguyen Van A",
+      "phone": "0901234567",
+      "addressLine1": "123 Nguyen Trai",
+  //     "addressLine2": "Apartment 10A",
+      "city": "Ho Chi Minh City",
+      "stateProvince": "District 1",
+      "postalCode": "700000",
+      "country": "VN"
+    },
+    "saveNewShippingAddress": true, // chọn false để không lưu address mới này
+    "billingAddressId": 15,
+    "couponCode": "SALE10",
+    "customerNotes": "Leave at reception"
+  }
+  // { dùng khi chọn address có sẵn, phía trên là chưa tạo address
+  //   "shippingAddressId": 12,
+  //   "billingAddressId": 15,
+  //   "couponCode": "SALE10",
+  //   "customerNotes": "Please call before delivery"
+  // }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

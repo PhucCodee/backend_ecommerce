@@ -12,6 +12,7 @@ namespace ECommerce.Application.DTOs.category
         public string? Description { get; set; }
         public string? ImageUrl { get; set; }
         public int DisplayOrder { get; set; }
+        public bool IsCore { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

@@ -1,16 +1,17 @@
-namespace ECommerce.Application.DTOs.productsku
+using System.Collections.Generic;
+using ECommerce.Application.DTOs.product;
+
+namespace ECommerce.Application.DTOs.product;
+
+public class ProductSkuCreateDto
 {
-    public class ProductSkuCreateDto
-    {
-        public int ProductId { get; set; }
-        public required string VariantAttributes { get; set; } = "{}";
-        public decimal Price { get; set; }
-        public decimal? CostPrice { get; set; }
-        public decimal? CompareAtPrice { get; set; }
-        public int Stock { get; set; }
-        public bool IsDefault { get; set; } = false;
-        public decimal? WeightKg { get; set; }
-        public string? DimensionsCm { get; set; }
-        public string? ImageUrl { get; set; }
-    }
+    public int ProductId { get; set; }
+    public string? VariantAttributes { get; set; }
+    public decimal Price { get; set; }
+    public decimal? CostPrice { get; set; }
+    public decimal? CompareAtPrice { get; set; }
+    public decimal? WeightKg { get; set; }
+    public string? DimensionsCm { get; set; }
+    public int Stock { get; set; }
+    public List<ProductImageCreateDto>? Images { get; set; }
 }

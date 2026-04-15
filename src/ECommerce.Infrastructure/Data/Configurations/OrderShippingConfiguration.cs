@@ -31,11 +31,11 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.Property(os => os.AddressLine1)
                 .IsRequired()
                 .HasMaxLength(500)
-                .HasColumnName("address_line_1");
+                .HasColumnName("address_line1");
 
             builder.Property(os => os.AddressLine2)
                 .HasMaxLength(500)
-                .HasColumnName("address_line_2");
+                .HasColumnName("address_line2");
 
             builder.Property(os => os.City)
                 .IsRequired()

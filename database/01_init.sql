@@ -205,6 +205,7 @@ CREATE TABLE
         description TEXT,
         image_url VARCHAR(500),
         display_order INTEGER NOT NULL DEFAULT 0,
+        is_core BOOLEAN NOT NULL DEFAULT TRUE,
         is_active BOOLEAN NOT NULL DEFAULT TRUE,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -222,7 +223,6 @@ CREATE TABLE
     products (
         product_id SERIAL PRIMARY KEY,
         seller_id INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-        category_id INTEGER NOT NULL REFERENCES categories (category_id) ON DELETE RESTRICT,
         product_name VARCHAR(255) NOT NULL,
         slug VARCHAR(255) UNIQUE NOT NULL,
         base_sku VARCHAR(100) UNIQUE NOT NULL,
@@ -257,6 +257,13 @@ CREATE INDEX trgm_idx_products_name ON products USING gin (product_name gin_trgm
 -- (Optional) Add this if you want to fuzzy search descriptions too
 CREATE INDEX trgm_idx_products_desc ON products USING gin (description gin_trgm_ops);
 
+CREATE TABLE product_categories (
+    product_id INTEGER NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES categories(category_id) ON DELETE RESTRICT,
+    is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (product_id, category_id)
+);
+
 -- Product SKUs table (actual sellable items)
 -- Represents individual sellable variations of a product
 CREATE TABLE
@@ -287,14 +294,13 @@ COMMENT ON COLUMN product_skus.compare_at_price IS 'Original price before discou
 CREATE TABLE
     product_images (
         image_id SERIAL PRIMARY KEY,
-        product_id INTEGER NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
-        sku_id INTEGER REFERENCES product_skus (sku_id) ON DELETE CASCADE, -- NULL if image applies to all SKUs
+        sku_id INTEGER NOT NULL REFERENCES product_skus (sku_id) ON DELETE CASCADE,
         image_url VARCHAR(500) NOT NULL,
         thumbnail_url VARCHAR(500),
         alt_text VARCHAR(255),
         display_order INTEGER NOT NULL DEFAULT 0,
         is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -365,7 +371,6 @@ CREATE TABLE
         abandoned_at TIMESTAMP,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        expires_at TIMESTAMP, -- Auto-clear old carts after 90 days
         CONSTRAINT cart_owner_check CHECK (
             (
                 user_id IS NOT NULL
@@ -393,8 +398,6 @@ WHERE
 COMMENT ON TABLE carts IS 'Multiple carts per user for historical tracking. Only ONE active cart enforced by partial unique index. Converted carts preserved for analytics.';
 
 COMMENT ON COLUMN carts.status IS '0=active (current shopping), 1=abandoned (inactive 24hrs), 2=converted (became an order)';
-
-COMMENT ON COLUMN carts.expires_at IS 'Cleanup timestamp - abandoned carts auto-deleted after 90 days';
 
 -- Shopping cart items table
 CREATE TABLE
@@ -602,7 +605,7 @@ COMMENT ON COLUMN processed_events.event_id IS 'UUID v4 - ensures global uniquen
 -- Event log table
 -- Complete audit trail of all event processing
 CREATE TABLE
-    event_log (
+    event_logs (
         log_id SERIAL PRIMARY KEY,
         event_id UUID NOT NULL,
         event_type VARCHAR(100) NOT NULL, -- enum?
@@ -619,9 +622,9 @@ CREATE TABLE
         processing_time_ms INTEGER
     );
 
-COMMENT ON TABLE event_log IS 'Complete audit trail of ALL event processing attempts (successes and failures). Critical for debugging distributed systems.';
+COMMENT ON TABLE event_logs IS 'Complete audit trail of ALL event processing attempts (successes and failures). Critical for debugging distributed systems.';
 
-COMMENT ON COLUMN event_log.attempt_number IS 'Retry attempt number - increments with each retry';
+COMMENT ON COLUMN event_logs.attempt_number IS 'Retry attempt number - increments with each retry';
 
 -- Dead letter queue table
 -- Failed events requiring manual intervention

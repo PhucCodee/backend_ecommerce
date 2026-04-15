@@ -17,6 +17,8 @@ namespace ECommerce.Application.DTOs.category
 
         public int DisplayOrder { get; set; } = 0;
 
+        public bool IsCore { get; set; } = true;
+
         public bool IsActive { get; set; } = true;
     }
 }

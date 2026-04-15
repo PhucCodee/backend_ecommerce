@@ -62,7 +62,7 @@ namespace ECommerce.Application.Services
             // Assign roles from DTO
             var rolesToAssign = createDto.Roles != null && createDto.Roles.Length > 0
                 ? createDto.Roles.Select(r => (UserRoleType)r).Distinct().ToArray()
-                : new[] { UserRoleType.buyer };
+                : [UserRoleType.buyer];
 
             foreach (var role in rolesToAssign)
             {
@@ -121,19 +121,16 @@ namespace ECommerce.Application.Services
 
         public async Task<bool> DeleteAsync(int userId)
         {
-            // Hard delete - completely remove user from database
-            await userRepository.DeleteAsync(userId);
-            await unitOfWork.SaveChangesAsync();
-
-            return true;
-
-            /* Soft delete (commented out for later use if needed):
             var user = await userRepository.GetByIdAsync(userId)
                 ?? throw new NotFoundException("User not found");
+
+            if (user.IsDeleted())
+                throw new NotFoundException("User not found");
+
             user.SoftDelete();
             await unitOfWork.SaveChangesAsync();
+
             return true;
-            */
         }
 
         private async Task UpdateEmailIfChanged(User user, string? newEmail)
@@ -198,7 +195,7 @@ namespace ECommerce.Application.Services
         {
             if (roleIds == null || roleIds.Length == 0)
             {
-                roleIds = new[] { (int)UserRoleType.buyer };
+                roleIds = [(int)UserRoleType.buyer];
             }
 
             var activeRoles = user.UserRoleUsers.Where(r => r.RevokedAt == null).ToList();

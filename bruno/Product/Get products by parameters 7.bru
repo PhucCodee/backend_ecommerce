@@ -1,0 +1,20 @@
+meta {
+  name: Get products by parameters 7
+  type: http
+  seq: 9
+}
+
+get {
+  url: http://localhost:8080/api/products?search=alpine
+  body: none
+  auth: inherit
+}
+
+params:query {
+  search: alpine
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

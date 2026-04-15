@@ -26,4 +26,7 @@ RUN sed -i 's/\r$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
+COPY wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
+
 ENTRYPOINT ["/docker-entrypoint.sh"]

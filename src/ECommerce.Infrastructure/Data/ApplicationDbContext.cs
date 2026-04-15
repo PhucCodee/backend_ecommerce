@@ -17,6 +17,7 @@ namespace ECommerce.Infrastructure.Data
         public DbSet<UserLoginHistory> UserLoginHistories { get; set; }
         public DbSet<UserItemInteraction> UserItemInteractions { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<ProductSku> ProductSkus { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<ProductMetric> ProductMetrics { get; set; }
