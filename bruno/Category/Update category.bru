@@ -5,22 +5,23 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/api/categories/8
+  url: http://localhost:8080/api/categories/13
   body: json
   auth: bearer
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ5ZUBnbWFpbC5jb20iLCJqdGkiOiJmYjEzODEzMy03Yjc5LTQwM2MtYWE4ZC03MDg3NmE2ODFlNzAiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImV4cCI6MTc2NjU5NTAxMCwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.toy47OeLghEFORu3PLyCWrJfugQxL_n6lnGJsjDthSQ
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ5ZUBnbWFpbC5jb20iLCJqdGkiOiJhYTM5ZTIxNS1iYjVkLTRiMjEtYjkwOC03YzZlNGI2YjdjZmUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImV4cCI6MTc3NDExNDEwNiwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.-lljxTkZzJobx6CbwRFvTqS6z-rXCVp4r6YbOLQxmiM
 }
 
 body:json {
   {
-    "isActive": false
+      "name": "Shorts",
+      "parentCategoryId": 1,
+      "description": "this is the description for shorts",
+      "imageUrl": "https://example.com/shorts.jpg",
+      "displayOrder": 2,
+      "isCore": false,
+      "isActive": true
   }
-}
-
-settings {
-  encodeUrl: true
-  timeout: 0
 }

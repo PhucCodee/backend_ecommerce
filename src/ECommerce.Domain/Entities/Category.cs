@@ -19,7 +19,9 @@ public class Category
 
     public int DisplayOrder { get; set; }
 
-    public bool IsActive { get; set; } = true;
+    public bool IsCore { get; set; }
+
+    public bool IsActive { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -29,7 +31,7 @@ public class Category
 
     public virtual ICollection<Category> ChildCategories { get; set; } = [];
 
-    public virtual ICollection<Product> Products { get; set; } = [];
+    public virtual ICollection<ProductCategory> ProductCategories { get; set; } = [];
 
     public static Category CreateDefault(
         string name,
@@ -38,6 +40,7 @@ public class Category
         string? description = null,
         string? imageUrl = null,
         int displayOrder = 0,
+        bool isCore = true,
         bool isActive = true)
     {
         return new Category
@@ -48,6 +51,7 @@ public class Category
             Description = description,
             ImageUrl = imageUrl,
             DisplayOrder = displayOrder,
+            IsCore = isCore,
             IsActive = isActive,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow

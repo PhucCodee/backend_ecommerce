@@ -59,9 +59,6 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
             .HasColumnName("updated_at")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-        builder.Property(c => c.ExpiresAt)
-            .HasColumnName("expires_at");
-
         // Relationships
         builder.HasOne(c => c.User)
             .WithMany(u => u.Carts)
@@ -77,19 +74,16 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         builder.HasIndex(c => c.UserId)
             .HasDatabaseName("idx_one_active_cart_per_user")
             .IsUnique()
-            .HasFilter("status = 0 AND user_id IS NOT NULL");
+            .HasFilter("status = 'active' AND user_id IS NOT NULL");
 
         // Partial unique index: only ONE active cart per guest session
         builder.HasIndex(c => c.SessionId)
             .HasDatabaseName("idx_one_active_cart_per_session")
             .IsUnique()
-            .HasFilter("status = 0 AND session_id IS NOT NULL");
+            .HasFilter("status = 'active' AND session_id IS NOT NULL");
 
         // Additional indexes
         builder.HasIndex(c => c.Status)
             .HasDatabaseName("idx_carts_status");
-
-        builder.HasIndex(c => c.ExpiresAt)
-            .HasDatabaseName("idx_carts_expires_at");
     }
 }

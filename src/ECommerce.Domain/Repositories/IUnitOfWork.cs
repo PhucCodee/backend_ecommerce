@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using ECommerce.Domain.Entities;
+using System.Threading;
 
 namespace ECommerce.Domain.Repositories
 {
@@ -15,5 +16,6 @@ namespace ECommerce.Domain.Repositories
         IRepository<Review> Reviews { get; }
 
         Task<int> SaveChangesAsync();
+        Task<TResult> ExecuteInTransactionAsync<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken = default);
     }
 }

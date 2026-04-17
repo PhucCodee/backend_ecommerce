@@ -1,0 +1,26 @@
+meta {
+  name: Update cart item
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8080/api/cart/items/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjExIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoicGh1YzFAZ21haWwuY29tIiwianRpIjoiMjFjMWRiYmUtNjc0NC00YjJkLTg5ZDUtNGNmNjJkMjljYjg3IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYnV5ZXIiLCJleHAiOjE3NzQ5NzkzNDAsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.Jp7gmUwdMo57RCrOuRWgl4SLESHXUP8hqvS0edgysXw
+}
+
+body:json {
+  {
+    "quantity": 5
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

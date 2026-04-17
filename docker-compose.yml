@@ -16,7 +16,7 @@ services:
         # depends_on:
             # - db
             # - cache
-            # - message_broker
+            - message_broker
 
     # db:
     #     image: postgres:11

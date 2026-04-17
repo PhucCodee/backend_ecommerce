@@ -55,4 +55,35 @@ public partial class Order
     public required virtual User User { get; set; }
 
     public virtual Coupon? Coupon { get; set; }
+
+    public static Order CreateDefault(
+        string orderNumber,
+        int userId,
+        decimal subtotal,
+        decimal shippingFee,
+        decimal taxAmount,
+        decimal totalAmount,
+        Currency preferredCurrency = Currency.vnd,
+        string? couponCode = null,
+        decimal couponDiscount = 0,
+        string? customerNotes = null)
+    {
+        return new Order
+        {
+            OrderNumber = orderNumber,
+            UserId = userId,
+            Status = OrderStatus.created,
+            Subtotal = subtotal,
+            ShippingFee = shippingFee,
+            TaxAmount = taxAmount,
+            CouponCode = couponCode,
+            CouponDiscount = couponDiscount,
+            TotalAmount = totalAmount,
+            PreferredCurrency = preferredCurrency,
+            CustomerNotes = customerNotes,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            User = null!
+        };
+    }
 }

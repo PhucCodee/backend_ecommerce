@@ -20,7 +20,7 @@ public partial class EventLog
 
     public int? OrderId { get; set; }
 
-    public string? Payload { get; set; }
+    public required string Payload { get; set; }
 
     public string? ErrorMessage { get; set; }
 

@@ -88,13 +88,15 @@ namespace ECommerce.API.Controllers
             if (int.TryParse(userIdClaim, out int parsedUserId))
             {
                 userId = parsedUserId;
+                // Authenticated users don't need sessionId - they have one lifetime cart
+                return (userId, null);
             }
 
             // Get session ID from header for guest carts
             sessionId = GetSessionId();
 
-            // If neither authenticated nor has session, generate one
-            if (!userId.HasValue && string.IsNullOrEmpty(sessionId))
+            // If no session, generate one for guest
+            if (string.IsNullOrEmpty(sessionId))
             {
                 sessionId = System.Guid.NewGuid().ToString();
                 Response.Headers.Append("X-Session-Id", sessionId);
