@@ -396,39 +396,39 @@ VALUES
 ((SELECT sku_id FROM product_skus WHERE sku='CLOTH-120-DEFAULT'), 90);
 
 
----------------------------------DATABASE USER-------------------------------------------
--- 1. Tạo user mới dành riêng cho chatbot (đổi mật khẩu cho bảo mật nhé)
-CREATE USER chatbot_user WITH PASSWORD 'chatbot';
+-- ---------------------------------DATABASE USER-------------------------------------------
+-- -- 1. Tạo user mới dành riêng cho chatbot (đổi mật khẩu cho bảo mật nhé)
+-- CREATE USER chatbot_user WITH PASSWORD 'chatbot';
 
--- 2. Cấp quyền kết nối vào database (thay 'database' bằng tên DB thực tế của bạn)
-GRANT CONNECT ON DATABASE "database" TO chatbot_user;
+-- -- 2. Cấp quyền kết nối vào database (thay 'database' bằng tên DB thực tế của bạn)
+-- GRANT CONNECT ON DATABASE "database" TO chatbot_user;
 
--- 3. Cấp quyền sử dụng schema public
-GRANT USAGE ON SCHEMA public TO chatbot_user;
+-- -- 3. Cấp quyền sử dụng schema public
+-- GRANT USAGE ON SCHEMA public TO chatbot_user;
 
--- 4. CHỈ cấp quyền SELECT (Đọc) trên các bảng cần thiết cho Product Search & Order Tracking
-GRANT SELECT ON 
-    categories, 
-    products, 
-    product_categories, 
-    product_skus, 
-    inventory,
-    -- Giả sử hệ thống của bạn có các bảng order như code python hôm trước:
-    orders, 
-    order_items, 
-    order_shipping, 
-    order_payments, 
-    order_fulfillment 
-TO chatbot_user;
+-- -- 4. CHỈ cấp quyền SELECT (Đọc) trên các bảng cần thiết cho Product Search & Order Tracking
+-- GRANT SELECT ON 
+--     categories, 
+--     products, 
+--     product_categories, 
+--     product_skus, 
+--     inventory,
+--     -- Giả sử hệ thống của bạn có các bảng order như code python hôm trước:
+--     orders, 
+--     order_items, 
+--     order_shipping, 
+--     order_payments, 
+--     order_fulfillment 
+-- TO chatbot_user;
 
--- 5. Cấp quyền Đọc một phần thông tin User (nếu cần để chào tên khách, hiển thị profile)
-GRANT SELECT ON users, user_profiles TO chatbot_user;
+-- -- 5. Cấp quyền Đọc một phần thông tin User (nếu cần để chào tên khách, hiển thị profile)
+-- GRANT SELECT ON users, user_profiles TO chatbot_user;
 
--- 6. CHẶN ĐỨT ĐƯỜNG truy cập vào bảng mật khẩu (Phòng hờ rủi ro)
-REVOKE ALL ON user_credentials FROM chatbot_user;
+-- -- 6. CHẶN ĐỨT ĐƯỜNG truy cập vào bảng mật khẩu (Phòng hờ rủi ro)
+-- REVOKE ALL ON user_credentials FROM chatbot_user;
 
--- 7. Thiết lập Default Privileges: Nếu sau này bạn tạo thêm bảng mới, chatbot cũng sẽ KHÔNG tự động có quyền đọc (phải cấp tay)
-ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM chatbot_user;
+-- -- 7. Thiết lập Default Privileges: Nếu sau này bạn tạo thêm bảng mới, chatbot cũng sẽ KHÔNG tự động có quyền đọc (phải cấp tay)
+-- ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM chatbot_user;
 
 
 
