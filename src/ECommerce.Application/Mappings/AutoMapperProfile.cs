@@ -3,6 +3,7 @@ using ECommerce.Application.DTOs;
 using ECommerce.Application.DTOs.address;
 using ECommerce.Application.DTOs.cart;
 using ECommerce.Application.DTOs.category;
+using ECommerce.Application.DTOs.coupon;
 using ECommerce.Application.DTOs.order;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.DTOs.user;
@@ -175,6 +176,8 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.TotalItems, opt => opt.MapFrom(src => src.OrderItems.Sum(i => i.Quantity)));
 
             CreateMap<UserAddress, AddressDto>();
+
+            CreateMap<Coupon, CouponDto>();
         }
     }
 }
