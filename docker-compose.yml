@@ -7,30 +7,30 @@ services:
             - "8080:8080"
         environment:
             - ASPNETCORE_URLS=http://+:8080
-            - ConnectionStrings__DefaultConnection=Username=postgres;Password=DiJEGX+u2p,qTp3;Host=db.akngescdycclbfcrfubn.supabase.co;Port=5432;Database=postgres
+            - ConnectionStrings__DefaultConnection=Username=postgres;Password=123;Host=db;Port=5432;Database=database
             - Redis__Host=cache
             - RabbitMQ__Host=message_broker
             - TZ=Asia/Ho_Chi_Minh
         volumes:
             - uploads_data:/app/uploads
-        # depends_on:
-            # - db
+        depends_on:
+            - db
             # - cache
             - message_broker
 
-    # db:
-    #     image: postgres:11
-    #     environment:
-    #         - POSTGRES_USER=postgres
-    #         - POSTGRES_PASSWORD=123
-    #         - POSTGRES_DB=database
-    #         - TZ=Asia/Ho_Chi_Minh
-    #     ports:
-    #         - "5432:5432"
-    #     volumes:
-    #         - postgres_data:/var/lib/postgresql/data
-    #         - ./database/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-    #         - ./database/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+    db:
+        image: postgres:15
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=123
+            - POSTGRES_DB=database
+            - TZ=Asia/Ho_Chi_Minh
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./database/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+            - ./database/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
 
     # cache:
     #     image: redis:7
@@ -39,11 +39,11 @@ services:
     #     volumes:
     #         - redis_data:/data
 
-    # message_broker:
-    #     image: rabbitmq:3-management
-    #     ports:
-    #         - "5672:5672"
-    #         - "15672:15672"
+    message_broker:
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"
+            - "15672:15672"
             
     chatbot_api:
         build:
@@ -55,23 +55,24 @@ services:
         env_file:
         - ./ai-module/.env  
         environment:
-        - DB_HOST=aws-1-ap-northeast-1.pooler.supabase.com
-        - DB_NAME=postgres
-        - DB_USER=postgres.akngescdycclbfcrfubn
-        - DB_PASSWORD=DiJEGX+u2p,qTp3
+        - DB_HOST=db
+        - DB_NAME=database
+        - DB_USER=postgres
+        - DB_PASSWORD=123
         - DB_PORT=5432
         - CHROMA_DB_PATH=/app/chroma_db
-        # depends_on:
-        # - db
+        depends_on:
+        - db
         # - cache
         networks:
         - default
         volumes:
         - ./ai-module/app:/app/app
-        - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
+        - ./ai-module/data/vector:/app/chroma_db
 
 
 
 volumes:
     postgres_data:
+    redis_data:
     uploads_data:
