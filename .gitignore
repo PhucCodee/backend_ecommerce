@@ -75,3 +75,19 @@ node_modules/
 dist/
 build/
 coverage/
+
+# Bỏ qua thư mục môi trường ảo Python
+venv/
+env/
+.env/
+venv*/
+env*/
+
+# Bỏ qua các file cache của Python (thường tự sinh ra khi chạy test)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Bỏ qua thư mục cache của pytest
+.pytest_cache/

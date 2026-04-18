@@ -8,7 +8,7 @@ env/
 # Python artifacts
 __pycache__/
 *.pyc
-
+.deepeval/
 # ChromaDB / Vector Store data
 chroma_db_data/
 # Ignore the UUID folders (wildcard match)
