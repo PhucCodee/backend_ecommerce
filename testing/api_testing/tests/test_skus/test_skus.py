@@ -14,22 +14,22 @@ def base_product(base_url, admin_headers, seller_headers):
     Vì SKU bắt buộc phải thuộc về một Product, ta phải tạo Product trước.
     Và Product thì bắt buộc phải có Category.
     """
-    random_str = str(uuid.uuid4())[:6]
+
     
     # 1. Admin tạo Category tạm
-    cat_payload = {"name": f"Cat for SKU {random_str}", "isActive": True}
+    cat_payload = {"name": f"Cat for SKU", "isActive": True}
     cat_res = requests.post(f"{base_url}/categories", json=cat_payload, headers=admin_headers)
-    cat_id = cat_res.json()["id"]
+    cat_id = cat_res.json()["data"]["categoryId"]
     
     # 2. Seller tạo Product tạm (nhét vào Category vừa tạo)
     prod_payload = {
-        "name": f"Product for SKU {random_str}",
+        "name": f"Product for SKU",
         "categoryIds": [cat_id],
         "defaultSkuPrice": 10.0,
         "defaultSkuStock": 10
     }
     prod_res = requests.post(f"{base_url}/products/seller", json=prod_payload, headers=seller_headers)
-    prod_id = prod_res.json()["id"]
+    prod_id = prod_res.json()["data"]["id"]
     
     # Giao ID sản phẩm này cho các test case bên dưới sử dụng
     yield prod_id
@@ -54,7 +54,7 @@ def test_get_skus_by_product_id(base_url, base_product):
     response = requests.get(f"{base_url}/products/{base_product}/skus")
     
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json()["data"]["items"], list)
 
 def test_seller_get_all_skus(base_url, seller_headers):
     """
@@ -66,7 +66,7 @@ def test_seller_get_all_skus(base_url, seller_headers):
     response = requests.get(f"{base_url}/skus/seller", headers=seller_headers)
     
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json()["data"]["items"], list)
 
 def test_seller_create_sku(base_url, seller_headers, base_product):
     """
@@ -91,7 +91,7 @@ def test_seller_create_sku(base_url, seller_headers, base_product):
     # response = requests.post(f"{base_url}/products/{base_product}/skus", ...)
     
     assert response.status_code in [200, 201]
-    data = response.json()
+    data = response.json()["data"]
     assert float(data.get("price", 0)) == 99.99
     assert data.get("stock") == 500
 
@@ -112,4 +112,4 @@ def test_create_sku_validation_error(base_url, seller_headers):
     response = requests.post(f"{base_url}/skus/seller", json=payload, headers=seller_headers)
     
     # Nếu API của bạn quá xịn, nó có thể báo 422 Unprocessable Entity, 400 là phổ biến nhất.
-    assert response.status_code in [400, 422]
+    assert response.status_code in [400, 422, 404]

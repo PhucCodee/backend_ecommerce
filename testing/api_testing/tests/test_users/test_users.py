@@ -19,7 +19,7 @@ def test_get_own_profile(base_url, user_headers):
     response = requests.get(f"{base_url}/users/profile", headers=user_headers)
     
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()["data"]
     assert "email" in data
     # Tuỳ thuộc vào email bạn setup trong conftest.py, ở đây ví dụ là phuc1@gmail.com
     assert data["email"] == "phuc1@gmail.com"
@@ -34,8 +34,7 @@ def test_update_own_profile(base_url, user_headers):
         1. Trả về 200 OK.
         2. Lấy lại profile một lần nữa để verify dữ liệu THỰC SỰ đã lưu vào DB.
     """
-    random_str = str(uuid.uuid4())[:4]
-    new_last_name = f"Automation {random_str}"
+    new_last_name = f"Automation"
     
     payload = {
         "firstName": "Test",
@@ -51,7 +50,7 @@ def test_update_own_profile(base_url, user_headers):
     # 2. Lấy lại Profile để kiểm chứng
     get_res = requests.get(f"{base_url}/users/profile", headers=user_headers)
     assert get_res.status_code == 200
-    assert get_res.json().get("lastName") == new_last_name
+    assert get_res.json()["data"]["lastName"] == new_last_name
 
 def test_admin_get_all_users(base_url, admin_headers):
     """

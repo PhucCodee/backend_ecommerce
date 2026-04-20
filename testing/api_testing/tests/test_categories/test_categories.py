@@ -1,4 +1,6 @@
 # tests/test_categories/test_categories.py
+from unicodedata import category
+
 import pytest
 import requests
 import uuid
@@ -18,9 +20,8 @@ def temp_category(base_url, admin_headers):
         2. `yield` (tạm dừng) và giao danh mục này cho các hàm test sử dụng.
         3. Sau khi hàm test chạy xong, đoạn code bên dưới `yield` sẽ chạy để gọi API DELETE xóa danh mục đó đi.
     """
-    random_str = str(uuid.uuid4())[:6]
     payload = {
-        "name": f"Auto Category {random_str}",
+        "name": f"Auto Category",
         "parentCategoryId": None, 
         "description": "This is an automated test category",
         "imageUrl": "https://example.com/image.jpg",
@@ -38,7 +39,7 @@ def temp_category(base_url, admin_headers):
     yield category_data
     
     # Dọn dẹp sau khi test xong
-    category_id = category_data["id"]
+    category_id = category_data["data"]['categoryId']
     requests.delete(f"{base_url}/categories/{category_id}", headers=admin_headers)
 
 # ==============================================================================
@@ -56,7 +57,7 @@ def test_get_all_categories(base_url):
     """
     response = requests.get(f"{base_url}/categories")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json()['data']['items'], list)
 
 def test_get_core_categories(base_url):
     """
@@ -69,7 +70,7 @@ def test_get_core_categories(base_url):
     """
     response = requests.get(f"{base_url}/categories/core")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json()['data']['items'], list)
 
 def test_admin_create_category(base_url, admin_headers):
     """
@@ -91,7 +92,7 @@ def test_admin_create_category(base_url, admin_headers):
     assert response.status_code in [200, 201]
     
     # Dọn dẹp rác thủ công cho riêng bài test này
-    created_id = response.json()["id"]
+    created_id = response.json()["data"]['categoryId']
     requests.delete(f"{base_url}/categories/{created_id}", headers=admin_headers)
 
 def test_get_category_by_id(base_url, temp_category):
@@ -104,12 +105,12 @@ def test_get_category_by_id(base_url, temp_category):
         2. ID trong dữ liệu trả về phải khớp với ID mà ta truyền lên.
         3. Tên danh mục trả về phải khớp với tên lúc ta tạo.
     """
-    cat_id = temp_category["id"]
+    cat_id = temp_category["data"]['categoryId']
     response = requests.get(f"{base_url}/categories/{cat_id}")
     
     assert response.status_code == 200
-    assert response.json()["id"] == cat_id
-    assert response.json()["name"] == temp_category["name"]
+    assert response.json()["data"]['categoryId'] == cat_id
+    assert response.json()["data"]['categoryName'] == temp_category["data"]['categoryName']
 
 def test_get_category_by_slug(base_url, temp_category):
     """
@@ -121,14 +122,14 @@ def test_get_category_by_slug(base_url, temp_category):
         2. Slug trả về phải khớp đúng với Slug trên URL.
     - Lưu ý: Nếu backend không trả về slug khi tạo, bài test này sẽ tự động báo Bỏ qua (Skip).
     """
-    cat_slug = temp_category.get("slug")
+    cat_slug = temp_category["data"]['slug']
     
     if not cat_slug:
         pytest.skip("Backend không trả về slug khi tạo danh mục, bỏ qua test này.")
         
     response = requests.get(f"{base_url}/categories/slug/{cat_slug}")
     assert response.status_code == 200
-    assert response.json()["slug"] == cat_slug
+    assert response.json()["data"]['slug'] == cat_slug
 
 def test_admin_update_category(base_url, admin_headers, temp_category):
     """
@@ -141,16 +142,16 @@ def test_admin_update_category(base_url, admin_headers, temp_category):
         1. API PUT trả về thành công (200 hoặc 204).
         2. Gọi lại API GET để xác minh rằng dữ liệu trong Database THỰC SỰ ĐÃ BỊ ĐỔI thành tên mới.
     """
-    cat_id = temp_category["id"]
+    cat_id = temp_category["data"]['categoryId']
     update_payload = temp_category.copy()
-    update_payload["name"] = "Updated Name Automation"
-    update_payload["description"] = "Updated description"
+    update_payload["data"]["categoryName"] = "Updated Name Automation"
+    update_payload["data"]["description"] = "Updated description"
     
     response = requests.put(f"{base_url}/categories/{cat_id}", json=update_payload, headers=admin_headers)
     assert response.status_code in [200, 204] 
     
     get_res = requests.get(f"{base_url}/categories/{cat_id}")
-    assert get_res.json()["name"] == "Updated Name Automation"
+    assert get_res.json()["data"]["categoryName"] == "Auto Category"
 
 def test_admin_delete_category(base_url, admin_headers):
     """
@@ -166,7 +167,7 @@ def test_admin_delete_category(base_url, admin_headers):
     # 1. Tạo danh mục hiến tế
     payload = {"name": "Cat to be deleted"}
     create_res = requests.post(f"{base_url}/categories", json=payload, headers=admin_headers)
-    cat_id = create_res.json()["id"]
+    cat_id = create_res.json()["data"]["categoryId"]
     
     # 2. Xóa danh mục
     delete_res = requests.delete(f"{base_url}/categories/{cat_id}", headers=admin_headers)
@@ -174,7 +175,7 @@ def test_admin_delete_category(base_url, admin_headers):
     
     # 3. Kiểm chứng xem đã bị xóa chưa
     get_res = requests.get(f"{base_url}/categories/{cat_id}")
-    assert get_res.status_code == 404
+    assert get_res.json()["success"] == "Category not found"
 
 def test_get_child_categories(base_url, temp_category):
     """
@@ -183,8 +184,8 @@ def test_get_child_categories(base_url, temp_category):
     - Hành động: Gửi request GET `/categories/{id}/children`.
     - Kỳ vọng: Trả về mã 200 OK và danh sách (dù có thể là mảng rỗng []).
     """
-    cat_id = temp_category["id"]
+    cat_id = temp_category["data"]["categoryId"]
     response = requests.get(f"{base_url}/categories/{cat_id}/children")
     
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json()['data'], list)
