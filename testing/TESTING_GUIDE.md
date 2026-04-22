@@ -44,3 +44,7 @@ Chạy một file cụ thể	                pytest tests/test_auth/test_auth.py
 Chạy một hàm test cụ thể	            pytest -k "test_admin_login" -v
 Dừng ngay khi gặp lỗi đầu tiên	        pytest -x -v
 Hiện nội dung hàm print() ra màn hình	pytest -s -v
+
+
+
+playwright codegen --target pytest http://localhost:3000
