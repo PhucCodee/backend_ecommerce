@@ -1,4 +1,4 @@
-# tests/test_users/test_users.py
+# api_tests/test_users/test_users.py
 import requests
 import uuid
 import pytest
@@ -80,3 +80,49 @@ def test_unauthorized_access_profile(base_url):
     
     # Mã 401 nghĩa là "Anh chưa đăng nhập, không có cửa vào đây!"
     assert response.status_code == 401
+
+
+# ==============================================================================
+# 🛡️ SECURITY TESTS BỔ SUNG (PHÂN QUYỀN & LỖ HỔNG LEO THANG ĐẶC QUYỀN)
+# ==============================================================================
+
+def test_security_user_cannot_access_admin_endpoint(base_url, user_headers):
+    """
+    TC_SEC_01 (Broken Access Control): BẢO VỆ API CỦA ADMIN
+    - Kịch bản: Đăng nhập bằng tài khoản User thường, nhưng lén gọi API của Admin (Lấy danh sách tất cả Users).
+    - Kỳ vọng: Backend đọc Token, biết đây là User thường -> Lập tức chặn lại và báo 403 Forbidden.
+    - Chú ý: 401 là "Chưa đăng nhập" (như TC_USER_04), còn 403 là "Đã đăng nhập nhưng CẤM VÀO".
+    """
+    params = {"pageNumber": 1, "pageSize": 10}
+    response = requests.get(f"{base_url}/users", params=params, headers=user_headers)
+    
+    assert response.status_code == 403, "Lỗ hổng Phân quyền: User thường có thể xem toàn bộ data của Users khác!"
+
+def test_security_prevent_role_escalation(base_url, user_headers):
+    """
+    TC_SEC_02 (Mass Assignment / Role Escalation): CHỐNG LEO THANG ĐẶC QUYỀN
+    - Kịch bản: Hacker dùng API Cập nhật Profile (vốn dĩ chỉ để đổi tên, SĐT) 
+      nhưng lén nhét thêm biến `"role": "Admin"` vào Payload để xem Backend có bị lừa không.
+    - Kỳ vọng: Backend dùng DTO (Data Transfer Object) an toàn, tự động bỏ qua (ignore) các trường nhạy cảm này.
+    """
+    malicious_payload = {
+        "firstName": "Hacker",
+        "lastName": "Pro",
+        "phone": "0999999999",
+        "role": "Admin",          # Cố tình leo quyền bằng text
+        "roleId": 1,              # Cố tình leo quyền bằng ID
+        "isActive": False         # Thử tự khóa tài khoản của chính mình
+    }
+    
+    # API vẫn cho phép đổi tên/SĐT thành công
+    update_res = requests.put(f"{base_url}/users/profile", json=malicious_payload, headers=user_headers)
+    assert update_res.status_code in [200, 204]
+    
+    # 2. Gọi lại API Get Profile để kiểm tra Role thực tế
+    get_res = requests.get(f"{base_url}/users/profile", headers=user_headers)
+    user_data = get_res.json()["data"]
+    
+    # Khẳng định Role của User này KHÔNG BỊ ĐỔI THÀNH ADMIN
+    # (Tùy thuộc vào JSON backend của bạn trả về chữ "Admin" hay roleId)
+    if "role" in user_data:
+        assert user_data["role"] != "Admin", "LỖ HỔNG NGHIÊM TRỌNG: Hacker đã tự nâng quyền lên Admin thành công!"

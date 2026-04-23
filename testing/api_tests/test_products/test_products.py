@@ -144,3 +144,64 @@ def test_admin_delete_product(base_url, admin_headers, seller_headers, temp_cate
     # 2. Admin xóa sản phẩm đó
     delete_res = requests.delete(f"{base_url}/products/{prod_id}", headers=admin_headers)
     assert delete_res.status_code in [200, 204]
+
+
+# ==============================================================================
+# 🛡️ SECURITY TESTS (KIỂM THỬ BẢO MẬT)
+# ==============================================================================
+
+# Danh sách các mã độc SQLi phổ biến (Từ điển Payload)
+SQLI_PAYLOADS = [
+    "Shirt' OR '1'='1",
+    "Shirts'+OR+1=1--",
+    "'; DROP TABLE Products; --",
+    "' UNION SELECT null, username, password FROM Users --",
+    "1 OR 1=1",
+    "\" OR \"\"=\""
+]
+
+@pytest.mark.parametrize("payload", SQLI_PAYLOADS)
+def test_api_prevent_sql_injection_on_search(base_url, payload):
+    """
+    TC_SEC_01: Kiểm tra lỗi SQL Injection trên tham số tìm kiếm (search).
+    Kỳ vọng: Trả về 200 OK (data rỗng) hoặc 400 Bad Request. 
+    Tuyệt đối không sập server (500) và không lộ toàn bộ dữ liệu.
+    """
+    params = {"search": payload}
+    response = requests.get(f"{base_url}/products", params=params)
+
+    # 1. Server không được sập (Trả về 500 thường nghĩa là DB đã cố gắng chạy mã độc và báo lỗi cú pháp)
+    assert response.status_code != 500, f"Cảnh báo: API bị sập (Lỗi 500) với payload: {payload}"
+
+    # 2. Nếu trả về 200, đảm bảo danh sách sản phẩm phải trống
+    # (Vì hệ thống an toàn sẽ coi payload là 1 chuỗi ký tự bình thường, ko có SP nào tên như vậy)
+    if response.status_code == 200:
+        response_body = response.json()
+        
+        # Xử lý linh hoạt 2 trường hợp JSON trả về từ Backend
+        data = response_body.get("data", [])
+        if isinstance(data, dict) and "items" in data:
+            items = data["items"]
+        else:
+            items = data
+            
+        assert len(items) == 0, f"Lỗ hổng SQLi! API đã trả về dữ liệu khi truyền mã độc: {payload}"
+
+
+@pytest.mark.parametrize("payload", [
+    "price; DROP TABLE Products; --",
+    "(SELECT CASE WHEN (1=1) THEN price ELSE name END)",
+    "price ASC, (SELECT Sleep(5))"
+])
+def test_api_prevent_sql_injection_on_sort(base_url, payload):
+    """
+    TC_SEC_02: Kiểm tra SQL Injection trên tham số sắp xếp (sortBy).
+    Lưu ý: Mệnh đề ORDER BY rất khó dùng Parameterized Query, nên Dev hay nối chuỗi ẩu ở đây.
+    """
+    params = {"sortBy": payload}
+    response = requests.get(f"{base_url}/products", params=params)
+    
+    # Ở tham số Sort, Backend chuẩn nên bắt lỗi ngay từ khâu Validation (Validation Error)
+    # và trả về 400 Bad Request (VD: "Trường sắp xếp không hợp lệ").
+    # Tuyệt đối không được trả về 500 (Sập DB do nối chuỗi).
+    assert response.status_code != 500, f"Lỗ hổng SQLi ở sortBy! Server báo lỗi 500 với payload: {payload}"

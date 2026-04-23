@@ -1,12 +1,13 @@
 # conftest.py
+from shared.config import Config
 import pytest
 import requests
 
-BASE_URL = "http://localhost:8080/api"
 
-@pytest.fixture
+
+@pytest.fixture(scope="session")
 def base_url():
-    return BASE_URL
+    return Config.API_URL
 
 @pytest.fixture
 def admin_headers(base_url):

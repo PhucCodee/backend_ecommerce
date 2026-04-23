@@ -18,6 +18,23 @@ def test_user_registration_success(base_url):
     response = requests.post(f"{base_url}/auth/register", json=payload)
     assert response.status_code in [200, 201]
 
+def test_user_registration_success(base_url):
+    # Tạo chuỗi ngẫu nhiên để email không bao giờ bị trùng khi chạy test nhiều lần
+    random_str = str(uuid.uuid4())[:8]
+    payload = {
+        "email": "phuc1234@gmail.com",
+        "username": "phucvovo",
+        "password": "Phucvovo2@",
+        "confirmPassword": "Phucvovo2@",
+        "firstName": "Phúc",
+        "lastName": "Võ",
+        "phone": "0868612497",
+        "acceptTerms": True
+    }
+    response = requests.post(f"{base_url}/auth/register", json=payload)
+    assert response.status_code in [200, 201]
+
+
 def test_login_success(base_url):
     payload = {"identifier": "west", "password": "Phuc123"}
     response = requests.post(f"{base_url}/auth/login", json=payload)

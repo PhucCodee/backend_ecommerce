@@ -151,7 +151,7 @@ def test_admin_update_category(base_url, admin_headers, temp_category):
     assert response.status_code in [200, 204] 
     
     get_res = requests.get(f"{base_url}/categories/{cat_id}")
-    assert get_res.json()["data"]["categoryName"] == "Auto Category"
+    assert get_res.json()["data"]["categoryName"] == "Updated Name Automation"
 
 def test_admin_delete_category(base_url, admin_headers):
     """
@@ -189,3 +189,43 @@ def test_get_child_categories(base_url, temp_category):
     
     assert response.status_code == 200
     assert isinstance(response.json()['data'], list)
+
+# ==============================================================================
+# 🛡️ SECURITY TESTS (KIỂM THỬ BẢO MẬT & PHÂN QUYỀN)
+# ==============================================================================
+
+def test_security_buyer_cannot_create_category(base_url, buyer_headers):
+    """
+    TC_SEC_01 (Phân quyền): BẢO VỆ API ADMIN
+    - Kịch bản: Một người dùng bình thường (Buyer) cố tình gọi API tạo danh mục.
+    - Kỳ vọng: Backend phải chặn lại và trả về 403 Forbidden (Không đủ quyền).
+    """
+    payload = {
+        "name": "Hacker Category",
+        "isCore": True
+    }
+    response = requests.post(f"{base_url}/categories", json=payload, headers=buyer_headers)
+    
+    # 401: Chưa đăng nhập, 403: Đã đăng nhập nhưng cấm vào
+    assert response.status_code in [401, 403], "LỖ HỔNG Phân quyền! Buyer có thể tạo Category!"
+
+
+@pytest.mark.parametrize("malicious_id", [
+    "1' OR '1'='1",
+    "9999; DROP TABLE Categories; --",
+    "../../etc/passwd"  # Path traversal (nếu backend dùng file system)
+])
+def test_security_sql_injection_on_category_id(base_url, malicious_id):
+    """
+    TC_SEC_02 (SQL Injection & Input Validation): TRUYỀN MÃ ĐỘC VÀO ID
+    - Kịch bản: Hacker truyền mã SQL Injection vào thẳng đường dẫn /categories/{id}
+    - Kỳ vọng: API an toàn phải trả về 400 Bad Request (Lỗi định dạng UUID/Int) 
+      hoặc 404 Not Found. TUYỆT ĐỐI không sập server (500).
+    """
+    response = requests.get(f"{base_url}/categories/{malicious_id}")
+    
+    # Server khỏe mạnh thì không bao giờ được trả về 500 do lỗi SQL syntax
+    assert response.status_code != 500, f"Server bị sập khi nhận malicious_id: {malicious_id}"
+    
+    # Đảm bảo API trả về 400 (Lỗi validation) hoặc 404 (Không tìm thấy)
+    assert response.status_code in [400, 404]

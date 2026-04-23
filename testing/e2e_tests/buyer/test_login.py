@@ -1,3 +1,5 @@
+#test_login.py
+
 import re
 from playwright.sync_api import Page, expect
 from shared.config import Config
@@ -24,38 +26,25 @@ def test_buyer_login_and_logout(page: Page) -> None:
     # Assert: Kiểm tra đã về lại trạng thái chưa đăng nhập
     expect(page.get_by_role("button", name="Login")).to_be_visible()
 
-import re
-from playwright.sync_api import Page, expect
 
 
-def test_example(page: Page) -> None:
+def test_register(page:Page) -> None:
     page.goto("http://localhost:3000/")
-    page.get_by_role("button", name="Login").click()
-    page.get_by_role("textbox", name="Email or Username").click()
-    page.get_by_role("textbox", name="Email or Username").fill("goat")
-    page.get_by_role("textbox", name="Password").dblclick()
-    page.get_by_role("textbox", name="Password").fill("Phuc123")
-    page.get_by_role("button", name="Sign in").click()
-    page.get_by_role("button", name="Shop").click()
-    page.get_by_text("Classic Crew T-Shirt$").click()
-    page.get_by_role("button", name="Add to Cart").click()
-    page.get_by_role("button", name="1", exact=True).click()
-    page.get_by_role("button", name="Proceed to Checkout").click()
-    page.get_by_role("button", name="Continue to Payment").click()
-    page.get_by_role("textbox", name="Street Address").click()
-    page.get_by_role("textbox", name="Street Address").fill("123 Main St")
-    page.get_by_role("textbox", name="City").dblclick()
-    page.get_by_role("textbox", name="City").fill("San Francisco")
-    page.get_by_role("textbox", name="State").dblclick()
-    page.get_by_role("textbox", name="State").fill("CA")
-    page.get_by_role("textbox", name="ZIP Code").dblclick()
-    page.get_by_role("textbox", name="ZIP Code").fill("94102")
-    page.get_by_role("button", name="Continue to Payment").click()
-    page.get_by_role("button", name="Continue to Review").click()
-    page.get_by_role("textbox", name="Last 4 Digits").dblclick()
-    page.get_by_role("textbox", name="Last 4 Digits").fill("1234")
-    page.get_by_role("textbox", name="Expiry Date").click()
-    page.get_by_role("button", name="Continue to Review").click()
-    page.get_by_role("button", name="Place Order").click()
-    page.get_by_role("button").filter(has_text=re.compile(r"^$")).nth(3).click()
-    page.get_by_role("menuitem", name="Orders").click()
+    page.get_by_role("button", name="Sign Up").click()
+    page.get_by_role("textbox", name="First Name").click()
+    page.get_by_role("textbox", name="First Name").fill("Phúc")
+    page.get_by_role("textbox", name="Last Name").click()
+    page.get_by_role("textbox", name="Last Name").fill("Võ")
+    page.get_by_role("textbox", name="Username").click()
+    page.get_by_role("textbox", name="Username").fill("phucvovo")
+    page.get_by_role("textbox", name="Email").click()
+    page.get_by_role("textbox", name="Email").fill("phuc@hcmut.edu.vn")
+    page.get_by_role("textbox", name="Phone (Optional)").click()
+    page.get_by_role("textbox", name="Phone (Optional)").fill("0899000123")
+    page.get_by_role("textbox", name="Password", exact=True).click()
+    page.get_by_role("textbox", name="Password", exact=True).fill("Phucvovo2@")
+    page.get_by_role("textbox", name="Confirm Password").click()
+    page.get_by_role("textbox", name="Confirm Password").fill("Phucvovo2@")
+    page.get_by_role("checkbox", name="I agree to the Terms of").click()
+    page.get_by_role("button", name="Create Account").click()
+    not expect(page.locator("#root")).to_contain_text("Request failed with status code 400")
