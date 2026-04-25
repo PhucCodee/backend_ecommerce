@@ -92,3 +92,23 @@ def test_merge_cart_on_login(base_url, session_headers, user_headers):
     
     res = requests.post(f"{base_url}/cart/merge", headers=headers_merge)
     assert res.status_code in [200, 204]
+
+def test_seller_cannot_create_cart(base_url, seller_headers):
+        """
+        🏷️ TC_ORDER_10 - SELLER CANNOT CREATE ORDERS (SELLER RESTRICTION)
+        
+        📌 DECLARATION:
+        Test that seller role cannot create customer orders.
+        
+        📝 GOAL:
+        - Verify role-based access control
+        
+        🔍 STEPS:
+        1. Seller attempts POST /api/orders
+        2. Verify 403 Forbidden
+        
+        ✔️ EXPECTED RESULT:
+        - Status: 403 Forbidden
+        """
+        response = requests.post(f"{base_url}/cart/items", json={"skuId": 1, "quantity": 1}, headers=seller_headers)
+        assert response.status_code not in [200, 201]

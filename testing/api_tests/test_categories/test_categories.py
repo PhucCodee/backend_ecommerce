@@ -1,5 +1,4 @@
 # tests/test_categories/test_categories.py
-from unicodedata import category
 
 import pytest
 import requests
@@ -175,7 +174,7 @@ def test_admin_delete_category(base_url, admin_headers):
     
     # 3. Kiểm chứng xem đã bị xóa chưa
     get_res = requests.get(f"{base_url}/categories/{cat_id}")
-    assert get_res.json()["success"] == "Category not found"
+    assert get_res.status_code == 404
 
 def test_get_child_categories(base_url, temp_category):
     """
@@ -194,7 +193,7 @@ def test_get_child_categories(base_url, temp_category):
 # 🛡️ SECURITY TESTS (KIỂM THỬ BẢO MẬT & PHÂN QUYỀN)
 # ==============================================================================
 
-def test_security_buyer_cannot_create_category(base_url, buyer_headers):
+def test_security_buyer_cannot_create_category(base_url, user_headers):
     """
     TC_SEC_01 (Phân quyền): BẢO VỆ API ADMIN
     - Kịch bản: Một người dùng bình thường (Buyer) cố tình gọi API tạo danh mục.
@@ -202,9 +201,14 @@ def test_security_buyer_cannot_create_category(base_url, buyer_headers):
     """
     payload = {
         "name": "Hacker Category",
-        "isCore": True
+        "parentCategoryId": 1,
+        "description": "this is the description for pants",
+        "imageUrl": "https://example.com/electronics.jpg",
+        "displayOrder": 1,
+        "isCore": True,
+        "isActive": True
     }
-    response = requests.post(f"{base_url}/categories", json=payload, headers=buyer_headers)
+    response = requests.post(f"{base_url}/categories", json=payload, headers= user_headers)
     
     # 401: Chưa đăng nhập, 403: Đã đăng nhập nhưng cấm vào
     assert response.status_code in [401, 403], "LỖ HỔNG Phân quyền! Buyer có thể tạo Category!"
