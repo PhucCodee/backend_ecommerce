@@ -149,6 +149,7 @@ public class OrderService(
 
             await _eventPublisher.PublishAsync(orderCreatedEvent);
 
+            await _unitOfWork.SaveChangesAsync();
             // Return the created order
             return _mapper.Map<OrderDto>(order);
         });

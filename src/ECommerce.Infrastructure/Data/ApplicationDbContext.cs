@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using ECommerce.Domain.Entities;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
-using System;
 using ECommerce.Domain.Enums;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Data
 {
@@ -67,9 +66,11 @@ namespace ECommerce.Infrastructure.Data
                 .HasPostgresEnum<UserRoleType>()
                 .HasPostgresEnum<UserStatus>();
 
-            // Apply entity configurations from separate files
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-        }
 
+            modelBuilder.AddInboxStateEntity();
+            modelBuilder.AddOutboxMessageEntity();
+            modelBuilder.AddOutboxStateEntity();
+        }
     }
 }

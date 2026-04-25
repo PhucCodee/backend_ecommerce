@@ -91,7 +91,51 @@ namespace ECommerce.Application.Services
 
         public Task<AuthResponseDto> RefreshTokenAsync(string refreshToken) => throw new NotImplementedException();
         public Task<AuthOperationResultDto> LogoutAsync(string accessToken) => throw new NotImplementedException();
-        public Task<AuthOperationResultDto> ChangePasswordAsync(int userId, string currentPassword, string newPassword) => throw new NotImplementedException();
+
+        public async Task<AuthOperationResultDto> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+                throw new BadRequestException("Current password and new password are required.");
+
+            var user = await userRepository.GetUserWithAllDetailsAsync(userId);
+
+            if (user == null || user.UserCredential == null)
+                throw new NotFoundException("User not found");
+
+            if (user.Status != UserStatus.active)
+                throw new UnauthorizedException("Invalid credentials");
+
+            if (!passwordService.VerifyPassword(
+                currentPassword,
+                user.UserCredential.PasswordHash,
+                user.UserCredential.PasswordSalt))
+            {
+                throw new UnauthorizedException("Current password is incorrect");
+            }
+
+            if (passwordService.VerifyPassword(
+                newPassword,
+                user.UserCredential.PasswordHash,
+                user.UserCredential.PasswordSalt))
+            {
+                throw new BadRequestException("New password must be different from current password");
+            }
+
+            var (passwordHash, passwordSalt) = passwordService.HashPassword(newPassword);
+            user.UserCredential.PasswordHash = passwordHash;
+            user.UserCredential.PasswordSalt = passwordSalt;
+            user.UserCredential.PasswordUpdatedAt = DateTime.UtcNow;
+            user.UserCredential.UpdatedAt = DateTime.UtcNow;
+            user.UserCredential.FailedLoginAttempts = 0;
+            user.UserCredential.LockedUntil = null;
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await unitOfWork.SaveChangesAsync();
+
+            return AuthOperationResultDto.SuccessResult("Password changed successfully");
+        }
+
         public Task<AuthOperationResultDto> ResetPasswordAsync(string email) => throw new NotImplementedException();
         public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
 

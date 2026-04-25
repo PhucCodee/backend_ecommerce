@@ -44,33 +44,31 @@ services:
         ports:
             - "5672:5672"
             - "15672:15672"
-            
-    chatbot_api:
-        build:
-            context: ./ai-module/  
-            dockerfile: Dockerfile
-        container_name: chatbot_service
-        ports:
-        - "8000:8000"
-        env_file:
-        - ./ai-module/.env  
-        environment:
-        - DB_HOST=db
-        - DB_NAME=database
-        - DB_USER=postgres
-        - DB_PASSWORD=123
-        - DB_PORT=5432
-        - CHROMA_DB_PATH=/app/chroma_db
-        depends_on:
-        - db
-        # - cache
-        networks:
-        - default
-        volumes:
-        - ./ai-module/app:/app/app
-        - ./ai-module/data/vector:/app/chroma_db
 
-
+    # chatbot_api:
+    #     build:
+    #         context: ./ai-module/
+    #         dockerfile: Dockerfile
+    #     container_name: chatbot_service
+    #     ports:
+    #     - "8000:8000"
+    #     env_file:
+    #     - ./ai-module/.env
+    #     environment:
+    #     - DB_HOST=db
+    #     - DB_NAME=database
+    #     - DB_USER=postgres
+    #     - DB_PASSWORD=123
+    #     - DB_PORT=5432
+    #     - CHROMA_DB_PATH=/app/chroma_db
+    #     depends_on:
+    #     - db
+    #     # - cache
+    #     networks:
+    #     - default
+    #     volumes:
+    #     - ./ai-module/app:/app/app
+    #     - ./ai-module/data/vector:/app/chroma_db
 
 volumes:
     postgres_data:
