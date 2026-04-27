@@ -9,6 +9,25 @@ class Config:
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
     API_URL = os.getenv("API_URL", "http://localhost:8080/api")
     
-    # Tài khoản
-    BUYER_EMAIL = os.getenv("TEST_BUYER_EMAIL", "default_user")
-    BUYER_PASS = os.getenv("TEST_BUYER_PASS", "default_pass")
+    # Tài khoản Buyer
+    BUYER_EMAIL = os.getenv("TEST_BUYER_EMAIL", "goat")
+    BUYER_PASS = os.getenv("TEST_BUYER_PASS", "Phuc123")
+    BUYER_USERNAME = os.getenv("TEST_BUYER_USERNAME", "goat")
+    
+    # Tài khoản Seller
+    SELLER_EMAIL = os.getenv("TEST_SELLER_EMAIL", "stephen@gmail.com")
+    SELLER_PASS = os.getenv("TEST_SELLER_PASS", "Phuc123")
+    SELLER_USERNAME = os.getenv("TEST_SELLER_USERNAME", "stephen@gmail.com")
+    
+    # Tài khoản Admin
+    ADMIN_EMAIL = os.getenv("TEST_ADMIN_EMAIL", "west")
+    ADMIN_PASS = os.getenv("TEST_ADMIN_PASS", "Phuc123")
+    ADMIN_USERNAME = os.getenv("TEST_ADMIN_USERNAME", "west")
+    
+    # Playwright config
+    HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"
+    SLOW_MO = 5000
+    TIMEOUT = int(os.getenv("TIMEOUT", "30000"))
+    
+    # Test config
+    BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")

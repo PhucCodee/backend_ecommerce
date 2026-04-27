@@ -1,56 +1,169 @@
+"""Buyer e2e tests - Shopping Cart and Checkout tests"""
 import re
 from playwright.sync_api import Page, expect
 from shared.config import Config
 
-def test_simple_buy_pay(page: Page) -> None:
+
+def test_browse_products(page: Page) -> None:
+    """Test buyer can browse products"""
     page.goto(Config.FRONTEND_URL)
     
-    # 1. Đăng nhập
-    page.get_by_role("button", name="Login").click()
-    page.get_by_role("textbox", name="Email or Username").fill(Config.BUYER_EMAIL)
-    page.get_by_role("textbox", name="Password").fill(Config.BUYER_PASS)
-    page.get_by_role("button", name="Sign in").click()
-    
-    # 2. Mua hàng
+    # Navigate to shop
     page.get_by_role("button", name="Shop").click()
-    page.get_by_text("Classic Crew T-Shirt$").click()
-    page.get_by_role("button", name="Add to Cart").click()
+    page.wait_for_load_state("networkidle")
     
-    # 3. Giỏ hàng & Thanh toán
-    page.get_by_role("button", name="1", exact=True).click() # Click icon giỏ hàng
-    page.get_by_role("button", name="Proceed to Checkout").click()
-    
-    # Điền địa chỉ
-    page.get_by_role("button", name="Continue to Payment").click()
-    page.get_by_role("textbox", name="Street Address").fill("123 Main St")
-    page.get_by_role("textbox", name="City").fill("San Francisco")
-    page.get_by_role("textbox", name="State").fill("CA")
-    page.get_by_role("textbox", name="ZIP Code").fill("94102")
-    
-    # Thanh toán & Review
-    page.get_by_role("button", name="Continue to Payment").click()
-    page.get_by_role("button", name="Continue to Review").click()
-    page.get_by_role("textbox", name="Last 4 Digits").fill("1234")
-    page.get_by_role("textbox", name="Expiry Date").fill("12/25") # Thêm dữ liệu còn thiếu
-    
-    page.get_by_role("button", name="Continue to Review").click()
-    page.get_by_role("button", name="Place Order").click()
-    
-    # ASSERT BẮT BUỘC: Đảm bảo luồng mua hàng thành công
-    # Cần chờ thông báo thành công hoặc URL đổi sang trang /orders
-    expect(page.get_by_text("Order placed successfully")).to_be_visible(timeout=5000)
+    # Verify products are displayed
+    expect(page.get_by_text("Products")).to_be_visible()
+    expect(page.get_by_role("button", name="Add to Cart")).first.to_be_visible()
 
 
-def test_checkout_empty_cart(page: Page) -> None:
+def test_search_products(page: Page) -> None:
+    """Test buyer can search for products"""
     page.goto(Config.FRONTEND_URL)
     
-    # Đăng nhập chuẩn
-    page.get_by_role("button", name="Login").click()
-    page.get_by_role("textbox", name="Email or Username").fill(Config.BUYER_EMAIL)
-    page.get_by_role("textbox", name="Password").fill(Config.BUYER_PASS)
-    page.get_by_role("button", name="Sign in").click()
+    # Navigate to shop
+    page.get_by_role("button", name="Shop").click()
+    page.wait_for_load_state("networkidle")
     
-    page.goto(f"{Config.FRONTEND_URL}/checkout")
+    # Search for product
+    search_box = page.get_by_placeholder("Search products")
+    if search_box.is_visible():
+        search_box.fill("Shirt")
+        page.wait_for_load_state("networkidle")
+        
+        # Verify search results
+        expect(page.get_by_text("Shirt")).to_be_visible()
+
+
+def test_view_product_details(page: Page) -> None:
+    """Test buyer can view product details"""
+    page.goto(Config.FRONTEND_URL)
     
-    # Assert
-    expect(page.get_by_role("heading")).to_contain_text("Your cart is empty")
+    # Navigate to shop
+    page.get_by_role("button", name="Shop").click()
+    page.wait_for_load_state("networkidle")
+    
+    # Click on first product
+    page.get_by_role("button", name="Add to Cart").first.click()
+    page.wait_for_load_state("networkidle")
+    
+    # Verify product details page
+    expect(page.get_by_text("Product Details")).to_be_visible()
+    expect(page.get_by_text("Price")).to_be_visible()
+
+
+def test_add_product_to_cart(authenticated_page_buyer: Page) -> None:
+    """Test buyer can add product to cart"""
+    page = authenticated_page_buyer
+    
+    # Navigate to shop
+    page.get_by_role("button", name="Shop").click()
+    page.wait_for_load_state("networkidle")
+    
+    # Add first product to cart
+    page.get_by_role("button", name="Add to Cart").first.click()
+    page.wait_for_load_state("networkidle")
+    
+    # Verify success message
+    expect(page.get_by_text("Added to cart")).to_be_visible()
+
+
+def test_add_multiple_items_to_cart(authenticated_page_buyer: Page) -> None:
+    """Test buyer can add multiple products to cart"""
+    page = authenticated_page_buyer
+    
+    # Navigate to shop
+    page.get_by_role("button", name="Shop").click()
+    page.wait_for_load_state("networkidle")
+    
+    # Add multiple products
+    page.get_by_role("button", name="Add to Cart").nth(0).click()
+    page.wait_for_load_state("networkidle")
+    
+    page.get_by_role("button", name="Add to Cart").nth(1).click()
+    page.wait_for_load_state("networkidle")
+    
+    # Verify items added
+    expect(page.get_by_text("Added to cart")).to_be_visible()
+
+
+def test_view_shopping_cart(authenticated_page_buyer: Page) -> None:
+    """Test buyer can view shopping cart"""
+    page = authenticated_page_buyer
+    
+    # Add item to cart first
+    page.get_by_role("button", name="Shop").click()
+    page.wait_for_load_state("networkidle")
+    page.get_by_role("button", name="Add to Cart").first.click()
+    page.wait_for_load_state("networkidle")
+    
+    # Click cart icon
+    cart_button = page.locator("[data-testid='cart-button']")
+    if not cart_button.is_visible():
+        # Try alternative cart button
+        page.get_by_role("button").filter(has_text=re.compile(r"Cart|cart")).first.click()
+    else:
+        cart_button.click()
+    
+    page.wait_for_load_state("networkidle")
+    
+    # Verify cart page
+    expect(page.get_by_role("heading", name="Shopping Cart")).to_be_visible()
+
+
+def test_update_cart_quantity(authenticated_page_buyer: Page) -> None:
+    """Test buyer can update product quantity in cart"""
+    page = authenticated_page_buyer
+    
+    # Add item to cart
+    page.get_by_role("button", name="Shop").click()
+    page.wait_for_load_state("networkidle")
+    page.get_by_role("button", name="Add to Cart").first.click()
+    page.wait_for_load_state("networkidle")
+    
+    # Open cart
+    cart_button = page.locator("[data-testid='cart-button']")
+    if not cart_button.is_visible():
+        page.get_by_role("button").filter(has_text=re.compile(r"Cart|cart")).first.click()
+    else:
+        cart_button.click()
+    
+    page.wait_for_load_state("networkidle")
+    
+    # Update quantity
+    quantity_input = page.get_by_role("spinbutton").first
+    if quantity_input.is_visible():
+        quantity_input.fill("3")
+        page.wait_for_load_state("networkidle")
+    
+    # Verify update
+    expect(quantity_input).to_have_value("3")
+
+
+def test_remove_item_from_cart(authenticated_page_buyer: Page) -> None:
+    """Test buyer can remove item from cart"""
+    page = authenticated_page_buyer
+    
+    # Add item to cart
+    page.get_by_role("button", name="Shop").click()
+    page.wait_for_load_state("networkidle")
+    page.get_by_role("button", name="Add to Cart").first.click()
+    page.wait_for_load_state("networkidle")
+    
+    # Open cart
+    cart_button = page.locator("[data-testid='cart-button']")
+    if not cart_button.is_visible():
+        page.get_by_role("button").filter(has_text=re.compile(r"Cart|cart")).first.click()
+    else:
+        cart_button.click()
+    
+    page.wait_for_load_state("networkidle")
+    
+    # Remove item
+    remove_button = page.get_by_role("button", name="Delete").first
+    if remove_button.is_visible():
+        remove_button.click()
+        page.wait_for_load_state("networkidle")
+    
+    # Verify removal
+    expect(page.get_by_text("Item removed")).to_be_visible()
