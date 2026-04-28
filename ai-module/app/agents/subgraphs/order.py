@@ -7,40 +7,109 @@ from psycopg2.extras import RealDictCursor
 from app.agents.state import MasterState, OrderTrackingAction, Order
 from app.agents.config import llm, get_db_connection
 
+# ── Node ─────────────────────────────────────────────────────────────────────
+
 def order_tracking(state: MasterState) -> MasterState:
-    print("\n--- 🔀 Routing to Order search Agent ---")
+    print("\n--- 🔀 Routing to Order Tracking Agent ---")
+
     chat_history = [
-        msg for msg in state["messages"] 
+        msg for msg in state["messages"]
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
-    recent_history = chat_history[-5:] 
+    recent_history = chat_history[-5:]
     history_text = "\n".join([
-        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" 
+        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}"
         for msg in recent_history[:-1]
     ])
     if not history_text:
         history_text = "This is the start of the conversation."
 
-    order_llm = llm.with_structured_output(Order)
+
+    # ── Prompt ───────────────────────────────────────────────────────────────────
+
     prompt = f"""
-    You are an AI assistant for an e-commerce platform. Extract order tracking properties based on the user query.
+You are an order query parser for an e-commerce platform.
+Extract structured order tracking fields from the user's latest message.
 
-    ---------------------------------------
-    CONVERSATION CONTEXT:
-    {history_text}
-    ---------------------------------------
+═══════════════════════════════════════════
+CONVERSATION HISTORY (most recent last):
+{history_text}
+═══════════════════════════════════════════
 
-    Examples:
-    User: "Is my newest order shipping?" -> order_number: "", time_context: "newest", status: "shipping"
-    User: "Track my order #ORD-9876" -> order_number: "ORD-9876", time_context: "any", status: "any"
-    User: "I just canceled my order yesterday, was it successful?" -> order_number: "", time_context: "yesterday", status: "cancel"
-    """
-    
+═══════════════════════════════════════════
+OUTPUT SCHEMA
+═══════════════════════════════════════════
+order_number   : Exact order ID if user mentions one (e.g. "ORD-2025-001234").
+                 Use "" if not mentioned.
+
+time_context   : Which order in time the user is referring to.
+                 Values: any | newest | oldest | today | yesterday | this_week | last_week | this_month
+                 Default: "any" (unless user implies a time reference)
+
+status_filter  : The order status the user is asking about or filtering by.
+                 Values: any | pending | confirmed | processing | shipped | delivered | cancelled | refunded
+                 Default: "any"
+
+order_intent   : The user's primary goal.
+                 Values:
+                   track_status   → asking for current order status
+                   track_location → asking where package is / tracking number
+                   cancel_order   → requesting cancellation or confirming if it was cancelled
+                   request_refund → requesting refund or asking refund status
+                   confirm_action → confirming a recent action (e.g. "did my cancellation go through?")
+
+needs_tracking : true if user asks about package location, carrier, tracking number, or delivery ETA.
+needs_refund   : true if user asks about or requests a refund.
+
+═══════════════════════════════════════════
+CONTEXT INHERITANCE RULE
+═══════════════════════════════════════════
+If the latest message is a follow-up (e.g., "what about the other one?", "did it ship?"),
+resolve the referenced order from CONVERSATION HISTORY.
+
+═══════════════════════════════════════════
+EXAMPLES
+═══════════════════════════════════════════
+"Where is my order?"
+→ order_number: "",           time_context: "any",       status_filter: "any",
+  order_intent: "track_location", needs_tracking: true,  needs_refund: false
+
+"Is my newest order still being processed?"
+→ order_number: "",           time_context: "newest",    status_filter: "processing",
+  order_intent: "track_status",   needs_tracking: false, needs_refund: false
+
+"Track order ORD-2025-009876"
+→ order_number: "ORD-2025-009876", time_context: "any", status_filter: "any",
+  order_intent: "track_location",  needs_tracking: true, needs_refund: false
+
+"I cancelled my order yesterday, was it successful?"
+→ order_number: "",           time_context: "yesterday", status_filter: "cancelled",
+  order_intent: "confirm_action",  needs_tracking: false, needs_refund: false
+
+"I want to cancel my order this week"
+→ order_number: "",           time_context: "this_week", status_filter: "any",
+  order_intent: "cancel_order",    needs_tracking: false, needs_refund: false
+
+"When will I get my refund for ORD-2025-001100?"
+→ order_number: "ORD-2025-001100", time_context: "any", status_filter: "refunded",
+  order_intent: "request_refund",  needs_tracking: false, needs_refund: true
+
+"Has my package from last week been delivered?"
+→ order_number: "",           time_context: "last_week", status_filter: "delivered",
+  order_intent: "track_status",    needs_tracking: false, needs_refund: false
+
+[History: User asked about order ORD-2025-005 → AI said it was shipped]
+"What's the tracking number?"
+→ order_number: "ORD-2025-005", time_context: "any",   status_filter: "shipped",
+  order_intent: "track_location",  needs_tracking: true, needs_refund: false
+"""
+    order_llm = llm.with_structured_output(Order)
+
     response = order_llm.invoke([
         SystemMessage(content=prompt),
-        HumanMessage(content=state['user_prompt']),
+        HumanMessage(content=state["user_prompt"]),
     ])
-    
+
     action = OrderTrackingAction(order=response)
     print(f"Order Entity Extracted: {response}")
     return {"log_action": [action]}
