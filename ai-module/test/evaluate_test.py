@@ -6,7 +6,7 @@ from deepeval.test_case import LLMTestCase
 from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric
 from deepeval.models import GeminiModel
 from langchain_core.messages import HumanMessage
-from app.agents.buyer.agents import app 
+from app.agents.agents import app 
 from dotenv import load_dotenv
 import os
 # --- 1. Cấu hình Model ---

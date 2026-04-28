@@ -1,11 +1,12 @@
-# app/agents/buyer/subgraphs/policy.py
+# app/agents/subgraphs/policy.py
 from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import SystemMessage, ToolMessage
+from langchain_core.messages import SystemMessage, ToolMessage, AIMessage
 from langchain_core.tools import tool
+import re
 
 # Import từ thư mục core/cấu hình của bạn
-from app.agents.buyer.state import MasterState, PolicyAction
-from app.agents.buyer.config import llm, retriever
+from app.agents.state import MasterState, PolicyAction
+from app.agents.config import llm, retriever
 
 # ==========================================
 # 1. KHAI BÁO CÔNG CỤ (TOOLS)
@@ -100,11 +101,22 @@ def should_continue(state: MasterState):
     return "faq_synthesize"
 
 def faq_synthesize(state: MasterState):
-    """Extract final answer."""
+    """Extract final answer and structure response consistently."""
     ai_answer = state['messages'][-1]
     
+    # Extract sources from message content for ui_data
+    sources = []
+    if isinstance(ai_answer, AIMessage):
+        # Look for source citations in the format "Source: filename (Page X)"
+        source_pattern = r'Source:\s*([^\(]+)\s*\(Page\s*([^\)]+)\)'
+        matches = re.findall(source_pattern, ai_answer.content)
+        sources = [{"source": match[0].strip(), "page": match[1].strip()} for match in matches]
+    
+    # 🔄 Return consistent format with ui_data and AIMessage
     return {
-        'answer': ai_answer.content
+        'answer': ai_answer.content,
+        'ui_data': {'sources': sources},
+        'messages': [AIMessage(content=ai_answer.content)] if not isinstance(ai_answer, AIMessage) else []
     }
 
 # ==========================================

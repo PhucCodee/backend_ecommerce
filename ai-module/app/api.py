@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr, Field
 from langchain_core.messages import HumanMessage
 
 # Import Graph từ module của bạn
-from app.agents.buyer.agent import app as buyer_orchestrator_app
+from app.agents.agent import app as buyer_orchestrator_app
 
 api = FastAPI(title="AI Microservice - E-commerce")
 
@@ -63,19 +63,19 @@ async def chat_endpoint(
         initial_state = {
             "user_prompt": request.message,
             "log_action": [],
-            "messages": [HumanMessage(content=request.message)]
+            "messages": [HumanMessage(content=request.message)],
+            "ui_data": {}  # Initialize empty ui_data for consistency
         }
         
-        # 1. Gọi Graph (Sử dụng RESTful ainvoke trước mắt)
-        # ... (đoạn đầu gọi ainvoke giữ nguyên)
+        # Invoke the orchestrator graph
         result = await buyer_orchestrator_app.ainvoke(initial_state, config=config)
         
-        # Lấy dữ liệu rành mạch từ MasterState
+        # Extract data from MasterState with proper defaults
         response_text = result.get("answer", "Done.")
-        response_data = result.get("ui_data", {}) # Lấy dictionary ra cực dễ dàng
+        response_data = result.get("ui_data", {})  # Structured data for frontend (product_ids, order_ids, etc.)
         current_intent = result.get("intent", "general")
 
-        # Trả thẳng về cho Frontend
+        # Return consistent response format
         return ChatResponse(
             text=response_text,
             intent=current_intent,

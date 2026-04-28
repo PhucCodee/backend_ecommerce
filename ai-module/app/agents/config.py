@@ -1,4 +1,4 @@
-# app/agents/buyer/config.py
+# app/agents/config.py
 import os
 import psycopg2
 from pathlib import Path
@@ -15,8 +15,8 @@ llm = init_chat_model("llama-3.3-70b-versatile", model_provider="groq", temperat
 # --- 2. DATABASE ---
 DB_HOST = os.getenv("DB_HOST", "localhost") 
 DB_NAME = os.getenv("DB_NAME", "database")
-DB_USER = os.getenv("DB_USER", "chatbot_user")
-DB_PASS = os.getenv("DB_PASSWORD", "chatbot")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASSWORD", "123")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 def get_db_connection():
@@ -29,7 +29,7 @@ def get_db_connection():
 # --- 3. CHROMA DB ---
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
-# Lưu ý: Vì config.py nằm ở app/agents/buyer/, bạn cần lùi đúng số cấp thư mục để trỏ về data1
+# Lưu ý: Vì config.py nằm ở app/agents/, bạn cần lùi đúng số cấp thư mục để trỏ về data1
 default_path = Path(__file__).resolve().parents[3] / "data" / "vector" / "chroma_db_data1"
 persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
 

@@ -1,10 +1,10 @@
-# app/agents/buyer/subgraphs/general.py
+# app/agents/subgraphs/general.py
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 # Import từ thư mục core/cấu hình của bạn
-from app.agents.buyer.state import MasterState, GeneralAction
-from app.agents.buyer.config import llm
+from app.agents.state import MasterState, GeneralAction, GeneralUIResponse
+from app.agents.config import llm
 
 def general_agent(state: MasterState):
     print("\n--- 🔀 Routing to General Chat Agent ---")
@@ -21,6 +21,7 @@ def general_agent(state: MasterState):
     system_prompt = """You are a helpful, friendly, and concise e-commerce assistant for "My Shop". 
     Your task is to handle general greetings, small talk, compliments, or unrelated questions politely.
     If the user asks something completely outside the scope of e-commerce, gently steer them back to shopping or asking about store policies.
+    Keep your response natural and conversational (2-3 sentences max).
     """
     
     messages_to_send = [SystemMessage(content=system_prompt)] + recent_history
@@ -38,10 +39,11 @@ def general_agent(state: MasterState):
         ai_ans=msg.content
     )
     
-    # 5. Cập nhật MasterState
-    # QUAN TRỌNG: Trả về AIMessage để LangGraph tự động nối vào lịch sử hội thoại
+    # 5. Cập nhật MasterState với format consistent
+    # Trả về AIMessage để LangGraph tự động nối vào lịch sử hội thoại
     return {
         "answer": msg.content,
+        "ui_data": {},  # 🔄 Ensure ui_data is always present (empty for general)
         "messages": [AIMessage(content=msg.content)],
         "log_action": [action]
     }

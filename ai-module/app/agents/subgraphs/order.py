@@ -1,11 +1,11 @@
-# app/agents/buyer/subgraphs/order.py
+# app/agents/subgraphs/order.py
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from psycopg2.extras import RealDictCursor
 
 # Import từ core
-from app.agents.buyer.state import MasterState, OrderTrackingAction, Order
-from app.agents.buyer.config import llm, get_db_connection
+from app.agents.state import MasterState, OrderTrackingAction, Order
+from app.agents.config import llm, get_db_connection
 
 def order_tracking(state: MasterState) -> MasterState:
     print("\n--- 🔀 Routing to Order search Agent ---")
@@ -112,6 +112,18 @@ def synthesize_order_answer(state: MasterState):
     action = state["log_action"][-1]
     results = action.get_order_res()
 
+    # Extract order IDs and order numbers for ui_data
+    order_ids = []
+    order_numbers = []
+    
+    if results and isinstance(results, list):
+        for result in results:
+            if isinstance(result, dict):
+                if "order_id" in result and result["order_id"]:
+                    order_ids.append(result["order_id"])
+                if "order_number" in result and result["order_number"]:
+                    order_numbers.append(result["order_number"])
+
     system_prompt = """You are a professional and empathetic customer service agent for an e-commerce platform.
     Your task is to read the database results of the customer's order and explain it to them naturally.
 
@@ -140,8 +152,13 @@ def synthesize_order_answer(state: MasterState):
         HumanMessage(content=state["user_prompt"])
     ])
     
+    # 🔄 Return consistent format with ui_data
     return {
         "answer": response.content,
+        "ui_data": {
+            "order_ids": order_ids,
+            "order_numbers": order_numbers
+        },
         "messages": [AIMessage(content=response.content)]
     }
 
