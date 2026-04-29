@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Text;
 using ECommerce.API.Middleware;
 using ECommerce.Application.Common.Authorization;
 using ECommerce.Application.Helpers;
@@ -9,6 +12,7 @@ using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Repositories;
 using ECommerce.Infrastructure.Services;
+using ECommerce.Infrastructure.Services.Momo;
 using ECommerce.Infrastructure.Worker;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,9 +23,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IO;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
 });
 
@@ -39,31 +38,38 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured"))),
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:SecretKey"]
+                        ?? throw new InvalidOperationException("JWT SecretKey not configured")
+                )
+            ),
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "ECommerce",
             ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "ECommerce",
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
         };
     });
 
-builder.Services.AddAuthorizationBuilder()
+builder
+    .Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Roles.Admin))
     .AddPolicy(Policies.AdminOrSeller, policy => policy.RequireRole(Roles.Admin, Roles.Seller))
     .AddPolicy(Policies.SellerOnly, policy => policy.RequireRole(Roles.Seller))
     .AddPolicy(Policies.Authenticated, policy => policy.RequireAuthenticatedUser());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -73,6 +79,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+builder.Services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<UserValidationHelper>();
@@ -80,6 +87,11 @@ builder.Services.AddScoped<UserValidationHelper>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+builder.Services.Configure<MomoOptions>(builder.Configuration.GetSection("MoMo"));
+builder.Services.AddHttpClient<IPaymentGatewayClient, MomoPaymentGatewayClient>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 
 builder.Services.AddMassTransit(x =>
 {
@@ -96,16 +108,22 @@ builder.Services.AddMassTransit(x =>
         o.QueryDelay = TimeSpan.FromSeconds(2);
     });
 
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host(builder.Configuration["RabbitMQ:Host"] ?? "message_broker", "/", h =>
+    x.UsingRabbitMq(
+        (context, cfg) =>
         {
-            h.Username(builder.Configuration["RabbitMQ:User"] ?? "guest");
-            h.Password(builder.Configuration["RabbitMQ:Pass"] ?? "guest");
-        });
+            cfg.Host(
+                builder.Configuration["RabbitMQ:Host"] ?? "message_broker",
+                "/",
+                h =>
+                {
+                    h.Username(builder.Configuration["RabbitMQ:User"] ?? "guest");
+                    h.Password(builder.Configuration["RabbitMQ:Pass"] ?? "guest");
+                }
+            );
 
-        cfg.ConfigureEndpoints(context);
-    });
+            cfg.ConfigureEndpoints(context);
+        }
+    );
 });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -119,6 +137,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -142,10 +161,12 @@ if (!Directory.Exists(uploadsPath))
     Directory.CreateDirectory(uploadsPath);
 }
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(uploadsPath),
-    RequestPath = "/uploads"
-});
+app.UseStaticFiles(
+    new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(uploadsPath),
+        RequestPath = "/uploads",
+    }
+);
 
 app.Run();

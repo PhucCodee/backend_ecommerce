@@ -1,21 +1,29 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace ECommerce.Domain.Interfaces;
+
 public interface IPaymentGatewayClient
 {
-    Task<PaymentGatewayResult> ChargeAsync(PaymentChargeRequest request, CancellationToken ct);
+    Task<PaymentGatewayResult> CreatePaymentAsync(
+        PaymentCreateRequest request,
+        CancellationToken ct
+    );
 }
 
-public record PaymentChargeRequest(
+public record PaymentCreateRequest(
     int OrderId,
+    string OrderNumber,
     decimal Amount,
-    string Method,
-    string Currency,
-    string Description);
+    string Description
+);
 
 public record PaymentGatewayResult(
     bool IsSuccess,
-    string? TransactionId,
-    string? GatewayResponse,
+    string? ProviderRequestId,
+    string? PaymentUrl,
+    string? QrCodeUrl,
+    string? RawResponse,
     string? ErrorCode,
-    string? ErrorMessage);
+    string? ErrorMessage
+);

@@ -21,7 +21,8 @@ public class OrderService(
     ICouponRepository couponRepository,
     IUnitOfWork unitOfWork,
     IEventPublisher eventPublisher,
-    IMapper mapper) : IOrderService
+    IMapper mapper
+) : IOrderService
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly ICartRepository _cartRepository = cartRepository;
@@ -33,7 +34,8 @@ public class OrderService(
     public async Task<OrderDto> CreateAsync(int userId, CreateOrderRequest request)
     {
         // Get user's cart with details
-        var cart = await _cartRepository.GetByUserIdWithDetailsAsync(userId)
+        var cart =
+            await _cartRepository.GetByUserIdWithDetailsAsync(userId)
             ?? throw new NotFoundException("Cart not found");
 
         if (cart.CartItems.Count == 0)
@@ -46,8 +48,9 @@ public class OrderService(
             if (availableStock < item.Quantity)
             {
                 throw new BadRequestException(
-                    $"Insufficient stock for {item.Sku?.Product?.ProductName ?? "item"}. " +
-                    $"Available: {availableStock}, Requested: {item.Quantity}");
+                    $"Insufficient stock for {item.Sku?.Product?.ProductName ?? "item"}. "
+                        + $"Available: {availableStock}, Requested: {item.Quantity}"
+                );
             }
         }
 
@@ -55,12 +58,17 @@ public class OrderService(
         var subtotal = cart.CartItems.Sum(i => i.PriceSnapshot * i.Quantity);
         var shippingFee = CalculateShippingFee(subtotal);
         var taxAmount = CalculateTax(subtotal);
-        var (couponId, couponCode, couponDiscount) =
-            await ResolveCouponAsync(request.CouponCode, subtotal, shippingFee, taxAmount);
+        var (couponId, couponCode, couponDiscount) = await ResolveCouponAsync(
+            request.CouponCode,
+            subtotal,
+            shippingFee,
+            taxAmount
+        );
 
         var totalBeforeDiscount = subtotal + shippingFee + taxAmount;
         var totalAmount = totalBeforeDiscount - couponDiscount;
-        if (totalAmount < 0) totalAmount = 0;
+        if (totalAmount < 0)
+            totalAmount = 0;
 
         return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
@@ -75,7 +83,8 @@ public class OrderService(
                 preferredCurrency: Currency.vnd,
                 couponCode: couponCode,
                 couponDiscount: couponDiscount,
-                customerNotes: request.CustomerNotes);
+                customerNotes: request.CustomerNotes
+            );
 
             order.CouponId = couponId;
 
@@ -93,7 +102,8 @@ public class OrderService(
                     sellerId: cartItem.Sku?.Product?.SellerId ?? 0,
                     quantity: cartItem.Quantity,
                     unitPrice: cartItem.PriceSnapshot,
-                    variantDescription: cartItem.Sku?.VariantAttributes);
+                    variantDescription: cartItem.Sku?.VariantAttributes
+                );
                 order.OrderItems.Add(orderItem);
             }
 
@@ -109,7 +119,8 @@ public class OrderService(
                 postalCode: shippingAddress.PostalCode,
                 country: shippingAddress.Country,
                 method: ShippingMethod.standard,
-                addressLine2: shippingAddress.AddressLine2);
+                addressLine2: shippingAddress.AddressLine2
+            );
             order.OrderShipping = orderShipping;
 
             await _unitOfWork.SaveChangesAsync();
@@ -135,16 +146,18 @@ public class OrderService(
                 TaxAmount = order.TaxAmount,
                 CouponCode = order.CouponCode,
                 CouponDiscount = order.CouponDiscount,
-                Items = order.OrderItems.Select(i => new OrderItemEvent
-                {
-                    SkuId = i.SkuId,
-                    ProductName = i.ProductName,
-                    Sku = i.Sku,
-                    SellerId = i.SellerId,
-                    Quantity = i.Quantity,
-                    UnitPrice = i.UnitPrice,
-                    Subtotal = i.Subtotal
-                }).ToList()
+                Items = order
+                    .OrderItems.Select(i => new OrderItemEvent
+                    {
+                        SkuId = i.SkuId,
+                        ProductName = i.ProductName,
+                        Sku = i.Sku,
+                        SellerId = i.SellerId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        Subtotal = i.Subtotal,
+                    })
+                    .ToList(),
             };
 
             await _eventPublisher.PublishAsync(orderCreatedEvent);
@@ -165,12 +178,16 @@ public class OrderService(
         return _mapper.Map<OrderDto>(order);
     }
 
-    public async Task<PagedResult<OrderSummaryDto>> GetUserOrdersAsync(int userId, PaginationParams paginationParams)
+    public async Task<PagedResult<OrderSummaryDto>> GetUserOrdersAsync(
+        int userId,
+        PaginationParams paginationParams
+    )
     {
         var (orders, totalCount) = await _orderRepository.GetOrdersByUserIdAsync(
             userId,
             paginationParams.PageNumber,
-            paginationParams.PageSize);
+            paginationParams.PageSize
+        );
 
         var orderSummaries = _mapper.Map<List<OrderSummaryDto>>(orders);
 
@@ -178,7 +195,8 @@ public class OrderService(
             orderSummaries,
             paginationParams.PageNumber,
             paginationParams.PageSize,
-            totalCount);
+            totalCount
+        );
     }
 
     public async Task<OrderDto?> CancelAsync(int userId, int orderId)
@@ -217,7 +235,10 @@ public class OrderService(
         return Math.Round(subtotal * 0.1m, 0);
     }
 
-    private async Task<UserAddress> ResolveShippingAddressAsync(int userId, CreateOrderRequest request)
+    private async Task<UserAddress> ResolveShippingAddressAsync(
+        int userId,
+        CreateOrderRequest request
+    )
     {
         var hasAddressId = request.ShippingAddressId.HasValue;
         var hasNewAddress = request.NewShippingAddress != null;
@@ -225,13 +246,15 @@ public class OrderService(
         if (hasAddressId == hasNewAddress)
         {
             throw new BadRequestException(
-                "Provide exactly one of shippingAddressId or newShippingAddress.");
+                "Provide exactly one of shippingAddressId or newShippingAddress."
+            );
         }
 
         if (hasAddressId)
         {
-            var existingAddresses = await _unitOfWork.UserAddresses.FindAsync(
-                a => a.AddressId == request.ShippingAddressId!.Value && a.UserId == userId);
+            var existingAddresses = await _unitOfWork.UserAddresses.FindAsync(a =>
+                a.AddressId == request.ShippingAddressId!.Value && a.UserId == userId
+            );
 
             return existingAddresses.FirstOrDefault()
                 ?? throw new NotFoundException("Shipping address not found");
@@ -239,13 +262,16 @@ public class OrderService(
 
         var newAddress = request.NewShippingAddress!;
 
-        var user = await _unitOfWork.Users.GetByIdAsync(userId)
+        var user =
+            await _unitOfWork.Users.GetByIdAsync(userId)
             ?? throw new NotFoundException("User not found");
 
         var addressEntity = UserAddress.CreateDefault(
             user: user,
             type: newAddress.Type,
-            label: string.IsNullOrWhiteSpace(newAddress.Label) ? "Shipping" : newAddress.Label.Trim(),
+            label: string.IsNullOrWhiteSpace(newAddress.Label)
+                ? "Shipping"
+                : newAddress.Label.Trim(),
             recipientName: newAddress.RecipientName.Trim(),
             phone: newAddress.Phone.Trim(),
             addressLine1: newAddress.AddressLine1.Trim(),
@@ -253,9 +279,12 @@ public class OrderService(
             stateProvince: newAddress.StateProvince.Trim(),
             postalCode: newAddress.PostalCode.Trim(),
             country: newAddress.Country.Trim(),
-            addressLine2: string.IsNullOrWhiteSpace(newAddress.AddressLine2) ? null : newAddress.AddressLine2.Trim(),
+            addressLine2: string.IsNullOrWhiteSpace(newAddress.AddressLine2)
+                ? null
+                : newAddress.AddressLine2.Trim(),
             isDefaultShipping: false,
-            isDefaultBilling: false);
+            isDefaultBilling: false
+        );
 
         // Persist only when requested. Otherwise use one-time address for this order only.
         if (request.SaveNewShippingAddress)
@@ -267,18 +296,24 @@ public class OrderService(
         return addressEntity;
     }
 
-    private async Task<(int? CouponId, string? CouponCode, decimal CouponDiscount)> ResolveCouponAsync(
-    string? couponCodeInput,
-    decimal subtotal,
-    decimal shippingFee,
-    decimal taxAmount)
+    private async Task<(
+        int? CouponId,
+        string? CouponCode,
+        decimal CouponDiscount
+    )> ResolveCouponAsync(
+        string? couponCodeInput,
+        decimal subtotal,
+        decimal shippingFee,
+        decimal taxAmount
+    )
     {
         if (string.IsNullOrWhiteSpace(couponCodeInput))
             return (null, null, 0m);
 
         var code = couponCodeInput.Trim().ToUpperInvariant();
 
-        var coupon = await _couponRepository.GetByCodeAsync(code)
+        var coupon =
+            await _couponRepository.GetByCodeAsync(code)
             ?? throw new BadRequestException("Invalid coupon code");
 
         if (!coupon.IsActive)
@@ -293,7 +328,10 @@ public class OrderService(
 
         var orderTotalBeforeDiscount = subtotal + shippingFee + taxAmount;
 
-        if (coupon.MinOrderAmount.HasValue && orderTotalBeforeDiscount < coupon.MinOrderAmount.Value)
+        if (
+            coupon.MinOrderAmount.HasValue
+            && orderTotalBeforeDiscount < coupon.MinOrderAmount.Value
+        )
             throw new BadRequestException("Order does not meet coupon minimum amount");
 
         var usageCount = await _couponRepository.CountUsageAsync(coupon.CouponId);
@@ -306,10 +344,16 @@ public class OrderService(
 
         decimal discount = coupon.DiscountType switch
         {
-            DiscountType.percentage => CalculatePercentageDiscount(coupon.DiscountValue, orderTotalBeforeDiscount),
-            DiscountType.fixed_amount => CalculateFixedAmountDiscount(coupon.DiscountValue, orderTotalBeforeDiscount),
+            DiscountType.percentage => CalculatePercentageDiscount(
+                coupon.DiscountValue,
+                orderTotalBeforeDiscount
+            ),
+            DiscountType.fixed_amount => CalculateFixedAmountDiscount(
+                coupon.DiscountValue,
+                orderTotalBeforeDiscount
+            ),
             DiscountType.free_shipping => shippingFee,
-            _ => throw new BadRequestException("Invalid coupon type")
+            _ => throw new BadRequestException("Invalid coupon type"),
         };
 
         if (discount > orderTotalBeforeDiscount)
@@ -321,7 +365,9 @@ public class OrderService(
     private static decimal CalculatePercentageDiscount(decimal percentage, decimal total)
     {
         if (percentage <= 0 || percentage > 20)
-            throw new BadRequestException("Percentage coupon must be greater than 0 and at most 20%");
+            throw new BadRequestException(
+                "Percentage coupon must be greater than 0 and at most 20%"
+            );
         return Math.Round(total * (percentage / 100m), 2);
     }
 
@@ -332,7 +378,9 @@ public class OrderService(
 
         var maxAllowed = total / 2m;
         if (amount > maxAllowed)
-            throw new BadRequestException("Fixed amount coupon cannot exceed half of the order total");
+            throw new BadRequestException(
+                "Fixed amount coupon cannot exceed half of the order total"
+            );
 
         return amount;
     }

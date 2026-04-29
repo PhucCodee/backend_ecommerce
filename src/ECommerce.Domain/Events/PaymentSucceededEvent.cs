@@ -1,5 +1,7 @@
 using System;
 
+namespace ECommerce.Domain.Events;
+
 public record PaymentSucceededEvent
 {
     public Guid EventId { get; init; } = Guid.NewGuid();
