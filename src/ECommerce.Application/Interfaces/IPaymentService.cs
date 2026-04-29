@@ -6,11 +6,14 @@ namespace ECommerce.Application.Interfaces;
 
 public interface IPaymentService
 {
-    Task<CreateMomoPaymentResponseDto> CreateMomoPaymentAsync(
+    Task<CreateZaloPayPaymentResponseDto> CreateZaloPayPaymentAsync(
         int userId,
-        CreateMomoPaymentRequestDto request,
+        CreateZaloPayPaymentRequestDto request,
         CancellationToken ct
     );
 
-    Task<MomoIpnResultDto> HandleMomoIpnAsync(MomoIpnDto request, CancellationToken ct);
+    Task<ZaloPayCallbackResultDto> HandleZaloPayCallbackAsync(
+        ZaloPayCallbackDto request,
+        CancellationToken ct
+    );
 }

@@ -25,5 +25,6 @@ public record PaymentGatewayResult(
     string? QrCodeUrl,
     string? RawResponse,
     string? ErrorCode,
-    string? ErrorMessage
+    string? ErrorMessage,
+    string? ZpTransToken
 );

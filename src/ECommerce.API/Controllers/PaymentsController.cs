@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ECommerce.API.Controllers;
 
 [ApiController]
-[Route("api/payments/momo")]
+[Route("api/payments/zalopay")]
 public class PaymentsController(IPaymentService paymentService) : ControllerBase
 {
     private readonly IPaymentService _paymentService = paymentService;
@@ -19,25 +19,26 @@ public class PaymentsController(IPaymentService paymentService) : ControllerBase
     [Authorize]
     [HttpPost("create")]
     public async Task<IActionResult> CreatePayment(
-        [FromBody] CreateMomoPaymentRequestDto request,
+        [FromBody] CreateZaloPayPaymentRequestDto request,
         CancellationToken ct
     )
     {
         var userId = GetCurrentUserId();
-        var result = await _paymentService.CreateMomoPaymentAsync(userId, request, ct);
+        var result = await _paymentService.CreateZaloPayPaymentAsync(userId, request, ct);
         return Ok(
-            ApiResponse<CreateMomoPaymentResponseDto>.Ok(result, "Payment created successfully")
+            ApiResponse<CreateZaloPayPaymentResponseDto>.Ok(result, "Payment created successfully")
         );
     }
 
     [AllowAnonymous]
-    [HttpPost("ipn")]
-    public async Task<IActionResult> MomoIpn([FromBody] MomoIpnDto request, CancellationToken ct)
+    [HttpPost("callback")]
+    public async Task<IActionResult> ZaloPayCallback(
+        [FromBody] ZaloPayCallbackDto request,
+        CancellationToken ct
+    )
     {
-        var result = await _paymentService.HandleMomoIpnAsync(request, ct);
-        return Ok(
-            ApiResponse<object>.Ok(new { resultCode = result.ResultCode, message = result.Message })
-        );
+        var result = await _paymentService.HandleZaloPayCallbackAsync(request, ct);
+        return Ok(new { return_code = result.ReturnCode, return_message = result.ReturnMessage });
     }
 
     private int GetCurrentUserId()

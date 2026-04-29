@@ -63,7 +63,7 @@ public sealed class PaymentConsumer(
         var exists = await _db.OrderPayments.AnyAsync(
             p =>
                 p.OrderId == order.OrderId
-                && p.PaymentGateway == "momo"
+                && p.PaymentGateway == "zalopay"
                 && (p.Status == PaymentStatus.pending || p.Status == PaymentStatus.processing),
             context.CancellationToken
         );
@@ -77,7 +77,7 @@ public sealed class PaymentConsumer(
                     Method = PaymentMethod.e_wallet,
                     Status = PaymentStatus.pending,
                     Amount = order.TotalAmount,
-                    PaymentGateway = "momo",
+                    PaymentGateway = "zalopay",
                     RetryCount = 0,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
@@ -115,7 +115,7 @@ public sealed class PaymentConsumer(
                 Method = PaymentMethod.e_wallet,
                 Status = PaymentStatus.failed,
                 Amount = order?.TotalAmount ?? 0m,
-                PaymentGateway = "momo",
+                PaymentGateway = "zalopay",
                 FailureReason = "Inventory reservation failed: " + message.Reason,
                 RetryCount = 0,
                 CreatedAt = DateTime.UtcNow,

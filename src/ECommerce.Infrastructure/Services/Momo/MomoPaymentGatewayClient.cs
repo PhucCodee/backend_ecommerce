@@ -97,7 +97,8 @@ public sealed class MomoPaymentGatewayClient(
                 null,
                 responseBody,
                 response.StatusCode.ToString(),
-                "MoMo HTTP error"
+                "MoMo HTTP error",
+                ""
             );
         }
 
@@ -114,7 +115,8 @@ public sealed class MomoPaymentGatewayClient(
                 null,
                 responseBody,
                 "deserialize_error",
-                "Invalid MoMo response"
+                "Invalid MoMo response",
+                ""
             );
         }
 
@@ -127,7 +129,8 @@ public sealed class MomoPaymentGatewayClient(
             dto.QrCodeUrl,
             responseBody,
             dto.ResultCode.ToString(),
-            dto.Message
+            dto.Message,
+            ""
         );
     }
 

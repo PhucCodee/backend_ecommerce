@@ -12,7 +12,7 @@ using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Repositories;
 using ECommerce.Infrastructure.Services;
-using ECommerce.Infrastructure.Services.Momo;
+using ECommerce.Infrastructure.Services.ZaloPay;
 using ECommerce.Infrastructure.Worker;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -87,8 +87,8 @@ builder.Services.AddScoped<UserValidationHelper>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
-builder.Services.Configure<MomoOptions>(builder.Configuration.GetSection("MoMo"));
-builder.Services.AddHttpClient<IPaymentGatewayClient, MomoPaymentGatewayClient>(client =>
+builder.Services.Configure<ZaloPayOptions>(builder.Configuration.GetSection("ZaloPay"));
+builder.Services.AddHttpClient<IPaymentGatewayClient, ZaloPayPaymentGatewayClient>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(15);
 });
