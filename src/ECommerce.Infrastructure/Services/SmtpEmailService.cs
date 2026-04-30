@@ -20,6 +20,16 @@ public class SmtpEmailService(
     public async Task SendEmailAsync(string to, string subject, string body)
     {
         var email = new MimeMessage();
+        if (
+            string.IsNullOrWhiteSpace(_emailSettings.FromAddress)
+            || string.IsNullOrWhiteSpace(_emailSettings.SmtpServer)
+            || string.IsNullOrWhiteSpace(_emailSettings.SmtpUser)
+            || string.IsNullOrWhiteSpace(_emailSettings.SmtpPass)
+        )
+        {
+            _logger.LogError("SMTP settings are not configured.");
+            return;
+        }
         email.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromAddress));
         email.To.Add(MailboxAddress.Parse(to));
         email.Subject = subject;

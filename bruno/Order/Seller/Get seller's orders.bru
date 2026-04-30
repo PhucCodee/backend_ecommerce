@@ -1,0 +1,20 @@
+meta {
+  name: Get seller's orders
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/orders/seller
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6IjZmYWMwNjRmLTlkN2EtNDIzZi04YTcwLWUyM2Y3YmFlNTE1NyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3Nzc1NjQxMDIsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.L1L4V5CvpkazK5b2cTj8YT477RxFbFo0I-uVg62M9r0
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

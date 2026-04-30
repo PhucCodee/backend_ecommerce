@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Threading.Tasks;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Events;
@@ -13,7 +14,11 @@ public sealed class NotificationConsumer(
     ILogger<NotificationConsumer> logger,
     IEmailService emailService,
     ApplicationDbContext dbContext
-) : IConsumer<PaymentSucceededEvent>, IConsumer<PaymentFailedEvent>
+)
+    : IConsumer<PaymentSucceededEvent>,
+        IConsumer<PaymentFailedEvent>,
+        IConsumer<OrderConfirmedEvent>,
+        IConsumer<OrderShippedEvent>
 {
     private readonly ILogger<NotificationConsumer> _logger = logger;
     private readonly IEmailService _emailService = emailService;
@@ -42,12 +47,15 @@ public sealed class NotificationConsumer(
         var subject = $"Payment Confirmation for Order #{message.OrderNumber}";
         var body = $"""
             <h1>Payment Confirmation</h1>
-            <p>Dear {user.UserProfile?.FirstName ?? user.Username},</p>
+            <p>Dear {user.UserProfile?.FirstName} {user.UserProfile?.LastName},</p>
             <p>We are pleased to inform you that your payment for order <strong>#{message.OrderNumber}</strong> has been successfully processed.</p>
             <p><strong>Payment Details:</strong></p>
             <ul>
                 <li><strong>Order Number:</strong> {message.OrderNumber}</li>
-                <li><strong>Amount Paid:</strong> {message.Amount:C}</li>
+                <li><strong>Amount Paid:</strong> {message.Amount.ToString(
+                "C0",
+                CultureInfo.GetCultureInfo("vi-VN")
+            )}</li>
                 <li><strong>Transaction ID:</strong> {message.TransactionId}</li>
             </ul>
             <p>Thank you for shopping with us. If you have any questions or need assistance, please contact our support team.</p>
@@ -71,5 +79,48 @@ public sealed class NotificationConsumer(
 
         // Optionally, send a notification email about the failed payment
         return Task.CompletedTask;
+    }
+
+    public async Task Consume(ConsumeContext<OrderConfirmedEvent> context)
+    {
+        var message = context.Message;
+        var user = await _dbContext
+            .Users.Include(u => u.UserProfile)
+            .FirstOrDefaultAsync(u => u.UserId == message.UserId);
+
+        if (user is null)
+            return;
+
+        var subject = $"Order Confirmed #{message.OrderNumber}";
+        var body = $"""
+            <h1>Order Confirmed</h1>
+            <p>Dear {user.UserProfile?.FirstName} {user.UserProfile?.LastName},</p>
+            <p>Your order <strong>#{message.OrderNumber}</strong> has been confirmed.</p>
+            <p>We’ll notify you once it ships.</p>
+            <p>Best regards,<br/>Sanquo Shop</p>
+            """;
+
+        await _emailService.SendEmailAsync(user.Email, subject, body);
+    }
+
+    public async Task Consume(ConsumeContext<OrderShippedEvent> context)
+    {
+        var message = context.Message;
+        var user = await _dbContext
+            .Users.Include(u => u.UserProfile)
+            .FirstOrDefaultAsync(u => u.UserId == message.UserId);
+
+        if (user is null)
+            return;
+
+        var subject = $"Order Shipped #{message.OrderNumber}";
+        var body = $"""
+            <h1>Order Shipped</h1>
+            <p>Dear {user.UserProfile?.FirstName} {user.UserProfile?.LastName},</p>
+            <p>Your order <strong>#{message.OrderNumber}</strong> has shipped.</p>
+            <p>Best regards,<br/>Sanquo Shop</p>
+            """;
+
+        await _emailService.SendEmailAsync(user.Email, subject, body);
     }
 }

@@ -38,6 +38,18 @@ public class OrderService(
             await _cartRepository.GetByUserIdWithDetailsAsync(userId)
             ?? throw new NotFoundException("Cart not found");
 
+        var sellerIds = cart
+            .CartItems.Select(i => i.Sku?.Product?.SellerId)
+            .Where(id => id.HasValue && id.Value > 0)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        if (sellerIds.Count != 1)
+            throw new BadRequestException(
+                "Cart must contain items from a single seller to checkout"
+            );
+
         if (cart.CartItems.Count == 0)
             throw new BadRequestException("Cart is empty");
 
@@ -199,6 +211,59 @@ public class OrderService(
         );
     }
 
+    public async Task<PagedResult<OrderSummaryDto>> GetAllOrdersAsync(
+        PaginationParams paginationParams
+    )
+    {
+        var (orders, totalCount) = await _orderRepository.GetOrdersPagedAsync(
+            paginationParams.PageNumber,
+            paginationParams.PageSize
+        );
+
+        var orderSummaries = _mapper.Map<List<OrderSummaryDto>>(orders);
+
+        return PagedResult<OrderSummaryDto>.Create(
+            orderSummaries,
+            paginationParams.PageNumber,
+            paginationParams.PageSize,
+            totalCount
+        );
+    }
+
+    public async Task<PagedResult<OrderSummaryDto>> GetSellerOrdersAsync(
+        int sellerId,
+        PaginationParams paginationParams
+    )
+    {
+        var (orders, totalCount) = await _orderRepository.GetOrdersBySellerIdAsync(
+            sellerId,
+            paginationParams.PageNumber,
+            paginationParams.PageSize
+        );
+
+        var orderSummaries = _mapper.Map<List<OrderSummaryDto>>(orders);
+
+        return PagedResult<OrderSummaryDto>.Create(
+            orderSummaries,
+            paginationParams.PageNumber,
+            paginationParams.PageSize,
+            totalCount
+        );
+    }
+
+    public async Task<OrderDto?> GetSellerOrderByIdAsync(int sellerId, int orderId)
+    {
+        var order = await _orderRepository.GetOrderWithDetailsAsync(orderId);
+
+        if (order == null)
+            return null;
+
+        if (!order.OrderItems.Any(i => i.SellerId == sellerId))
+            return null;
+
+        return _mapper.Map<OrderDto>(order);
+    }
+
     public async Task<OrderDto?> CancelAsync(int userId, int orderId)
     {
         var order = await _orderRepository.GetOrderWithDetailsAsync(orderId);
@@ -215,6 +280,82 @@ public class OrderService(
 
         await _unitOfWork.SaveChangesAsync();
 
+        return _mapper.Map<OrderDto>(order);
+    }
+
+    public async Task<OrderDto?> UpdateStatusAsSellerAsync(
+        int sellerId,
+        int orderId,
+        UpdateOrderStatusRequest request
+    )
+    {
+        var order = await _orderRepository.GetOrderWithDetailsAsync(orderId);
+        if (order == null)
+            return null;
+
+        if (!order.OrderItems.Any(i => i.SellerId == sellerId))
+            throw new ForbiddenException("Not allowed to update this order");
+
+        var distinctSellers = order.OrderItems.Select(i => i.SellerId).Distinct().ToList();
+        if (distinctSellers.Count != 1 || distinctSellers[0] != sellerId)
+            throw new BadRequestException("Order contains items from multiple sellers");
+
+        if (!Enum.TryParse<OrderStatus>(request.Status, true, out var newStatus))
+            throw new BadRequestException("Invalid order status");
+
+        // Example: allow confirmed/shipped (adjust as needed)
+        if (newStatus is not (OrderStatus.confirmed or OrderStatus.shipped))
+            throw new BadRequestException("Seller can only set status to confirmed or shipped");
+
+        var oldStatus = order.Status;
+        if (oldStatus == newStatus)
+            return _mapper.Map<OrderDto>(order);
+
+        order.Status = newStatus;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        order.OrderStatusHistories.Add(
+            new OrderStatusHistory
+            {
+                OrderId = order.OrderId,
+                OldStatus = oldStatus,
+                NewStatus = newStatus,
+                Notes = request.Notes,
+                ChangedBy = sellerId,
+                ChangedByNavigation = null!,
+                Order = order,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            }
+        );
+
+        await _unitOfWork.SaveChangesAsync();
+
+        if (newStatus == OrderStatus.confirmed)
+        {
+            await _eventPublisher.PublishAsync(
+                new OrderConfirmedEvent
+                {
+                    OrderId = order.OrderId,
+                    OrderNumber = order.OrderNumber,
+                    UserId = order.UserId,
+                }
+            );
+        }
+
+        if (newStatus == OrderStatus.shipped)
+        {
+            await _eventPublisher.PublishAsync(
+                new OrderShippedEvent
+                {
+                    OrderId = order.OrderId,
+                    OrderNumber = order.OrderNumber,
+                    UserId = order.UserId,
+                }
+            );
+        }
+
+        await _unitOfWork.SaveChangesAsync();
         return _mapper.Map<OrderDto>(order);
     }
 

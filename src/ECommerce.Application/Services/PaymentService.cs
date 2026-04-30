@@ -176,20 +176,7 @@ public class PaymentService(
             };
         }
 
-        // --- START DEBUG LOGGING ---
         var generatedMac = SignHmacSha256(_zaloPayOptions.Key2, request.Data);
-        _logger.LogInformation("--- ZaloPay Callback Debug ---");
-        _logger.LogInformation("Received Data: {Data}", request.Data);
-        _logger.LogInformation("Received MAC: {Mac}", request.Mac);
-        _logger.LogInformation("Generated MAC: {GeneratedMac}", generatedMac);
-        _logger.LogInformation(
-            "Using Key2 (first 5 chars): {Key2Start}",
-            _zaloPayOptions.Key2.Length > 5
-                ? _zaloPayOptions.Key2.Substring(0, 5)
-                : _zaloPayOptions.Key2
-        );
-        _logger.LogInformation("--- End ZaloPay Callback Debug ---");
-        // --- END DEBUG LOGGING ---
 
         if (!string.Equals(generatedMac, request.Mac, StringComparison.OrdinalIgnoreCase))
         {
@@ -314,6 +301,12 @@ public class PaymentService(
             payment.Status = PaymentStatus.completed;
             payment.PaidAt = DateTime.UtcNow;
 
+            if (order.Status == OrderStatus.created || order.Status == OrderStatus.confirmed)
+            {
+                order.Status = OrderStatus.processing;
+                order.UpdatedAt = DateTime.UtcNow;
+            }
+
             await _eventPublisher.PublishAsync(
                 new PaymentSucceededEvent
                 {
@@ -359,7 +352,7 @@ public class PaymentService(
         {
             AppTransId = appTransId,
             ZpTransId = Guid.NewGuid().ToString("N"),
-            ReturnCode = 1, // 1 for success
+            ReturnCode = 1,
             ReturnMessage = "Success",
             Amount = (long)amount,
         };
@@ -377,48 +370,8 @@ public class PaymentService(
             Type = 1,
         };
 
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            // This URL should point to your running application's callback endpoint
-            var callbackUrl = "http://localhost:8080/api/payments/zalopay/callback";
-            var content = new StringContent(
-                JsonSerializer.Serialize(callbackPayload),
-                Encoding.UTF8,
-                "application/json"
-            );
-
-            _logger.LogInformation(
-                "Simulating ZaloPay callback for AppTransId: {AppTransId}",
-                appTransId
-            );
-            var response = await client.PostAsync(callbackUrl, content, ct);
-            var responseBody = await response.Content.ReadAsStringAsync(ct);
-
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation(
-                    "Simulated ZaloPay callback succeeded. Response: {ResponseBody}",
-                    responseBody
-                );
-            }
-            else
-            {
-                _logger.LogError(
-                    "Simulated ZaloPay callback failed. Status: {StatusCode}, Body: {ResponseBody}",
-                    response.StatusCode,
-                    responseBody
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Exception during simulated ZaloPay callback for AppTransId: {AppTransId}",
-                appTransId
-            );
-        }
+        // Call the same handler used by the HTTP callback
+        await HandleZaloPayCallbackAsync(callbackPayload, ct);
     }
 
     private static string ResolveAppTransId(
