@@ -9,6 +9,7 @@ using ECommerce.Application.Mappings;
 using ECommerce.Application.Services;
 using ECommerce.Domain.Interfaces;
 using ECommerce.Domain.Repositories;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Repositories;
 using ECommerce.Infrastructure.Services;
@@ -92,6 +93,10 @@ builder.Services.AddHttpClient<IPaymentGatewayClient, ZaloPayPaymentGatewayClien
 {
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.Configure<ECommerce.Infrastructure.Common.EmailSettings>(
+    builder.Configuration.GetSection(ECommerce.Infrastructure.Common.EmailSettings.SectionName)
+);
+builder.Services.AddSingleton<IEmailService, SendGridEmailService>();
 
 builder.Services.AddMassTransit(x =>
 {
@@ -138,6 +143,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+builder.Services.AddHttpClient();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 

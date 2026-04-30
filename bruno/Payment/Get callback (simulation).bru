@@ -1,0 +1,26 @@
+meta {
+  name: Get callback (simulation)
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/api/payments/zalopay/callback
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJqdXN0aW50cmFuMjkwMUBnbWFpbC5jb20iLCJqdGkiOiI1NDE0MjMzZS0yNjE2LTQ0NGUtOGQxNC0xOTE4NjFhZTgyMzAiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJidXllciIsImV4cCI6MTc3NzQ3MjkwMSwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.bezQQv-y0NTqOS-TZea7bBXhEv2RqdK_84CFjpIALno
+}
+
+body:json {
+  {
+    "appTransId": "260430_1_771089"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

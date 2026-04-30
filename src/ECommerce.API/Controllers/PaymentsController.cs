@@ -41,6 +41,17 @@ public class PaymentsController(IPaymentService paymentService) : ControllerBase
         return Ok(new { return_code = result.ReturnCode, return_message = result.ReturnMessage });
     }
 
+    [AllowAnonymous]
+    [HttpPost("simulate-callback")]
+    public async Task<IActionResult> SimulateZaloPayCallback(
+        [FromBody] SimulateZaloPayCallbackRequestDto request,
+        CancellationToken ct
+    )
+    {
+        await _paymentService.SimulateZaloPayCallbackAsync(request.AppTransId, request.Amount, ct);
+        return Ok(ApiResponse<object>.Ok(null, "Callback simulation initiated"));
+    }
+
     private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

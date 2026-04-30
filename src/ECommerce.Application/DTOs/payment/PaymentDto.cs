@@ -30,3 +30,9 @@ public sealed class ZaloPayCallbackResultDto
     public int ReturnCode { get; set; }
     public string ReturnMessage { get; set; } = "success";
 }
+
+public class SimulateZaloPayCallbackRequestDto
+{
+    public string AppTransId { get; set; } = "";
+    public decimal Amount { get; set; }
+}
