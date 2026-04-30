@@ -23,12 +23,23 @@ services:
             - Jwt__Issuer=ECommerce.API
             - Jwt__Audience=ECommerce.Client
 
+            # SendGrid Connection
+            - EmailSettings__ApiKey=${EmailSettings__ApiKey}
+
+            # ZaloPay Connection
+            - ZaloPay__AppId=${ZaloPay__AppId}
+            - ZaloPay__Key1=${ZaloPay__Key1}
+            - ZaloPay__Key2=${ZaloPay__Key2}
+            - ZaloPay__CreateOrderUrl=${ZaloPay__CreateOrderUrl}
+            - ZaloPay__CallbackUrl=${ZaloPay__CallbackUrl}
+            - ZaloPay__BankCode=${ZaloPay__BankCode}
+
             # MoMo Configuration
-            - MoMo__PartnerCode=${MoMo__PartnerCode}
-            - MoMo__AccessKey=${MoMo__AccessKey}
-            - MoMo__SecretKey=${MoMo__SecretKey}
-            - MoMo__RedirectUrl=${MoMo__RedirectUrl}
-            - MoMo__IpnUrl=${MoMo__IpnUrl}
+            # - MoMo__PartnerCode=${MoMo__PartnerCode}
+            # - MoMo__AccessKey=${MoMo__AccessKey}
+            # - MoMo__SecretKey=${MoMo__SecretKey}
+            # - MoMo__RedirectUrl=${MoMo__RedirectUrl}
+            # - MoMo__IpnUrl=${MoMo__IpnUrl}
 
             - Redis_Host=cache
         volumes:

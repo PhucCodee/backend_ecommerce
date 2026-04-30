@@ -41,12 +41,17 @@ public sealed class NotificationConsumer(
 
         var subject = $"Payment Confirmation for Order #{message.OrderNumber}";
         var body = $"""
-            <h1>Payment Successful!</h1>
-            <p>Hi {user.UserProfile?.FirstName ?? user.Username},</p>
-            <p>We're happy to let you know that your payment for order <strong>#{message.OrderNumber}</strong> has been received.</p>
-            <p>Amount: {message.Amount:C}</p>
-            <p>Transaction ID: {message.TransactionId}</p>
-            <p>Thank you for your purchase!</p>
+            <h1>Payment Confirmation</h1>
+            <p>Dear {user.UserProfile?.FirstName ?? user.Username},</p>
+            <p>We are pleased to inform you that your payment for order <strong>#{message.OrderNumber}</strong> has been successfully processed.</p>
+            <p><strong>Payment Details:</strong></p>
+            <ul>
+                <li><strong>Order Number:</strong> {message.OrderNumber}</li>
+                <li><strong>Amount Paid:</strong> {message.Amount:C}</li>
+                <li><strong>Transaction ID:</strong> {message.TransactionId}</li>
+            </ul>
+            <p>Thank you for shopping with us. If you have any questions or need assistance, please contact our support team.</p>
+            <p>Best regards,<br/>Sanquo Shop</p>
             """;
 
         await _emailService.SendEmailAsync(user.Email, subject, body);

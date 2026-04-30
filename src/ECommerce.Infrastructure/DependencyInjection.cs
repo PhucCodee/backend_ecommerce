@@ -20,15 +20,15 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
+        _ = services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
             )
         );
 
-        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
-        services.AddSingleton<IEmailService>(sp =>
+        _ = services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+        _ = services.AddSingleton<IEmailService>(sp =>
         {
             var emailSettings = sp.GetRequiredService<IOptions<EmailSettings>>().Value;
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
@@ -49,11 +49,13 @@ public static class DependencyInjection
             };
         });
 
-        services.AddScoped<IUnitOfWork>(sp => (IUnitOfWork)sp.GetRequiredService<ApplicationDbContext>());
+        _ = services.AddScoped<IUnitOfWork>(sp =>
+            (IUnitOfWork)sp.GetRequiredService<ApplicationDbContext>()
+        );
 
-        services.AddHttpClient<IPaymentGatewayClient, ZaloPayPaymentGatewayClient>();
+        _ = services.AddHttpClient<IPaymentGatewayClient, ZaloPayPaymentGatewayClient>();
 
-        services.AddMassTransit(busConfig =>
+        _ = services.AddMassTransit(busConfig =>
         {
             busConfig.SetKebabCaseEndpointNameFormatter();
             busConfig.UsingRabbitMq(

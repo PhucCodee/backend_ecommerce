@@ -7,7 +7,7 @@
 INSERT INTO
     users (email, username, status)
 VALUES (
-        'phuc.codeeee@gmail.com',
+        'justintran2901@gmail.com',
         'goat',
         0
     ),
