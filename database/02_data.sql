@@ -1723,4 +1723,4 @@ VALUES (
     );
 
 UPDATE product_skus
-SET price = price * 1000;
+SET price = ROUND(price) * 10000;
