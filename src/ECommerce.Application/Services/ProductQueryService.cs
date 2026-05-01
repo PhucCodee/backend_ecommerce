@@ -29,9 +29,9 @@ namespace ECommerce.Application.Services
 
         public async Task<PagedResult<ProductSummaryDto>> GetFilteredAsync(ProductQueryParams productQueryParams)
         {
-            var dbQuery = _context.Products
-                .AsNoTracking()
-                .Where(p => p.RemovedAt == null);
+            var dbQuery = productQueryParams.IncludeSuspended
+                ? _context.Products.AsNoTracking()
+                : _context.Products.AsNoTracking().Where(p => p.RemovedAt == null);
 
             dbQuery = ApplyFilters(dbQuery, productQueryParams);
 
@@ -52,6 +52,14 @@ namespace ECommerce.Application.Services
                         .Where(pc => pc.IsPrimary)
                         .Select(pc => pc.Category.CategoryName)
                         .FirstOrDefault(),
+                    CategoryNames = p.ProductCategories
+                        .OrderByDescending(pc => pc.IsPrimary)
+                        .Select(pc => pc.Category.CategoryName)
+                        .ToList(),
+                    CategoryIds = p.ProductCategories
+                        .OrderByDescending(pc => pc.IsPrimary)
+                        .Select(pc => pc.CategoryId)
+                        .ToList(),
                     Price = p.ProductSkus
                         .Where(s => s.IsDefault)
                         .Select(s => s.Price)
@@ -68,7 +76,17 @@ namespace ECommerce.Application.Services
                         .Where(i => !i.IsDeleted && i.IsPrimary)
                         .Select(i => i.ThumbnailUrl)
                         .FirstOrDefault(),
-                    VariantCount = p.ProductSkus.Count(s => !s.IsDefault)
+                    VariantCount = p.ProductSkus.Count(s => !s.IsDefault),
+                    AverageRating = p.ProductMetrics
+                        .OrderByDescending(m => m.Date)
+                        .Select(m => m.AverageRating ?? 0)
+                        .FirstOrDefault(),
+                    ReviewCount = p.ProductMetrics
+                        .OrderByDescending(m => m.Date)
+                        .Select(m => m.ReviewCount)
+                        .FirstOrDefault(),
+                    Status = p.Status.ToString(),
+                    IsSuspended = p.RemovedAt != null
                 })
                 .ToListAsync();
 

@@ -16,10 +16,14 @@ namespace ECommerce.Application.DTOs.product
         public string? DimensionsCm { get; set; }
         public int VariantCount { get; set; }
 
-        // Default SKU info for immediate display
+        public decimal AverageRating { get; set; }
+        public int ReviewCount { get; set; }
+
         public decimal Price { get; set; }
         public decimal? CompareAtPrice { get; set; }
         public bool InStock { get; set; }
         public List<ProductImageDto> Images { get; set; } = [];
+
+        public List<ProductSkuDto> Skus { get; set; } = [];
     }
 }
