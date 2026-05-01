@@ -1,0 +1,53 @@
+meta {
+  name: Create coupon
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/coupons
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ5ZUBnbWFpbC5jb20iLCJqdGkiOiI3ZWU1ZWExZi02MWM3LTQxOGItYmM5Ny04NTk0NzlhNmQ3ZjUiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImV4cCI6MTc3NjE4NDU3OCwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.03wWkBN-XUV5W5R0eULKdiQgv7AGS3r9DIbFWWjdmqQ
+}
+
+body:json {
+  // discount theo phần trăm
+  {
+    "code": "WELCOME20",
+    "description": "20% off for new users",
+    "discountType": 0,
+    "discountValue": 20,
+    "minOrderAmount": 100000,
+    "validFrom": "2026-04-14T00:00:00Z",
+    "validUntil": "2026-05-01T00:00:00Z",
+    "isActive": true
+  }
+  
+  // discount theo số tiền
+  // {
+  //   "code": "SAVE50K",
+  //   "description": "Save 50,000 VND on orders over 200,000",
+  //   "discountType": 1,
+  //   "discountValue": 50000,
+  //   "minOrderAmount": 200000,
+  //   "isActive": true
+  // }
+  
+  // miễn phí shipping
+  // {
+  //   "code": "FREESHIP",
+  //   "description": "Free shipping for all orders",
+  //   "discountType": 2,
+  //   "discountValue": 0,
+  //   "isActive": true
+  // }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

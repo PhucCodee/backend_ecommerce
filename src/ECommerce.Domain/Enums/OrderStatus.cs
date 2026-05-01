@@ -8,6 +8,6 @@ namespace ECommerce.Domain.Enums
         shipped,
         delivered,
         cancelled,
-        failed
+        failed,
     }
 }
