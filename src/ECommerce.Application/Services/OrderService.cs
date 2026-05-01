@@ -18,12 +18,14 @@ namespace ECommerce.Application.Services;
 public class OrderService(
     IOrderRepository orderRepository,
     ICartRepository cartRepository,
+    ICouponRepository couponRepository,
     IUnitOfWork unitOfWork,
     IEventPublisher eventPublisher,
     IMapper mapper) : IOrderService
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly ICartRepository _cartRepository = cartRepository;
+    private readonly ICouponRepository _couponRepository = couponRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEventPublisher _eventPublisher = eventPublisher;
     private readonly IMapper _mapper = mapper;
@@ -53,8 +55,12 @@ public class OrderService(
         var subtotal = cart.CartItems.Sum(i => i.PriceSnapshot * i.Quantity);
         var shippingFee = CalculateShippingFee(subtotal);
         var taxAmount = CalculateTax(subtotal);
-        var couponDiscount = 0m; // TODO: Implement coupon logic
-        var totalAmount = subtotal + shippingFee + taxAmount - couponDiscount;
+        var (couponId, couponCode, couponDiscount) =
+            await ResolveCouponAsync(request.CouponCode, subtotal, shippingFee, taxAmount);
+
+        var totalBeforeDiscount = subtotal + shippingFee + taxAmount;
+        var totalAmount = totalBeforeDiscount - couponDiscount;
+        if (totalAmount < 0) totalAmount = 0;
 
         return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
@@ -67,9 +73,11 @@ public class OrderService(
                 taxAmount: taxAmount,
                 totalAmount: totalAmount,
                 preferredCurrency: Currency.vnd,
-                couponCode: request.CouponCode,
+                couponCode: couponCode,
                 couponDiscount: couponDiscount,
                 customerNotes: request.CustomerNotes);
+
+            order.CouponId = couponId;
 
             await _orderRepository.AddAsync(order);
             await _unitOfWork.SaveChangesAsync();
@@ -256,5 +264,75 @@ public class OrderService(
         }
 
         return addressEntity;
+    }
+
+    private async Task<(int? CouponId, string? CouponCode, decimal CouponDiscount)> ResolveCouponAsync(
+    string? couponCodeInput,
+    decimal subtotal,
+    decimal shippingFee,
+    decimal taxAmount)
+    {
+        if (string.IsNullOrWhiteSpace(couponCodeInput))
+            return (null, null, 0m);
+
+        var code = couponCodeInput.Trim().ToUpperInvariant();
+
+        var coupon = await _couponRepository.GetByCodeAsync(code)
+            ?? throw new BadRequestException("Invalid coupon code");
+
+        if (!coupon.IsActive)
+            throw new BadRequestException("Coupon is inactive");
+
+        var now = DateTime.UtcNow;
+        if (coupon.ValidFrom.HasValue && now < coupon.ValidFrom.Value)
+            throw new BadRequestException("Coupon is not active yet");
+
+        if (coupon.ValidUntil.HasValue && now > coupon.ValidUntil.Value)
+            throw new BadRequestException("Coupon has expired");
+
+        var orderTotalBeforeDiscount = subtotal + shippingFee + taxAmount;
+
+        if (coupon.MinOrderAmount.HasValue && orderTotalBeforeDiscount < coupon.MinOrderAmount.Value)
+            throw new BadRequestException("Order does not meet coupon minimum amount");
+
+        var usageCount = await _couponRepository.CountUsageAsync(coupon.CouponId);
+
+        if (usageCount >= 1)
+            throw new BadRequestException("Coupon has already been used");
+
+        if (coupon.UsageLimit.HasValue && usageCount >= coupon.UsageLimit.Value)
+            throw new BadRequestException("Coupon usage limit reached");
+
+        decimal discount = coupon.DiscountType switch
+        {
+            DiscountType.percentage => CalculatePercentageDiscount(coupon.DiscountValue, orderTotalBeforeDiscount),
+            DiscountType.fixed_amount => CalculateFixedAmountDiscount(coupon.DiscountValue, orderTotalBeforeDiscount),
+            DiscountType.free_shipping => shippingFee,
+            _ => throw new BadRequestException("Invalid coupon type")
+        };
+
+        if (discount > orderTotalBeforeDiscount)
+            discount = orderTotalBeforeDiscount;
+
+        return (coupon.CouponId, coupon.Code, discount);
+    }
+
+    private static decimal CalculatePercentageDiscount(decimal percentage, decimal total)
+    {
+        if (percentage <= 0 || percentage > 20)
+            throw new BadRequestException("Percentage coupon must be greater than 0 and at most 20%");
+        return Math.Round(total * (percentage / 100m), 2);
+    }
+
+    private static decimal CalculateFixedAmountDiscount(decimal amount, decimal total)
+    {
+        if (amount <= 0)
+            throw new BadRequestException("Fixed amount coupon must be greater than 0");
+
+        var maxAllowed = total / 2m;
+        if (amount > maxAllowed)
+            throw new BadRequestException("Fixed amount coupon cannot exceed half of the order total");
+
+        return amount;
     }
 }
