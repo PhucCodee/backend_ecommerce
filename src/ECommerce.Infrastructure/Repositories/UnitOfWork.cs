@@ -1,9 +1,9 @@
-using ECommerce.Infrastructure.Data;
-using ECommerce.Domain.Entities;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
+using ECommerce.Infrastructure.Data;
 
 namespace ECommerce.Infrastructure.Repositories
 {
@@ -17,13 +17,18 @@ namespace ECommerce.Infrastructure.Repositories
         private IRepository<CartItem>? _cartItems;
         private IRepository<UserAddress>? _userAddresses;
         private IRepository<Review>? _reviews;
+        private IOrderPaymentRepository? _orderPayments;
         public IUserRepository Users => _users ??= new UserRepository(_context);
         public IProductRepository Products => _products ??= new ProductRepository(_context);
         public IOrderRepository Orders => _orders ??= new OrderRepository(_context);
-        public IRepository<Category> Categories => _categories ??= new Repository<Category>(_context);
+        public IRepository<Category> Categories =>
+            _categories ??= new Repository<Category>(_context);
         public IRepository<CartItem> CartItems => _cartItems ??= new Repository<CartItem>(_context);
-        public IRepository<UserAddress> UserAddresses => _userAddresses ??= new Repository<UserAddress>(_context);
+        public IRepository<UserAddress> UserAddresses =>
+            _userAddresses ??= new Repository<UserAddress>(_context);
         public IRepository<Review> Reviews => _reviews ??= new Repository<Review>(_context);
+        public IOrderPaymentRepository OrderPayments =>
+            _orderPayments ??= new OrderPaymentRepository(_context);
 
         public async Task<int> SaveChangesAsync()
         {
@@ -39,9 +44,14 @@ namespace ECommerce.Infrastructure.Repositories
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken = default)
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+            Func<Task<TResult>> action,
+            CancellationToken cancellationToken = default
+        )
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            await using var transaction = await _context.Database.BeginTransactionAsync(
+                cancellationToken
+            );
             try
             {
                 var result = await action();

@@ -1,6 +1,6 @@
+using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ECommerce.Domain.Entities;
 
 namespace ECommerce.Infrastructure.Data.Configurations
 {
@@ -17,59 +17,56 @@ namespace ECommerce.Infrastructure.Data.Configurations
             // Properties
             builder.Property(ps => ps.ProductId).HasColumnName("product_id");
 
-            builder.Property(ps => ps.Sku)
-                .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("sku");
+            builder.Property(ps => ps.Sku).IsRequired().HasMaxLength(100).HasColumnName("sku");
 
-            builder.Property(ps => ps.VariantAttributes)
+            builder
+                .Property(ps => ps.VariantAttributes)
                 .IsRequired()
                 .HasColumnType("jsonb")
                 .HasColumnName("variant_attributes");
 
-            builder.Property(ps => ps.Price)
-                .HasColumnType("decimal(18,2)")
-                .HasColumnName("price");
+            builder.Property(ps => ps.Price).HasColumnType("decimal(18,2)").HasColumnName("price");
 
-            builder.Property(ps => ps.CostPrice)
+            builder
+                .Property(ps => ps.CostPrice)
                 .HasColumnType("decimal(18,2)")
                 .HasColumnName("cost_price");
 
-            builder.Property(ps => ps.CompareAtPrice)
+            builder
+                .Property(ps => ps.CompareAtPrice)
                 .HasColumnType("decimal(18,2)")
                 .HasColumnName("compare_at_price");
 
-            builder.Property(ps => ps.IsActive)
-                .HasColumnName("is_active")
-                .HasDefaultValue(true);
+            builder.Property(ps => ps.IsActive).HasColumnName("is_active").HasDefaultValue(true);
 
-            builder.Property(ps => ps.IsDefault)
-                .HasColumnName("is_default")
-                .HasDefaultValue(false);
+            builder.Property(ps => ps.IsDefault).HasColumnName("is_default").HasDefaultValue(false);
 
-            builder.Property(ps => ps.WeightKg)
+            builder
+                .Property(ps => ps.WeightKg)
                 .HasColumnType("decimal(10,2)")
                 .HasColumnName("weight_kg");
 
-            builder.Property(ps => ps.DimensionsCm)
-                .HasMaxLength(50)
-                .HasColumnName("dimensions_cm");
+            builder.Property(ps => ps.DimensionsCm).HasMaxLength(50).HasColumnName("dimensions_cm");
 
-            builder.Property(ps => ps.CreatedAt)
+            builder
+                .Property(ps => ps.CreatedAt)
                 .HasColumnName("created_at")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            builder.Property(ps => ps.UpdatedAt)
+            builder
+                .Property(ps => ps.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Relationships
-            builder.HasOne(ps => ps.Product)
+            builder
+                .HasOne(ps => ps.Product)
                 .WithMany(p => p.ProductSkus)
                 .HasForeignKey(ps => ps.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(ps => ps.Inventory)
+            builder
+                .HasOne(ps => ps.Inventory)
                 .WithOne(i => i.Sku)
                 .HasForeignKey<Inventory>(i => i.SkuId)
                 .OnDelete(DeleteBehavior.Cascade);

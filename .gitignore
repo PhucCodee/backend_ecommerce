@@ -88,6 +88,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
+.env
 # Bỏ qua thư mục cache của pytest
 .pytest_cache/

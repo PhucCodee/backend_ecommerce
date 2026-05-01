@@ -7,7 +7,7 @@
 INSERT INTO
     users (email, username, status)
 VALUES (
-        'ronaldo@gmail.com',
+        'justintran2901@gmail.com',
         'goat',
         0
     ),
@@ -1721,3 +1721,6 @@ VALUES (
         ),
         90
     );
+
+UPDATE product_skus
+SET price = ROUND(price) * 10000;
