@@ -1721,3 +1721,6 @@ VALUES (
         ),
         90
     );
+
+UPDATE product_skus
+SET price = price * 1000;
