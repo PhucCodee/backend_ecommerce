@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Helpers;
@@ -120,10 +121,31 @@ namespace ECommerce.Application.Services
                 UpdatedAt = DateTime.UtcNow
             };
 
-            sku.Inventory = Inventory.CreateDefault(sku, dto.Stock);
+            sku.Inventory = BuildInventory(sku, dto.Inventory, dto.Stock);
             ImageHelper.AddImages(sku, dto.Images, $"{product.ProductName} - {skuCode}");
 
             return sku;
+        }
+        private static Inventory BuildInventory(ProductSku sku, InventoryCreateDto? dto, int fallbackStock)
+        {
+            var available = dto?.QuantityAvailable ?? fallbackStock;
+            var reserved = dto?.QuantityReserved ?? 0;
+            var sold = dto?.QuantitySold ?? 0;
+        
+            if (available < 0 || reserved < 0 || sold < 0)
+                throw new BadRequestException("Inventory values must be non-negative");
+        
+            if (reserved > available)
+                throw new BadRequestException("Reserved quantity cannot exceed available quantity");
+        
+            var inventory = Inventory.CreateDefault(sku, available);
+            inventory.QuantityReserved = reserved;
+            inventory.QuantitySold = sold;
+            inventory.ReorderPoint = dto?.ReorderPoint ?? 0;
+            inventory.ReorderQuantity = dto?.ReorderQuantity ?? 0;
+            inventory.LastRestockedAt = dto?.LastRestockedAt ?? (available > 0 ? DateTime.UtcNow : null);
+        
+            return inventory;
         }
 
         private static void ApplyUpdates(ProductSku sku, ProductSkuUpdateDto dto)

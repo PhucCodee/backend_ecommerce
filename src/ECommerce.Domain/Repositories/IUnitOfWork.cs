@@ -11,6 +11,8 @@ namespace ECommerce.Domain.Repositories
         IProductRepository Products { get; }
         IOrderRepository Orders { get; }
         IOrderPaymentRepository OrderPayments { get; }
+        IInventoryRepository Inventories { get; }
+        IProductSkuRepository ProductSkus { get; }
         IRepository<Category> Categories { get; }
         IRepository<CartItem> CartItems { get; }
         IRepository<UserAddress> UserAddresses { get; }
