@@ -9,10 +9,15 @@ namespace ECommerce.Application.DTOs.product
         public string? Brand { get; set; }
         public string? PrimaryCategoryName { get; set; }
         public List<string> CategoryNames { get; set; } = [];
+        public List<int> CategoryIds { get; set; } = [];
         public decimal Price { get; set; }
         public decimal? CompareAtPrice { get; set; }
         public bool InStock { get; set; }
         public string? ThumbnailUrl { get; set; }
         public int VariantCount { get; set; }
+        public decimal AverageRating { get; set; }
+        public int ReviewCount { get; set; }
+        public string Status { get; set; } = "active";
+        public bool IsSuspended { get; set; } = false;
     }
 }
