@@ -325,9 +325,28 @@ class TestSKUDeletion:
         
         # Create SKU to delete
         create_payload = {
-            "productId": product_id,
-            "price": 45.00,
-            "stock": 10
+            "productId": 1,
+            "variantAttributes": "{\"size\":\"L\",\"color\":\"black\"}",
+            "price": 24.99,
+            "costPrice": 12.50,
+            "compareAtPrice": 29.99,
+            "weightKg": 0.26,
+            "dimensionsCm": "30x25x2",
+            "stock": 50,
+            "images": [
+                {
+                "imageUrl": "https://tshirt-front.com",
+                "thumbnailUrl": "https://tshirt-front.com",
+                "altText": "Front view",
+                "displayOrder": 1
+                },
+                {
+                "imageUrl": "https://tshirt-back.com",
+                "thumbnailUrl": None,
+                "altText": "Back view",
+                "displayOrder": 2
+                }
+            ]
         }
         create_res = requests.post(f"{base_url}/skus/seller", json=create_payload, headers=seller_headers)
         
@@ -335,7 +354,7 @@ class TestSKUDeletion:
             sku_id = create_res.json()["data"].get("id", create_res.json()["data"].get("skuId"))
             
             # Delete it
-            delete_res = requests.delete(f"{base_url}/skus/{sku_id}", headers=seller_headers)
+            delete_res = requests.delete(f"{base_url}/skus/seller/{sku_id}", headers=seller_headers)
             assert delete_res.status_code in [200, 204]
 
     def test_admin_delete_sku(self, base_url, admin_headers, seller_headers):

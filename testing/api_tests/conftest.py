@@ -25,7 +25,7 @@ def seller_headers(base_url):
 
 @pytest.fixture
 def user_headers(base_url):
-    payload = {"identifier": "phuc1@gmail.com", "password": "Test123@"}
+    payload = {"identifier": "goat", "password": "Phuc123"}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     token = response.json()['data']['accessToken']  if response.status_code == 200 else ""
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}

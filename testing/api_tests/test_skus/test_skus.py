@@ -123,14 +123,32 @@ def test_seller_update_sku(base_url, seller_headers, base_product):
     TC_SKU_05: SELLER CẬP NHẬT SKU (THAY ĐỔI GIÁ VÀ TỒN KHO)
     """
     # 1. Tạo 1 SKU trước
-    create_payload = {
-        "productId": base_product,
-        "skuCode": "SKU-TO-UPDATE",
-        "price": 50.0,
-        "stock": 10
-    }
+    create_payload = create_payload = {
+    "productId": 1,
+    "variantAttributes": "{\"size\":\"L\",\"color\":\"black\"}",
+    "price": 24.99,
+    "costPrice": 12.50,
+    "compareAtPrice": 29.99,
+    "weightKg": 0.26,
+    "dimensionsCm": "30x25x2",
+    "stock": 50,
+    "images": [
+      {
+        "imageUrl": "https://tshirt-front.com",
+        "thumbnailUrl": "https://tshirt-front.com",
+        "altText": "Front view",
+        "displayOrder": 1
+      },
+      {
+        "imageUrl": "https://tshirt-back.com",
+        "thumbnailUrl": None,
+        "altText": "Back view",
+        "displayOrder": 2
+      }
+    ]
+}
     create_res = requests.post(f"{base_url}/skus/seller", json=create_payload, headers=seller_headers)
-    sku_id = create_res.json()["data"]["id"]
+    sku_id = create_res.json()["data"]["skuId"]
     
     # 2. Thực hiện Update
     update_payload = {
@@ -150,13 +168,33 @@ def test_seller_delete_sku(base_url, seller_headers, base_product):
     """
     # 1. Tạo SKU để "hiến tế"
     create_payload = {
-        "productId": base_product,
-        "skuCode": "SKU-TO-DELETE",
-        "price": 10.0,
-        "stock": 5
-    }
+    "productId": 1,
+    "variantAttributes": "{\"size\":\"L\",\"color\":\"black\"}",
+    "price": 24.99,
+    "costPrice": 12.50,
+    "compareAtPrice": 29.99,
+    "weightKg": 0.26,
+    "dimensionsCm": "30x25x2",
+    "stock": 50,
+    "images": [
+      {
+        "imageUrl": "https://tshirt-front.com",
+        "thumbnailUrl": "https://tshirt-front.com",
+        "altText": "Front view",
+        "displayOrder": 1
+      },
+      {
+        "imageUrl": "https://tshirt-back.com",
+        "thumbnailUrl": None,
+        "altText": "Back view",
+        "displayOrder": 2
+      }
+    ]
+}
     create_res = requests.post(f"{base_url}/skus/seller", json=create_payload, headers=seller_headers)
-    sku_id = create_res.json()["data"]["id"]
+    assert create_res.status_code in [201, 204]
+    
+    sku_id = create_res.json()["data"]["skuId"]
     
     # 2. Gọi API Xóa
     delete_res = requests.delete(f"{base_url}/skus/seller/{sku_id}", headers=seller_headers)
@@ -191,7 +229,7 @@ def test_business_logic_prevent_negative_values(base_url, seller_headers, base_p
     response = requests.post(f"{base_url}/skus/seller", json=payload, headers=seller_headers)
     
     # Tuyệt đối không được phép trả về 200 OK
-    assert response.status_code == 400, f"Lỗ hổng nghiêm trọng: Hệ thống cho phép giá {bad_price} và tồn kho {bad_stock}"
+    assert response.status_code == 400, f"Hệ thống cho phép giá {bad_price} và tồn kho {bad_stock}"
 
 
 def test_idor_seller_update_other_seller_sku(base_url, seller_headers, base_product):

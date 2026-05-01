@@ -2,21 +2,7 @@
 import requests
 import uuid
 
-def test_user_registration_success(base_url):
-    # Tạo chuỗi ngẫu nhiên để email không bao giờ bị trùng khi chạy test nhiều lần
-    random_str = str(uuid.uuid4())[:8]
-    payload = {
-        "email": f"auto_{random_str}@gmail.com",
-        "username": f"user_{random_str}",
-        "password": "Test123@Password!",
-        "confirmPassword": "Test123@Password!",
-        "firstName": "Auto",
-        "lastName": "Bot",
-        "phone": "0901234567",
-        "acceptTerms": True
-    }
-    response = requests.post(f"{base_url}/auth/register", json=payload)
-    assert response.status_code in [200, 201]
+
 
 def test_user_registration_success(base_url):
     # Tạo chuỗi ngẫu nhiên để email không bao giờ bị trùng khi chạy test nhiều lần

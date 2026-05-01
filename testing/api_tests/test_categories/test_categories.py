@@ -20,7 +20,7 @@ def temp_category(base_url, admin_headers):
         3. Sau khi hàm test chạy xong, đoạn code bên dưới `yield` sẽ chạy để gọi API DELETE xóa danh mục đó đi.
     """
     payload = {
-        "name": f"Auto Category",
+        "name": f"Updated Name Automation",
         "parentCategoryId": None, 
         "description": "This is an automated test category",
         "imageUrl": "https://example.com/image.jpg",

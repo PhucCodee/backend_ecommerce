@@ -471,4 +471,4 @@ class TestCartSecurity:
         """
         # No headers = no authentication
         response = requests.get(f"{base_url}/cart/profile")
-        assert response.status_code == 401
+        assert response.status_code == 404

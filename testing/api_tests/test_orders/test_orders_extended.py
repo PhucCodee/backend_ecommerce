@@ -153,7 +153,7 @@ class TestOrderCreation:
                 "postalCode": "700000",
                 "country": "VN"
             },
-            "saveNewShippingAddress": True, 
+            "saveNewShippingAddress": False, 
             "billingAddressId": 15,
             "couponCode": "SALE10",
             "customerNotes": "Leave at reception"

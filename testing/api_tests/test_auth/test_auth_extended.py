@@ -11,35 +11,40 @@ import requests
 import uuid
 from datetime import datetime
 
+@pytest.fixture
+def cleanup_new_users(base_url, admin_headers):
+    """
+    Fixture theo dõi và tự động xóa các user được tạo ra trong quá trình test.
+    Sử dụng quyền Admin để xóa nhằm đảm bảo data rác không bị tồn đọng.
+    """
+    created_accounts = []
+    
+    yield created_accounts
+    
+    # --- TEARDOWN: Khối lệnh này chạy sau khi test case hoàn tất ---
+    for account in created_accounts:
+        # 1. Đăng nhập vào user vừa tạo để lấy userId một cách chính xác
+        login_resp = requests.post(f"{base_url}/auth/login", json=account)
+        if login_resp.status_code == 200:
+            user_id = login_resp.json().get('data', {}).get('user', {}).get('userId')
+            
+            # 2. Nếu lấy được ID, dùng Admin token để xóa user
+            if user_id:
+                requests.delete(
+                    f"{base_url}/users/{user_id}", 
+                    headers=admin_headers
+                )
 
+                
 class TestUserRegistration:
     """
     ✅ GOAL: Validate all user registration scenarios including success paths,
     validation errors, and duplicate prevention mechanisms.
     """
 
-    def test_user_registration_success_with_valid_data(self, base_url):
+    def test_user_registration_success_with_valid_data(self, base_url, cleanup_new_users):
         """
         🏷️ TC_AUTH_01 - USER REGISTRATION WITH VALID DATA
-        
-        📌 DECLARATION:
-        Test successful user registration with all required and valid fields.
-        
-        📝 GOAL:
-        - Register a new user with valid email, username, password, and personal details
-        - Verify HTTP 200/201 response
-        - Verify user can login immediately after registration
-        
-        🔍 STEPS:
-        1. Generate unique email and username
-        2. Send POST /auth/register with valid payload
-        3. Verify response status and structure
-        4. Attempt login with registered credentials
-        
-        ✔️ EXPECTED RESULT:
-        - Status Code: 200 or 201
-        - Response contains user ID and/or success message
-        - User can login successfully after registration
         """
         random_str = str(uuid.uuid4())[:8]
         payload = {
@@ -55,42 +60,30 @@ class TestUserRegistration:
         response = requests.post(f"{base_url}/auth/register", json=payload)
         assert response.status_code in [200, 201], f"Registration failed: {response.text}"
         
+        # Đánh dấu user này cần được Admin xóa sau khi test xong
+        cleanup_new_users.append({
+            "identifier": payload["username"],
+            "password": payload["password"]
+        })
+        
         # Verify user can login
         login_payload = {
-            "identifier": f"validuser_{random_str}",
-            "password": "Test123@Password!"
+            "identifier": payload["username"],
+            "password": payload["password"]
         }
         login_response = requests.post(f"{base_url}/auth/login", json=login_payload)
         assert login_response.status_code == 200
 
-    def test_user_registration_duplicate_email_rejection(self, base_url):
+    def test_user_registration_duplicate_email_rejection(self, base_url, cleanup_new_users):
         """
         🏷️ TC_AUTH_02 - DUPLICATE EMAIL PREVENTION
-        
-        📌 DECLARATION:
-        Test that the system rejects registration attempts with already-registered email.
-        
-        📝 GOAL:
-        - Attempt to register two accounts with the same email
-        - Verify second registration is rejected
-        - Ensure system prevents email duplication
-        
-        🔍 STEPS:
-        1. Register first user with email A
-        2. Attempt to register second user with same email A
-        3. Verify second attempt returns error (400/409)
-        
-        ✔️ EXPECTED RESULT:
-        - First registration: 200/201
-        - Second registration: 400 Bad Request or 409 Conflict
-        - Error message mentions "email already exists"
         """
         email = f"duplicate_test_{uuid.uuid4()}@gmail.com"
         
         # First registration succeeds
         payload1 = {
             "email": email,
-            "username": f"user_{uuid.uuid4()}",
+            "username": f"user_{uuid.uuid4().hex[:8]}",
             "password": "Test123@",
             "confirmPassword": "Test123@",
             "firstName": "First",
@@ -101,10 +94,16 @@ class TestUserRegistration:
         response1 = requests.post(f"{base_url}/auth/register", json=payload1)
         assert response1.status_code in [200, 201]
         
+        # Đánh dấu user 1 cần được xóa sau khi test xong
+        cleanup_new_users.append({
+            "identifier": payload1["username"],
+            "password": payload1["password"]
+        })
+        
         # Second registration with same email should fail
         payload2 = {
             "email": email,
-            "username": f"user_{uuid.uuid4()}",
+            "username": f"usertest_{uuid.uuid4().hex[:8]}",
             "password": "Test123@",
             "confirmPassword": "Test123@",
             "firstName": "Second",
@@ -115,26 +114,11 @@ class TestUserRegistration:
         response2 = requests.post(f"{base_url}/auth/register", json=payload2)
         assert response2.status_code in [400, 409], f"System allowed duplicate email: {response2.text}"
 
-    def test_user_registration_duplicate_username_rejection(self, base_url):
+    def test_user_registration_duplicate_username_rejection(self, base_url, cleanup_new_users):
         """
         🏷️ TC_AUTH_03 - DUPLICATE USERNAME PREVENTION
-        
-        📌 DECLARATION:
-        Test that the system rejects registration attempts with already-registered username.
-        
-        📝 GOAL:
-        - Attempt to register two accounts with the same username
-        - Verify second registration is rejected
-        
-        🔍 STEPS:
-        1. Register user with username A
-        2. Attempt to register with same username A but different email
-        3. Verify rejection
-        
-        ✔️ EXPECTED RESULT:
-        - Status: 400/409 for duplicate username
         """
-        username = f"duplicate_user_{uuid.uuid4()}"
+        username = f"test_user_name_{uuid.uuid4().hex[:8]}"
         
         payload1 = {
             "email": f"email1_{uuid.uuid4()}@gmail.com",
@@ -149,6 +133,12 @@ class TestUserRegistration:
         response1 = requests.post(f"{base_url}/auth/register", json=payload1)
         assert response1.status_code in [200, 201]
         
+        # Đánh dấu user 1 cần được xóa sau khi test xong
+        cleanup_new_users.append({
+            "identifier": payload1["username"],
+            "password": payload1["password"]
+        })
+        
         payload2 = {
             "email": f"email2_{uuid.uuid4()}@gmail.com",
             "username": username,
@@ -161,6 +151,8 @@ class TestUserRegistration:
         }
         response2 = requests.post(f"{base_url}/auth/register", json=payload2)
         assert response2.status_code in [400, 409]
+
+
 
     def test_registration_password_mismatch_rejection(self, base_url):
         """

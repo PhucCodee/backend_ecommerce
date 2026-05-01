@@ -392,7 +392,7 @@ class TestAddressUpdate:
                 addr_id = addresses[0].get("addressId", addresses[0].get("id"))
                 
                 # Try invalid phone
-                update_payload = {"phoneNumber": "invalid"}
+                update_payload = {"phoneNumber": "invalidinvalid"}
                 response = requests.put(f"{base_url}/addresses/{addr_id}", json=update_payload, headers=user_headers)
                 assert response.status_code == 400
 
