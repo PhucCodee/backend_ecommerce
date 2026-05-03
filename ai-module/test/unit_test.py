@@ -3,7 +3,8 @@
 import json
 import pytest
 from langchain_core.messages import HumanMessage
-from app.agents.buyer.agents import intent_classifier ,app, ProductSearchAction, Product
+from app.agents.agent import app, intent_classifier
+from app.agents.state import ProductSearchAction, Product
 
 # ---------------- TEST DATA ---------------- #
 

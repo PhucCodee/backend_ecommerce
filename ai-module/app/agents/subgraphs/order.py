@@ -110,8 +110,11 @@ EXAMPLES
         HumanMessage(content=state["user_prompt"]),
     ])
 
+    print(f"Order response: {response}")
+
     action = OrderTrackingAction(order=response)
     print(f"Order Entity Extracted: {response}")
+
     return {"log_action": [action]}
 
 def generate_order_query(state: MasterState) -> MasterState:
@@ -174,13 +177,14 @@ def execute_order_query(state: MasterState) -> MasterState:
         if isinstance(action, OrderTrackingAction): action.set_order_res([{"error": str(e)}])
     finally:
         if conn: conn.close()
-        
+
+    print("Execute sql done")    
     return {}
     
 def synthesize_order_answer(state: MasterState):
     action = state["log_action"][-1]
     results = action.get_order_res()
-
+    print("Checkpount3")
     # Extract order IDs and order numbers for ui_data
     order_ids = []
     order_numbers = []
@@ -193,6 +197,7 @@ def synthesize_order_answer(state: MasterState):
                 if "order_number" in result and result["order_number"]:
                     order_numbers.append(result["order_number"])
 
+    print("Checkpount4")
     system_prompt = """You are a professional and empathetic customer service agent for an e-commerce platform.
     Your task is to read the database results of the customer's order and explain it to them naturally.
 
@@ -215,12 +220,12 @@ def synthesize_order_answer(state: MasterState):
     - Order status is stored as INTEGER: 0=created, 1=confirmed, 2=processing, 3=shipped, 4=delivered, 5=cancelled, 6=failed.
     - The DB returns status as an integer (0=created, 3=shipped, etc.). You MUST translate this integer into a natural language word when replying to the user.
     """
-    
+    print("results",results)
     response = llm.invoke([
         SystemMessage(content=system_prompt + f"\nData Results: {results}"),
         HumanMessage(content=state["user_prompt"])
     ])
-    
+    print("Last checkpoint")
     # 🔄 Return consistent format with ui_data
     return {
         "answer": response.content,

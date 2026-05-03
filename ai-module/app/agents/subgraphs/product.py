@@ -310,13 +310,12 @@ def synthesize_product_answer(state: MasterState):
     # If data exists, use Structured Output to create the MCP JSON
     ui_llm = llm.with_structured_output(UIResponse)
     
-    system_prompt = """You are a helpful e-commerce assistant.
+    system_prompt = system_prompt = """You are a helpful e-commerce assistant.
     You receive data from the database containing products matching the user's request.
     
     YOUR TASK:
-    1. Write a short, friendly message in the `text` field (e.g., "I found some great options that match your expectations!"). Do not use exactly the eg sentence, you should paraphase in a polite manner
-    2. Extract the product information from the data and map it to the `ui_components` list.
-    3. Ensure EACH component has type="product_embed" and the `data` field contains `product_id`, `name`, `price`, and a short `description`.
+    1. Write a short, friendly message in the `text` field (e.g., "I found some great options that match your expectations!"). Do not use exactly the eg sentence, you should paraphrase in a polite manner.
+    2. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
     """
     
     response_model = ui_llm.invoke([

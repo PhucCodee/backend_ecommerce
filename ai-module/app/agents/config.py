@@ -10,7 +10,7 @@ from langchain_chroma import Chroma
 load_dotenv()
 
 # --- 1. LLM ---
-llm = init_chat_model("llama-3.3-70b-versatile", model_provider="groq", temperature=0.1)
+llm = init_chat_model("llama-3.1-8b-instant", model_provider="groq", temperature=0.1)
 
 # --- 2. DATABASE ---
 DB_HOST = os.getenv("DB_HOST", "localhost") 
@@ -30,7 +30,8 @@ def get_db_connection():
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
 # Lưu ý: Vì config.py nằm ở app/agents/, bạn cần lùi đúng số cấp thư mục để trỏ về data1
-default_path = Path(__file__).resolve().parents[3] / "data" / "vector" / "chroma_db_data1"
+default_path = Path(__file__).resolve().parents[2] / "data" / "vector" / "chroma_db_data1"
+print("default_path",default_path)
 persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
 
 vectorstore = Chroma(
