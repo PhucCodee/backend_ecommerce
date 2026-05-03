@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.product;
 
 namespace ECommerce.Application.DTOs.product;
@@ -14,4 +15,5 @@ public class ProductSkuCreateDto
     public string? DimensionsCm { get; set; }
     public int Stock { get; set; }
     public List<ProductImageCreateDto>? Images { get; set; }
+    public InventoryCreateDto? Inventory { get; set; }
 }

@@ -1,11 +1,11 @@
 meta {
-  name: Create product
+  name: Seller changes sku's inventory
   type: http
-  seq: 2
+  seq: 1
 }
 
-post {
-  url: http://localhost:8080/api/products/seller
+put {
+  url: http://localhost:8080/api/inventories/skus/1
   body: json
   auth: bearer
 }
@@ -16,25 +16,11 @@ auth:bearer {
 
 body:json {
   {
-    "name": "Classic Crew T-Shirt",
-    "description": "Everyday cotton crew tee",
-    "categoryIds": [
-      1,
-      12
-    ],
-    "brand": "CurryWear",
-    "weightKg": 0.25,
-    "defaultSkuPrice": 195000,
-    "defaultSkuStock": 200,
-    "dimensionsCm": "30x25x2",
-    "defaultSkuInventory": {
-      "quantityAvailable": 200,
-      "quantityReserved": 10,
-      "quantitySold": 5,
-      "reorderPoint": 30,
-      "reorderQuantity": 150
-      //     "lastRestockedAt": "2026-05-01T09:00:00Z"
-    }
+    "quantityAvailable": 120,
+    "quantityReserved": 15,
+    "quantitySold": 20,
+    "reorderPoint": 25,
+    "reorderQuantity": 100
   }
 }
 

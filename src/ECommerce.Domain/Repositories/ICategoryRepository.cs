@@ -10,5 +10,6 @@ namespace ECommerce.Domain.Repositories
         Task<IEnumerable<Category>> GetChildCategoriesAsync(int parentId);
         Task<(IEnumerable<Category> Categories, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
         Task<(IEnumerable<Category> Categories, int TotalCount)> GetCoreCategoriesPagedAsync(int pageNumber, int pageSize);
+        Task<bool> HasProductsAsync(int categoryId);
     }
 }

@@ -141,6 +141,10 @@ namespace ECommerce.Application.Services
             if (children.Any())
                 throw new BadRequestException("Cannot delete category with active child categories");
 
+            // Check if category has any products
+            if (await _categoryRepository.HasProductsAsync(categoryId))
+                throw new BadRequestException("Cannot delete category with products");
+
             // Soft delete
             category.SoftDelete();
             await _unitOfWork.SaveChangesAsync();

@@ -349,28 +349,233 @@ ON CONFLICT DO NOTHING;
 -- ====================================
 -- 7. PRODUCT SKUs
 -- ====================================
-INSERT INTO product_skus (product_id, sku, price, is_default)
-VALUES
-((SELECT product_id FROM products WHERE slug='classic-crew-tshirt'),         'CLOTH-101-DEFAULT', 19.99, TRUE),
-((SELECT product_id FROM products WHERE slug='oversized-graphic-tee'),        'CLOTH-102-DEFAULT', 29.99, TRUE),
-((SELECT product_id FROM products WHERE slug='slim-fit-jeans'),               'CLOTH-103-DEFAULT', 59.99, TRUE),
-((SELECT product_id FROM products WHERE slug='high-rise-straight-jeans'),     'CLOTH-104-DEFAULT', 64.99, TRUE),
-((SELECT product_id FROM products WHERE slug='pleated-midi-skirt'),           'CLOTH-105-DEFAULT', 44.99, TRUE),
-((SELECT product_id FROM products WHERE slug='fleece-pullover-hoodie'),       'CLOTH-106-DEFAULT', 49.99, TRUE),
-((SELECT product_id FROM products WHERE slug='bomber-jacket'),                'CLOTH-107-DEFAULT', 79.99, TRUE),
-((SELECT product_id FROM products WHERE slug='trench-coat'),                  'CLOTH-108-DEFAULT', 99.99, TRUE),
-((SELECT product_id FROM products WHERE slug='performance-running-sneakers'), 'CLOTH-109-DEFAULT', 89.99, TRUE),
-((SELECT product_id FROM products WHERE slug='canvas-lowtop-sneakers'),       'CLOTH-110-DEFAULT', 54.99, TRUE),
-((SELECT product_id FROM products WHERE slug='leather-belt'),                 'CLOTH-111-DEFAULT', 24.99, TRUE),
-((SELECT product_id FROM products WHERE slug='baseball-cap'),                 'CLOTH-112-DEFAULT', 18.99, TRUE),
-((SELECT product_id FROM products WHERE slug='knit-beanie'),                  'CLOTH-113-DEFAULT', 16.99, TRUE),
-((SELECT product_id FROM products WHERE slug='yoga-leggings'),                'CLOTH-114-DEFAULT', 39.99, TRUE),
-((SELECT product_id FROM products WHERE slug='sports-bra'),                   'CLOTH-115-DEFAULT', 29.99, TRUE),
-((SELECT product_id FROM products WHERE slug='kids-hoodie'),                  'CLOTH-116-DEFAULT', 34.99, TRUE),
-((SELECT product_id FROM products WHERE slug='kids-sneakers'),                'CLOTH-117-DEFAULT', 39.99, TRUE),
-((SELECT product_id FROM products WHERE slug='lightweight-windbreaker'),      'CLOTH-118-DEFAULT', 59.99, TRUE),
-((SELECT product_id FROM products WHERE slug='puffer-vest'),                  'CLOTH-119-DEFAULT', 69.99, TRUE),
-((SELECT product_id FROM products WHERE slug='linen-shortsleeve-shirt'),      'CLOTH-120-DEFAULT', 42.99, TRUE);
+INSERT INTO
+    product_skus (
+        product_id,
+        sku,
+        price,
+        is_default
+    )
+VALUES (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'classic-crew-tshirt'
+        ),
+        'CLOTH-101-DEFAULT',
+        190000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'oversized-graphic-tee'
+        ),
+        'CLOTH-102-DEFAULT',
+        290000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'slim-fit-jeans'
+        ),
+        'CLOTH-103-DEFAULT',
+        590000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'high-rise-straight-jeans'
+        ),
+        'CLOTH-104-DEFAULT',
+        640000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'pleated-midi-skirt'
+        ),
+        'CLOTH-105-DEFAULT',
+        440000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'fleece-pullover-hoodie'
+        ),
+        'CLOTH-106-DEFAULT',
+        490000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'bomber-jacket'
+        ),
+        'CLOTH-107-DEFAULT',
+        790000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'trench-coat'
+        ),
+        'CLOTH-108-DEFAULT',
+        990000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'performance-running-sneakers'
+        ),
+        'CLOTH-109-DEFAULT',
+        890000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'canvas-lowtop-sneakers'
+        ),
+        'CLOTH-110-DEFAULT',
+        540000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'leather-belt'
+        ),
+        'CLOTH-111-DEFAULT',
+        240000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'baseball-cap'
+        ),
+        'CLOTH-112-DEFAULT',
+        180000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'knit-beanie'
+        ),
+        'CLOTH-113-DEFAULT',
+        160000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'yoga-leggings'
+        ),
+        'CLOTH-114-DEFAULT',
+        390000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'sports-bra'
+        ),
+        'CLOTH-115-DEFAULT',
+        290000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'kids-hoodie'
+        ),
+        'CLOTH-116-DEFAULT',
+        340000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'kids-sneakers'
+        ),
+        'CLOTH-117-DEFAULT',
+        390000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'lightweight-windbreaker'
+        ),
+        'CLOTH-118-DEFAULT',
+        590000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'puffer-vest'
+        ),
+        'CLOTH-119-DEFAULT',
+        690000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE
+                slug = 'linen-shortsleeve-shirt'
+        ),
+        'CLOTH-120-DEFAULT',
+        420000,
+        TRUE
+    );
 
 -- ====================================
 -- 8. INVENTORY
@@ -557,6 +762,3 @@ VALUES (
         ),
         90
     );
-
-UPDATE product_skus
-SET price = ROUND(price) * 10000;
