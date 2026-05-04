@@ -330,14 +330,6 @@ def synthesize_product_answer(state: MasterState):
         "messages": [AIMessage(content=response_model.text)]
     }
     
-    # 1. Convert Pydantic model to JSON string to push to Frontend via FastAPI
-    json_output = response_model.model_dump()
-    
-    # 2. Save the natural text to history to maintain AI memory
-    return {
-        "answer": json_output,
-        "messages": [AIMessage(content=response_model.text)]
-    }
 
 # ==========================================
 # BUILD SUBGRAPH

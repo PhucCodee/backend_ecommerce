@@ -1,6 +1,9 @@
 # Consolidated basemodel - Contains all models, enums, actions, and state definitions
 from typing import Annotated, Literal, List, Tuple, Dict, Any
-from typing_extensions import TypedDict
+try:
+    from typing_extensions import TypedDict
+except ImportError:
+    from typing import TypedDict
 from enum import Enum
 from pydantic import BaseModel, Field
 from abc import ABC
@@ -117,7 +120,7 @@ class ProductSearchAction(Action):
     def get_product(self): 
         return self.product
 
-
+@dataclass
 class OrderTrackingAction(Action):
     """Action for order tracking queries"""
     def __init__(self, human_mes: str = "", ai_ans: str = "", order: Order = None):

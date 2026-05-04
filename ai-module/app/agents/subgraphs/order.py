@@ -112,7 +112,7 @@ EXAMPLES
 
     print(f"Order response: {response}")
 
-    action = OrderTrackingAction(order=response)
+    action = OrderTrackingAction(human_mes=state["user_prompt"], order=response)
     print(f"Order Entity Extracted: {response}")
 
     return {"log_action": [action]}
@@ -184,7 +184,7 @@ def execute_order_query(state: MasterState) -> MasterState:
 def synthesize_order_answer(state: MasterState):
     action = state["log_action"][-1]
     results = action.get_order_res()
-    print("Checkpount3")
+
     # Extract order IDs and order numbers for ui_data
     order_ids = []
     order_numbers = []
@@ -197,7 +197,7 @@ def synthesize_order_answer(state: MasterState):
                 if "order_number" in result and result["order_number"]:
                     order_numbers.append(result["order_number"])
 
-    print("Checkpount4")
+  
     system_prompt = """You are a professional and empathetic customer service agent for an e-commerce platform.
     Your task is to read the database results of the customer's order and explain it to them naturally.
 
@@ -208,10 +208,9 @@ def synthesize_order_answer(state: MasterState):
     4. Highlight important information like Order Status, Tracking Number, and Total Amount.
     
     Format Example:
-    "Here is the information for your order **#ORD-123**:
+    "Here is the information for your order **#ORD-123456**:
     - **Status:** Shipped
     - **Total:** $150.00
-    - **Tracking Number:** [Carrier] 1Z9999999999
     
     Items in this order:
     - 1x Blue Jacket ($150.00)"
@@ -219,13 +218,13 @@ def synthesize_order_answer(state: MasterState):
     CRITICAL DB SCHEMA INFO - ENUMS:
     - Order status is stored as INTEGER: 0=created, 1=confirmed, 2=processing, 3=shipped, 4=delivered, 5=cancelled, 6=failed.
     - The DB returns status as an integer (0=created, 3=shipped, etc.). You MUST translate this integer into a natural language word when replying to the user.
+    - Currency enum is stored as INTEGER: 0=VND, 1=USD, 2=EUR. Translate this to the correct currency symbol in your response. Use "$" for USD, "€" for EUR, and "₫" for VND.
     """
     print("results",results)
     response = llm.invoke([
         SystemMessage(content=system_prompt + f"\nData Results: {results}"),
         HumanMessage(content=state["user_prompt"])
     ])
-    print("Last checkpoint")
     # 🔄 Return consistent format with ui_data
     return {
         "answer": response.content,
