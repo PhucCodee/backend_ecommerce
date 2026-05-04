@@ -81,6 +81,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 builder.Services.AddScoped<ICouponRepository, CouponRepository>();
 builder.Services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<UserValidationHelper>();
@@ -143,6 +144,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddHttpClient();
 

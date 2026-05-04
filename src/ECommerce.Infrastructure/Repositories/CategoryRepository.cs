@@ -14,6 +14,7 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context.Categories
                 .Include(c => c.ParentCategory)
+                .Where(c => c.IsActive)
                 .FirstOrDefaultAsync(c => c.Slug == slug);
         }
 
@@ -66,6 +67,7 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context.Categories
                 .Include(c => c.ParentCategory)
+                .Where(c => c.IsActive)
                 .FirstOrDefaultAsync(c => c.CategoryId == id);
         }
 
@@ -73,9 +75,16 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context.Categories
                 .Include(c => c.ParentCategory)
+                .Where(c => c.IsActive)
                 .OrderBy(c => c.DisplayOrder)
                 .ThenBy(c => c.CategoryName)
                 .ToListAsync();
+        }
+
+        public async Task<bool> HasProductsAsync(int categoryId)
+        {
+            return await _context.ProductCategories
+                .AnyAsync(pc => pc.CategoryId == categoryId && pc.Product.RemovedAt == null);
         }
     }
 }

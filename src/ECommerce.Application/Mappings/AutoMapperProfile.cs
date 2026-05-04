@@ -4,6 +4,7 @@ using ECommerce.Application.DTOs.address;
 using ECommerce.Application.DTOs.cart;
 using ECommerce.Application.DTOs.category;
 using ECommerce.Application.DTOs.coupon;
+using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.order;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.DTOs.user;
@@ -178,6 +179,8 @@ namespace ECommerce.Application.Mappings
             CreateMap<UserAddress, AddressDto>();
 
             CreateMap<Coupon, CouponDto>();
+
+            CreateMap<Inventory, InventoryDto>();
         }
     }
 }
