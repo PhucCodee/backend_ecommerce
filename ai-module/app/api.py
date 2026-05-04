@@ -45,7 +45,7 @@ class ChatResponse(BaseModel):
 # --- 2. MOCK AUTH DEPENDENCY ---
 async def get_current_user() -> UserContext:
     return UserContext(
-        user_id="1",
+        user_id="4",
         username="goat",
         email="ronaldo@gmail.com",
         role="buyer", 

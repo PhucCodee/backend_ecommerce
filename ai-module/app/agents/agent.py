@@ -181,7 +181,7 @@ if __name__ == "__main__":
     print("Type 'exit' to quit.\n")
 
     # 1. Define a thread ID. In a real app, this would be the User ID or Session ID.
-    user_id = "1"
+    user_id = 1
     config = {"configurable": {"thread_id": user_id}}
 
     while True:

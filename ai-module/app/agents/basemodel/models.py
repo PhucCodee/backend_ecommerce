@@ -38,16 +38,10 @@ class Order(BaseModel):
         default="any",
         description="Temporal reference to identify which order"
     )
-    status_filter:  Literal["any", "pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "refunded"] = Field(
-        default="any",
-        description="Order status the user is asking about or referencing"
-    )
     order_intent:   Literal["track_status", "track_location", "cancel_order", "request_refund", "confirm_action"] = Field(
         default="track_status",
         description="What the user actually wants to do with the order"
     )
-    needs_tracking: bool = Field(default=False, description="True if user wants shipping/delivery location info")
-    needs_refund:   bool = Field(default=False, description="True if user is asking about or requesting a refund")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 3. ACTION CLASSES
