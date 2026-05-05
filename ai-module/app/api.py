@@ -56,7 +56,7 @@ async def get_current_user() -> UserContext:
 @api.post("/api/ai/start-session")
 async def start_session(user: UserContext = Depends(get_current_user)):
     """
-    Simulates starting a session.
+    Simulates starting a session.git 
     """
     session_id = str(uuid.uuid4())
     
