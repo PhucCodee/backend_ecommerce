@@ -61,6 +61,7 @@ services:
             - postgres_data:/var/lib/postgresql/data
             - ./database/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
             - ./database/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+            - ./database/03_image.sql:/docker-entrypoint-initdb.d/03_image.sql:ro
 
     message_broker:
         image: rabbitmq:3-management

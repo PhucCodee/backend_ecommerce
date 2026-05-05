@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
+using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.DTOs.coupon;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
@@ -18,6 +20,21 @@ namespace ECommerce.Application.Services
         private readonly ICouponRepository _couponRepository = couponRepository;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
+
+        public async Task<PagedResult<CouponDto>> GetPagedAsync(PaginationParams paginationParams)
+        {
+            var (coupons, totalCount) = await _couponRepository.GetPagedAsync(
+                paginationParams.PageNumber,
+                paginationParams.PageSize);
+
+            var dtos = _mapper.Map<IEnumerable<CouponDto>>(coupons);
+
+            return PagedResult<CouponDto>.Create(
+                dtos,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount);
+        }
 
         public async Task<CouponDto> CreateAsync(CouponCreateDto createDto)
         {
@@ -114,6 +131,37 @@ namespace ECommerce.Application.Services
             await _couponRepository.DeleteAsync(coupon.CouponId);
             await _unitOfWork.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<CouponDto> GetByCodeAsync(string code, decimal? subtotal = null)
+        {
+            var normalized = NormalizeCode(code);
+
+            var coupon = await _couponRepository.GetByCodeAsync(normalized)
+                ?? throw new NotFoundException("Coupon not found");
+
+            if (!coupon.IsActive)
+                throw new BadRequestException("Coupon is inactive");
+
+            var now = DateTime.UtcNow;
+            if (coupon.ValidFrom.HasValue && coupon.ValidFrom.Value > now)
+                throw new BadRequestException("Coupon is not valid yet");
+
+            if (coupon.ValidUntil.HasValue && coupon.ValidUntil.Value < now)
+                throw new BadRequestException("Coupon has expired");
+
+            if (coupon.UsageLimit.HasValue)
+            {
+                var usageCount = await _couponRepository.CountUsageAsync(coupon.CouponId);
+                if (usageCount >= coupon.UsageLimit.Value)
+                    throw new BadRequestException("Coupon usage limit reached");
+            }
+
+            if (subtotal.HasValue && coupon.MinOrderAmount.HasValue &&
+                subtotal.Value < coupon.MinOrderAmount.Value)
+                throw new BadRequestException("Order amount too low for this coupon");
+
+            return _mapper.Map<CouponDto>(coupon);
         }
 
         private static string NormalizeCode(string code)

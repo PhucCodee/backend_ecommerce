@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Text;
+using ECommerce.API.Logging;
 using ECommerce.API.Middleware;
 using ECommerce.Application.Common.Authorization;
 using ECommerce.Application.Helpers;
@@ -26,200 +26,183 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using Serilog.Sinks.Grafana.Loki;
 
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
+var builder = WebApplication.CreateBuilder(args);
 
-try
+// ── In-memory log buffer (must be registered before Serilog config) ───────────
+var logBuffer = new InMemoryLogBuffer();
+builder.Services.AddSingleton(logBuffer);
+
+// ── Serilog: Console + in-memory sink ─────────────────────────────────────────
+builder.Host.UseSerilog((ctx, cfg) =>
 {
-    var builder = WebApplication.CreateBuilder(args);
+    cfg.ReadFrom.Configuration(ctx.Configuration)
+       .WriteTo.Sink(new InMemoryLogSink(logBuffer));
+});
 
-    builder.Host.UseSerilog((context, services, config) =>
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
     {
-        var lokiUrl = context.Configuration["Loki:Url"] ?? "http://loki:3100";
-        config
-            .ReadFrom.Configuration(context.Configuration)
-            .ReadFrom.Services(services)
-            .WriteTo.GrafanaLoki(
-                lokiUrl,
-                labels: new List<LokiLabel>
-                {
-                    new() { Key = "app", Value = "ecommerce-api" },
-                    new() { Key = "env", Value = context.HostingEnvironment.EnvironmentName.ToLowerInvariant() }
-                },
-                propertiesAsLabels: new[] { "Level" });
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
+});
 
-    builder.Services.AddCors(options =>
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
-        options.AddDefaultPolicy(policy =>
-        {
-            policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-        });
-    });
-
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
-    builder
-        .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(
-                        builder.Configuration["Jwt:SecretKey"]
-                            ?? throw new InvalidOperationException("JWT SecretKey not configured")
-                    )
-                ),
-                ValidateIssuer = true,
-                ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "ECommerce",
-                ValidateAudience = true,
-                ValidAudience = builder.Configuration["Jwt:Audience"] ?? "ECommerce",
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero,
-            };
-        });
-
-    builder
-        .Services.AddAuthorizationBuilder()
-        .AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Roles.Admin))
-        .AddPolicy(Policies.AdminOrSeller, policy => policy.RequireRole(Roles.Admin, Roles.Seller))
-        .AddPolicy(Policies.SellerOnly, policy => policy.RequireRole(Roles.Seller))
-        .AddPolicy(Policies.Authenticated, policy => policy.RequireAuthenticatedUser());
-
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-    );
-
-    builder.Services.AddScoped<IUserRepository, UserRepository>();
-    builder.Services.AddScoped<IProductRepository, ProductRepository>();
-    builder.Services.AddScoped<IProductSkuRepository, ProductSkuRepository>();
-    builder.Services.AddScoped<ICartRepository, CartRepository>();
-    builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-    builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
-    builder.Services.AddScoped<ICouponRepository, CouponRepository>();
-    builder.Services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
-    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-    builder.Services.AddScoped<UserValidationHelper>();
-
-    builder.Services.AddScoped<IPasswordService, PasswordService>();
-    builder.Services.AddScoped<IJwtService, JwtService>();
-    builder.Services.AddScoped<IEventPublisher, EventPublisher>();
-    builder.Services.Configure<ZaloPayOptions>(builder.Configuration.GetSection("ZaloPay"));
-    builder.Services.AddHttpClient<IPaymentGatewayClient, ZaloPayPaymentGatewayClient>(client =>
-    {
-        client.Timeout = TimeSpan.FromSeconds(15);
-    });
-    builder.Services.Configure<ECommerce.Infrastructure.Common.EmailSettings>(
-        builder.Configuration.GetSection(ECommerce.Infrastructure.Common.EmailSettings.SectionName)
-    );
-    builder.Services.AddSingleton<IEmailService, SendGridEmailService>();
-
-    builder.Services.AddMassTransit(x =>
-    {
-        x.SetKebabCaseEndpointNameFormatter();
-
-        x.AddConsumer<PaymentConsumer>();
-        x.AddConsumer<InventoryConsumer>();
-        x.AddConsumer<NotificationConsumer>();
-
-        x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
-        {
-            o.UsePostgres();
-            o.UseBusOutbox();
-            o.QueryDelay = TimeSpan.FromSeconds(2);
-        });
-
-        x.UsingRabbitMq(
-            (context, cfg) =>
-            {
-                cfg.Host(
-                    builder.Configuration["RabbitMQ:Host"] ?? "message_broker",
-                    "/",
-                    h =>
-                    {
-                        h.Username(builder.Configuration["RabbitMQ:User"] ?? "guest");
-                        h.Password(builder.Configuration["RabbitMQ:Pass"] ?? "guest");
-                    }
-                );
-
-                cfg.ConfigureEndpoints(context);
-            }
+        // Accept and return enum values as strings (e.g. "percentage" not 0)
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()
         );
     });
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-    builder.Services.AddScoped<IAuthService, AuthService>();
-    builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
-    builder.Services.AddScoped<IProductService, ProductService>();
-    builder.Services.AddScoped<IProductSkuQueryService, ProductSkuQueryService>();
-    builder.Services.AddScoped<IProductSkuService, ProductSkuService>();
-    builder.Services.AddScoped<ICartService, CartService>();
-    builder.Services.AddScoped<IOrderService, OrderService>();
-    builder.Services.AddScoped<ICategoryService, CategoryService>();
-    builder.Services.AddScoped<IAddressService, AddressService>();
-    builder.Services.AddScoped<ICouponService, CouponService>();
-    builder.Services.AddScoped<IPaymentService, PaymentService>();
-    builder.Services.AddScoped<IReviewService, ReviewService>();
 
-    builder.Services.AddHttpClient();
-
-    builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
-
-    var app = builder.Build();
-
-    if (app.Environment.IsDevelopment())
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseSerilogRequestLogging(options =>
-    {
-        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "unknown");
-            diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:SecretKey"]
+                        ?? throw new InvalidOperationException("JWT SecretKey not configured")
+                )
+            ),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "ECommerce",
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "ECommerce",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
         };
     });
 
-    app.UseMiddleware<ExceptionHandlingMiddleware>();
-    app.UseCors();
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.MapControllers();
+builder
+    .Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Roles.Admin))
+    .AddPolicy(Policies.AdminOrSeller, policy => policy.RequireRole(Roles.Admin, Roles.Seller))
+    .AddPolicy(Policies.SellerOnly, policy => policy.RequireRole(Roles.Seller))
+    .AddPolicy(Policies.Authenticated, policy => policy.RequireAuthenticatedUser());
 
-    var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
-    if (!Directory.Exists(uploadsPath))
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
+
+// Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductSkuRepository, ProductSkuRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+builder.Services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<UserValidationHelper>();
+
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+builder.Services.Configure<ZaloPayOptions>(builder.Configuration.GetSection("ZaloPay"));
+builder.Services.AddHttpClient<IPaymentGatewayClient, ZaloPayPaymentGatewayClient>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.Configure<ECommerce.Infrastructure.Common.EmailSettings>(
+    builder.Configuration.GetSection(ECommerce.Infrastructure.Common.EmailSettings.SectionName)
+);
+builder.Services.AddSingleton<IEmailService, SendGridEmailService>();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.SetKebabCaseEndpointNameFormatter();
+
+    x.AddConsumer<PaymentConsumer>();
+    x.AddConsumer<InventoryConsumer>();
+    x.AddConsumer<NotificationConsumer>();
+
+    x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
     {
-        Directory.CreateDirectory(uploadsPath);
-    }
+        o.UsePostgres();
+        o.UseBusOutbox();
+        o.QueryDelay = TimeSpan.FromSeconds(2);
+    });
 
-    app.UseStaticFiles(
-        new StaticFileOptions
+    x.UsingRabbitMq(
+        (context, cfg) =>
         {
-            FileProvider = new PhysicalFileProvider(uploadsPath),
-            RequestPath = "/uploads",
+            cfg.Host(
+                builder.Configuration["RabbitMQ:Host"] ?? "message_broker",
+                "/",
+                h =>
+                {
+                    h.Username(builder.Configuration["RabbitMQ:User"] ?? "guest");
+                    h.Password(builder.Configuration["RabbitMQ:Pass"] ?? "guest");
+                }
+            );
+
+            cfg.ConfigureEndpoints(context);
         }
     );
+});
 
-    app.Run();
-}
-catch (Exception ex) when (ex is not HostAbortedException)
+// Application services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductSkuQueryService, ProductSkuQueryService>();
+builder.Services.AddScoped<IProductSkuService, ProductSkuService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    Log.Fatal(ex, "Application terminated unexpectedly");
-    throw;
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
-finally
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseCors();
+
+// Serve uploaded files publicly — must be before auth middleware
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
 {
-    Log.CloseAndFlush();
+    Directory.CreateDirectory(uploadsPath);
 }
+
+app.UseStaticFiles(
+    new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(uploadsPath),
+        RequestPath = "/uploads",
+    }
+);
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();

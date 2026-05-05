@@ -67,6 +67,15 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<object>.Ok(new { reviewId }, "Review deleted successfully"));
         }
 
+        // Mark review as helpful — open to anyone (incl. anonymous browsers)
+        // since the FE deduplicates per-browser via localStorage.
+        [HttpPost("{reviewId:int}/helpful")]
+        public async Task<IActionResult> MarkHelpful(int reviewId)
+        {
+            var review = await _reviewService.MarkHelpfulAsync(reviewId);
+            return Ok(ApiResponse<ReviewDto>.Ok(review, "Marked as helpful"));
+        }
+
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

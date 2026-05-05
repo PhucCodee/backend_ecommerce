@@ -1,0 +1,21 @@
+# Default — normalize line endings to LF in repo
+* text=auto
+
+# Shell scripts must always be LF (Docker/Linux requires this)
+*.sh text eol=lf
+
+# SQL files — LF
+*.sql text eol=lf
+
+# Windows-specific files can keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binaries — no conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

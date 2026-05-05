@@ -7,6 +7,8 @@ namespace ECommerce.Application.DTOs.product
         public required string Name { get; set; }
         public required string Slug { get; set; }
         public string? Brand { get; set; }
+        public int SellerId { get; set; }
+        public string? SellerName { get; set; }
         public string? PrimaryCategoryName { get; set; }
         public List<string> CategoryNames { get; set; } = [];
         public List<int> CategoryIds { get; set; } = [];

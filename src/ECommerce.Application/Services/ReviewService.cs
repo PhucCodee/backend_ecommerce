@@ -29,6 +29,9 @@ namespace ECommerce.Application.Services
                 .Include(r => r.User)
                     .ThenInclude(u => u.UserProfile)
                 .Include(r => r.ReviewImages)
+                .Include(r => r.OrderItem)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
                 .Where(r => r.ProductId == productId && r.IsApproved)
                 .AsQueryable();
 
@@ -185,6 +188,9 @@ namespace ECommerce.Application.Services
                 .Include(r => r.User)
                     .ThenInclude(u => u.UserProfile)
                 .Include(r => r.ReviewImages)
+                .Include(r => r.OrderItem)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
                 .FirstAsync(r => r.ReviewId == review.ReviewId);
 
             return _mapper.Map<ReviewDto>(created);
@@ -196,6 +202,9 @@ namespace ECommerce.Application.Services
                 .Include(r => r.ReviewImages)
                 .Include(r => r.User)
                     .ThenInclude(u => u.UserProfile)
+                .Include(r => r.OrderItem)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
                 .FirstOrDefaultAsync(r => r.ReviewId == reviewId)
                 ?? throw new NotFoundException("Review not found");
 
@@ -227,6 +236,25 @@ namespace ECommerce.Application.Services
 
             await _context.SaveChangesAsync();
             await UpdateProductMetricsAsync(review.ProductId);
+
+            return _mapper.Map<ReviewDto>(review);
+        }
+
+        public async Task<ReviewDto> MarkHelpfulAsync(int reviewId)
+        {
+            var review = await _context.Reviews
+                .Include(r => r.User)
+                    .ThenInclude(u => u.UserProfile)
+                .Include(r => r.ReviewImages)
+                .Include(r => r.OrderItem)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
+                .FirstOrDefaultAsync(r => r.ReviewId == reviewId)
+                ?? throw new NotFoundException("Review not found");
+
+            review.HelpfulCount += 1;
+            review.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
 
             return _mapper.Map<ReviewDto>(review);
         }
