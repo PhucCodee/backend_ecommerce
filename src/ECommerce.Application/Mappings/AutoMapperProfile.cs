@@ -184,6 +184,37 @@ namespace ECommerce.Application.Mappings
                         )
                 )
                 .ForMember(
+                    dest => dest.QuantityReserved,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Inventory != null ? src.Inventory.QuantityReserved : 0
+                        )
+                )
+                .ForMember(
+                    dest => dest.QuantitySold,
+                    opt =>
+                        opt.MapFrom(src => src.Inventory != null ? src.Inventory.QuantitySold : 0)
+                )
+                .ForMember(
+                    dest => dest.ReorderPoint,
+                    opt =>
+                        opt.MapFrom(src => src.Inventory != null ? src.Inventory.ReorderPoint : 0)
+                )
+                .ForMember(
+                    dest => dest.ReorderQuantity,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Inventory != null ? src.Inventory.ReorderQuantity : 0
+                        )
+                )
+                .ForMember(
+                    dest => dest.LastRestockedAt,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Inventory != null ? src.Inventory.LastRestockedAt : null
+                        )
+                )
+                .ForMember(
                     dest => dest.Images,
                     opt =>
                         opt.MapFrom(src =>
@@ -428,13 +459,33 @@ namespace ECommerce.Application.Mappings
                         opt.MapFrom(src =>
                             src.ParentCategory != null ? src.ParentCategory.CategoryName : null
                         )
+                )
+                .ForMember(
+                    dest => dest.ProductCount,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.ProductCategories.Count(pc =>
+                                pc.Product != null && pc.Product.RemovedAt == null
+                            )
+                        )
+                )
+                .ForMember(
+                    dest => dest.ChildCount,
+                    opt => opt.MapFrom(src => src.ChildCategories.Count(cc => cc.IsActive))
                 );
 
             // Order mappings
             CreateMap<Order, OrderDto>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                // Source navigation is `OrderItems`, target property is `Items` —
+                // names differ so AutoMapper won't auto-resolve. Map explicitly.
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems));
 
-            CreateMap<OrderItem, OrderItemDto>();
+            CreateMap<OrderItem, OrderItemDto>()
+                .ForMember(
+                    dest => dest.Subtotal,
+                    opt => opt.MapFrom(src => src.UnitPrice * src.Quantity)
+                );
 
             CreateMap<Order, OrderSummaryDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
@@ -453,6 +504,8 @@ namespace ECommerce.Application.Mappings
 
             CreateMap<Coupon, CouponDto>();
 
+            CreateMap<Inventory, InventoryDto>();
+
             // Review mappings
             CreateMap<Review, ReviewDto>()
                 .ForMember(
@@ -465,6 +518,39 @@ namespace ECommerce.Application.Mappings
                         opt.MapFrom(src =>
                             src.User != null && src.User.UserProfile != null
                                 ? src.User.UserProfile.AvatarUrl
+                                : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.Sku,
+                    opt => opt.MapFrom(src => src.OrderItem != null ? src.OrderItem.Sku : null)
+                )
+                .ForMember(
+                    dest => dest.VariantDescription,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.OrderItem != null ? src.OrderItem.VariantDescription : null
+                        )
+                )
+                // Resolve the primary image of the purchased variant SKU.
+                // Prefer IsPrimary, fall back to the first non-deleted image.
+                .ForMember(
+                    dest => dest.VariantImageUrl,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.OrderItem != null && src.OrderItem.SkuNavigation != null
+                                ? (
+                                    src.OrderItem.SkuNavigation.ProductImages.Where(i =>
+                                            !i.IsDeleted && i.IsPrimary
+                                        )
+                                        .Select(i => i.ImageUrl)
+                                        .FirstOrDefault()
+                                    ?? src.OrderItem.SkuNavigation.ProductImages.Where(i =>
+                                            !i.IsDeleted
+                                        )
+                                        .Select(i => i.ImageUrl)
+                                        .FirstOrDefault()
+                                )
                                 : null
                         )
                 )

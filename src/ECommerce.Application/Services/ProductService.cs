@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using ECommerce.Application.DTOs.inventory;
+using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Helpers;

@@ -26,7 +26,11 @@ namespace ECommerce.Infrastructure.Repositories
             int pageSize
         )
         {
-            var query = _context.Orders.Where(o => o.UserId == userId);
+            // Include OrderItems so the OrderSummaryDto.TotalItems mapping
+            // (Sum of OrderItems.Quantity) returns the real count instead of 0.
+            var query = _context.Orders
+                .Include(o => o.OrderItems)
+                .Where(o => o.UserId == userId);
 
             var totalCount = await query.CountAsync();
             var orders = await query

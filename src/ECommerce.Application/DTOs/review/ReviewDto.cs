@@ -11,6 +11,22 @@ namespace ECommerce.Application.DTOs.review
         public string Username { get; set; } = string.Empty;
         public string? AvatarUrl { get; set; }
         public int OrderItemId { get; set; }
+        /// <summary>
+        /// SKU code of the variant the user actually purchased (from the
+        /// OrderItem the review is linked to). Lets the FE distinguish reviews
+        /// of different variants of the same product.
+        /// </summary>
+        public string? Sku { get; set; }
+        /// <summary>
+        /// Variant attribute description JSON snapshotted on the OrderItem at
+        /// purchase time (e.g. <c>{"Color":"Black","Size":"M"}</c>).
+        /// </summary>
+        public string? VariantDescription { get; set; }
+        /// <summary>
+        /// Primary image URL of the variant SKU the reviewer purchased — used
+        /// in place of the raw SKU code on review cards.
+        /// </summary>
+        public string? VariantImageUrl { get; set; }
         public int Rating { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Comment { get; set; } = string.Empty;

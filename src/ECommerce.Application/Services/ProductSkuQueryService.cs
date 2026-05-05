@@ -32,7 +32,12 @@ namespace ECommerce.Application.Services
                     IsDefault = s.IsDefault,
                     WeightKg = s.WeightKg,
                     DimensionsCm = s.DimensionsCm,
-                    Stock = s.Inventory != null ? s.Inventory.QuantityAvailable : 0,
+                    Stock            = s.Inventory != null ? s.Inventory.QuantityAvailable  : 0,
+                    QuantityReserved = s.Inventory != null ? s.Inventory.QuantityReserved   : 0,
+                    QuantitySold     = s.Inventory != null ? s.Inventory.QuantitySold       : 0,
+                    ReorderPoint     = s.Inventory != null ? s.Inventory.ReorderPoint       : 0,
+                    ReorderQuantity  = s.Inventory != null ? s.Inventory.ReorderQuantity    : 0,
+                    LastRestockedAt  = s.Inventory != null ? s.Inventory.LastRestockedAt    : null,
                     Images = s.ProductImages
                         .Where(i => !i.IsDeleted)
                         .OrderBy(i => i.DisplayOrder)
@@ -105,7 +110,12 @@ namespace ECommerce.Application.Services
                     IsDefault = s.IsDefault,
                     WeightKg = s.WeightKg,
                     DimensionsCm = s.DimensionsCm,
-                    Stock = s.Inventory != null ? s.Inventory.QuantityAvailable : 0,
+                    Stock            = s.Inventory != null ? s.Inventory.QuantityAvailable  : 0,
+                    QuantityReserved = s.Inventory != null ? s.Inventory.QuantityReserved   : 0,
+                    QuantitySold     = s.Inventory != null ? s.Inventory.QuantitySold       : 0,
+                    ReorderPoint     = s.Inventory != null ? s.Inventory.ReorderPoint       : 0,
+                    ReorderQuantity  = s.Inventory != null ? s.Inventory.ReorderQuantity    : 0,
+                    LastRestockedAt  = s.Inventory != null ? s.Inventory.LastRestockedAt    : null,
                     Images = s.ProductImages
                         .Where(i => !i.IsDeleted)
                         .OrderBy(i => i.DisplayOrder)

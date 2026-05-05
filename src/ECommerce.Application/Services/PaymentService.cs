@@ -301,9 +301,9 @@ public class PaymentService(
             payment.Status = PaymentStatus.completed;
             payment.PaidAt = DateTime.UtcNow;
 
-            if (order.Status == OrderStatus.created || order.Status == OrderStatus.confirmed)
+            if (order.Status == OrderStatus.created)
             {
-                order.Status = OrderStatus.processing;
+                order.Status = OrderStatus.confirmed;
                 order.UpdatedAt = DateTime.UtcNow;
             }
 

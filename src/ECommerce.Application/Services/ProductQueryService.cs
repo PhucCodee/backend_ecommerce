@@ -48,6 +48,8 @@ namespace ECommerce.Application.Services
                     Name = p.ProductName,
                     Slug = p.Slug,
                     Brand = p.Brand,
+                    SellerId = p.SellerId,
+                    SellerName = p.Seller != null ? p.Seller.Username : null,
                     PrimaryCategoryName = p.ProductCategories
                         .Where(pc => pc.IsPrimary)
                         .Select(pc => pc.Category.CategoryName)
