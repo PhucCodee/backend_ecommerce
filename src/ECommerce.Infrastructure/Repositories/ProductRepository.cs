@@ -1,20 +1,22 @@
-using ECommerce.Domain.Entities;
-using ECommerce.Domain.Repositories;
-using ECommerce.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
+using ECommerce.Domain.Entities;
+using ECommerce.Domain.Repositories;
+using ECommerce.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class ProductRepository(ApplicationDbContext context) : Repository<Product>(context), IProductRepository
+    public class ProductRepository(ApplicationDbContext context)
+        : Repository<Product>(context),
+            IProductRepository
     {
         public async Task<Product?> GetByIdWithDetailsAsync(int id)
         {
-            return await _context.Products
-                .Where(p => p.RemovedAt == null)
+            return await _context
+                .Products.Where(p => p.RemovedAt == null)
                 .Include(p => p.ProductCategories)
                     .ThenInclude(pc => pc.Category)
                 .Include(p => p.Seller)
@@ -28,16 +30,14 @@ namespace ECommerce.Infrastructure.Repositories
 
         public override async Task<Product?> GetByIdAsync(int productId)
         {
-            return await _context.Products
-                .Where(p => p.RemovedAt == null)
+            return await _context
+                .Products.Where(p => p.RemovedAt == null)
                 .FirstOrDefaultAsync(p => p.ProductId == productId);
         }
 
         public override async Task<IEnumerable<Product>> GetAllAsync()
         {
-            return await _context.Products
-                .Where(p => p.RemovedAt == null)
-                .ToListAsync();
+            return await _context.Products.Where(p => p.RemovedAt == null).ToListAsync();
         }
 
         public async Task<bool> SlugExistsAsync(string slug, int? excludeProductId = null)

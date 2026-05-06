@@ -58,7 +58,7 @@ public partial class Product
 
     public virtual ICollection<UserItemInteraction> UserItemInteractions { get; set; } = [];
 
-    public required virtual User Seller { get; set; }
+    public virtual required User Seller { get; set; }
 
     public static Product CreateDefault(
         string name,
@@ -68,7 +68,8 @@ public partial class Product
         string? description = null,
         string? brand = null,
         decimal? weightKg = null,
-        string? dimensionsCm = null)
+        string? dimensionsCm = null
+    )
     {
         return new Product
         {
@@ -85,7 +86,7 @@ public partial class Product
             Moderation = ModerationStatus.approved,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            Seller = null!
+            Seller = null!,
         };
     }
 

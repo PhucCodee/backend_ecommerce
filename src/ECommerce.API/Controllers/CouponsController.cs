@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using ECommerce.Application.Common.Authorization;
+using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Common.Responses;
 using ECommerce.Application.DTOs.coupon;
 using ECommerce.Application.Interfaces;
-using ECommerce.Application.Common.Pagination;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -31,7 +31,8 @@ namespace ECommerce.API.Controllers
             var coupon = await _couponService.CreateAsync(createDto);
             return StatusCode(
                 StatusCodes.Status201Created,
-                ApiResponse<CouponDto>.Ok(coupon, "Coupon created successfully"));
+                ApiResponse<CouponDto>.Ok(coupon, "Coupon created successfully")
+            );
         }
 
         [HttpPut("{id:int}")]
