@@ -10,6 +10,8 @@ using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
 using ECommerce.Application.DTOs.inventory;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace ECommerce.Application.Services
 {
@@ -51,12 +53,36 @@ namespace ECommerce.Application.Services
             product.ProductSkus.Add(defaultSku);
 
             await _productRepository.AddAsync(product);
-            await _unitOfWork.SaveChangesAsync();
+
+            // Retry on a race where a concurrent create grabs the same slug
+            // between our uniqueness check and INSERT. Just rewrite the slug
+            // on the tracked entity and save again — EF keeps the rest of
+            // the graph unchanged.
+            const int maxSlugAttempts = 5;
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    break;
+                }
+                catch (DbUpdateException ex) when (IsDuplicateSlug(ex) && attempt < maxSlugAttempts)
+                {
+                    product.Slug = await GenerateUniqueSlugAsync(createDto.Name);
+                }
+            }
 
             var created = await _productRepository.GetByIdWithDetailsAsync(product.ProductId)
                 ?? throw new NotFoundException("Product not found");
 
             return _mapper.Map<ProductDto>(created);
+        }
+
+        private static bool IsDuplicateSlug(DbUpdateException ex)
+        {
+            return ex.InnerException is PostgresException pg
+                && pg.SqlState == PostgresErrorCodes.UniqueViolation
+                && pg.ConstraintName == "products_slug_key";
         }
 
         public async Task<ProductDto> UpdateAsync(int productId, ProductUpdateDto updateDto, int? sellerId = null)
@@ -90,6 +116,26 @@ namespace ECommerce.Application.Services
             product.SoftDelete();
             await _unitOfWork.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<ProductDto> RestoreAsync(int productId, int? sellerId = null)
+        {
+            var product = await _productRepository.GetByIdIncludingRemovedAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            if (!product.IsDeleted())
+                throw new BadRequestException("Product is not suspended");
+
+            if (sellerId.HasValue && product.SellerId != sellerId.Value)
+                throw new ForbiddenException("You do not have permission to restore this product");
+
+            product.Restore();
+            await _unitOfWork.SaveChangesAsync();
+
+            var loaded = await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found after restore");
+
+            return _mapper.Map<ProductDto>(loaded);
         }
 
         #region Private Helpers

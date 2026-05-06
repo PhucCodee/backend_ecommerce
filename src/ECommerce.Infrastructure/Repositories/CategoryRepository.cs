@@ -22,6 +22,9 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context.Categories
                 .Include(c => c.ParentCategory)
+                .Include(c => c.ChildCategories.Where(cc => cc.IsActive))
+                .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
                 .Where(c => c.ParentCategoryId == parentId && c.IsActive)
                 .OrderBy(c => c.DisplayOrder)
                 .ToListAsync();
@@ -31,6 +34,9 @@ namespace ECommerce.Infrastructure.Repositories
         {
             var query = _context.Categories
                 .Include(c => c.ParentCategory)
+                .Include(c => c.ChildCategories.Where(cc => cc.IsActive))
+                .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.DisplayOrder)
                 .ThenBy(c => c.CategoryName);
@@ -49,6 +55,9 @@ namespace ECommerce.Infrastructure.Repositories
         {
             var query = _context.Categories
                 .Include(c => c.ParentCategory)
+                .Include(c => c.ChildCategories.Where(cc => cc.IsActive))
+                .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
                 .Where(c => c.IsActive && c.IsCore)
                 .OrderBy(c => c.DisplayOrder)
                 .ThenBy(c => c.CategoryName);
@@ -67,6 +76,9 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context.Categories
                 .Include(c => c.ParentCategory)
+                .Include(c => c.ChildCategories.Where(cc => cc.IsActive))
+                .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
                 .Where(c => c.IsActive)
                 .FirstOrDefaultAsync(c => c.CategoryId == id);
         }

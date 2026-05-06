@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(python -c ' *)",
+      "Bash(xargs cat *)",
+      "Bash(git add *)",
+      "Bash(dotnet build *)",
+      "Read(//d/Project/Đồ Án/FE-admin/**)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(\"D:\\\\Project\\\\Đồ Án\\\\FE-seller\\\\node_modules\\\\.bin\\\\tsc\" --noEmit --project \"D:\\\\Project\\\\Đồ Án\\\\FE-seller\\\\tsconfig.json\")",
+      "WebFetch(domain:developers.zalopay.vn)"
+    ]
+  }
+}
