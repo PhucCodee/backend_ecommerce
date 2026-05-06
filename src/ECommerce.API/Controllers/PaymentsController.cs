@@ -48,8 +48,15 @@ public class PaymentsController(IPaymentService paymentService) : ControllerBase
         CancellationToken ct
     )
     {
-        await _paymentService.SimulateZaloPayCallbackAsync(request.AppTransId, request.Amount, ct);
-        return Ok(ApiResponse<object>.Ok(null, "Callback simulation initiated"));
+        var result = await _paymentService.SimulateZaloPayCallbackAsync(
+            request.AppTransId,
+            request.Amount,
+            ct
+        );
+
+        return Ok(
+            ApiResponse<ZaloPayCallbackResultDto>.Ok(result, "Callback simulation initiated")
+        );
     }
 
     private int GetCurrentUserId()

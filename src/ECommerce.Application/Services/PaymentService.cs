@@ -342,7 +342,7 @@ public class PaymentService(
         return new ZaloPayCallbackResultDto { ReturnCode = 1, ReturnMessage = "success" };
     }
 
-    public async Task SimulateZaloPayCallbackAsync(
+    public async Task<ZaloPayCallbackResultDto> SimulateZaloPayCallbackAsync(
         string appTransId,
         decimal amount,
         CancellationToken ct
@@ -370,8 +370,7 @@ public class PaymentService(
             Type = 1,
         };
 
-        // Call the same handler used by the HTTP callback
-        await HandleZaloPayCallbackAsync(callbackPayload, ct);
+        return await HandleZaloPayCallbackAsync(callbackPayload, ct);
     }
 
     private static string ResolveAppTransId(

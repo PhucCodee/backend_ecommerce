@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using ECommerce.Application.Common.Responses;
 using ECommerce.Application.Exceptions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -31,7 +31,9 @@ namespace ECommerce.API.Controllers
             // Validate file extension
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(ext) || Array.IndexOf(_allowedExtensions, ext) < 0)
-                throw new BadRequestException("Invalid file type. Allowed: jpg, jpeg, png, gif, webp");
+                throw new BadRequestException(
+                    "Invalid file type. Allowed: jpg, jpeg, png, gif, webp"
+                );
 
             // Ensure uploads directory exists
             var uploadsPath = Path.Combine(_env.ContentRootPath, "uploads");

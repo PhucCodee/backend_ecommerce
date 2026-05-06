@@ -1,14 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-using ECommerce.Application.Interfaces;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using ECommerce.Application.DTOs.user;
-using ECommerce.Application.Common.Responses;
-using ECommerce.Application.Common.Pagination;
+using System.Threading.Tasks;
 using ECommerce.Application.Common.Authorization;
-using Microsoft.AspNetCore.Http;
+using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.Common.Responses;
+using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Exceptions;
+using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
