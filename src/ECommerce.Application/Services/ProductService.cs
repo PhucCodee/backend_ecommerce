@@ -3,20 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using ECommerce.Application.Exceptions;
+using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.product;
+using ECommerce.Application.Exceptions;
+using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
-using ECommerce.Application.DTOs.inventory;
 
 namespace ECommerce.Application.Services
 {
     public class ProductService(
         IProductRepository productRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : IProductService
+        IMapper mapper
+    ) : IProductService
     {
         private readonly IProductRepository _productRepository = productRepository;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -24,42 +26,74 @@ namespace ECommerce.Application.Services
 
         public async Task<ProductDto> CreateAsync(ProductCreateDto createDto, int sellerId)
         {
-            var slug = await GenerateUniqueSlugAsync(createDto.Name);
-            var baseSku = GenerateBaseSku();
+            var baseSlug = SlugHelper.GenerateSlug(createDto.Name);
+            var slug = await SlugHelper.EnsureUniqueAsync(
+                baseSlug,
+                slug => _productRepository.SlugExistsAsync(slug)
+            );
 
             var product = Product.CreateDefault(
                 name: createDto.Name,
                 slug: slug,
-                baseSku: baseSku,
+                baseSku: SkuGenerator.GenerateBaseSku(),
                 sellerId: sellerId,
                 description: createDto.Description,
                 brand: createDto.Brand,
                 weightKg: createDto.WeightKg,
-                dimensionsCm: createDto.DimensionsCm);
+                dimensionsCm: createDto.DimensionsCm
+            );
 
             foreach (var (catId, index) in createDto.CategoryIds.Select((id, i) => (id, i)))
             {
-                product.ProductCategories.Add(new ProductCategory
-                {
-                    CategoryId = catId,
-                    IsPrimary = index == 0  // first one is primary
-                });
+                product.ProductCategories.Add(
+                    new ProductCategory
+                    {
+                        CategoryId = catId,
+                        IsPrimary = index == 0, // first one is primary
+                    }
+                );
             }
 
-            var defaultSku = ProductSku.CreateDefault(product, $"{baseSku}-DEFAULT", createDto.DefaultSkuPrice);
-            defaultSku.Inventory = BuildInventory(defaultSku, createDto.DefaultSkuInventory, createDto.DefaultSkuStock);
+            var defaultSku = ProductSku.CreateDefault(
+                product,
+                $"{product.BaseSku}-DEFAULT",
+                createDto.DefaultSkuPrice
+            );
+            defaultSku.Inventory = BuildInventory(
+                defaultSku,
+                createDto.DefaultSkuInventory,
+                createDto.DefaultSkuStock
+            );
             product.ProductSkus.Add(defaultSku);
 
             await _productRepository.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
 
-            var created = await _productRepository.GetByIdWithDetailsAsync(product.ProductId)
+            var created =
+                await _productRepository.GetByIdWithDetailsAsync(product.ProductId)
                 ?? throw new NotFoundException("Product not found");
 
             return _mapper.Map<ProductDto>(created);
         }
 
-        public async Task<ProductDto> UpdateAsync(int productId, ProductUpdateDto updateDto, int? sellerId = null)
+        private async Task<string?> ResolveSlugAsync(ProductUpdateDto updateDto, int productId)
+        {
+            var slugSource = updateDto.Slug ?? updateDto.Name;
+            if (string.IsNullOrWhiteSpace(slugSource))
+                return null;
+
+            var baseSlug = SlugHelper.GenerateSlug(slugSource);
+            return await SlugHelper.EnsureUniqueAsync(
+                baseSlug,
+                slug => _productRepository.SlugExistsAsync(slug, productId)
+            );
+        }
+
+        public async Task<ProductDto> UpdateAsync(
+            int productId,
+            ProductUpdateDto updateDto,
+            int? sellerId = null
+        )
         {
             var product = await GetActiveProductAsync(productId);
 
@@ -74,7 +108,8 @@ namespace ECommerce.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            var loaded = await _productRepository.GetByIdWithDetailsAsync(productId)
+            var loaded =
+                await _productRepository.GetByIdWithDetailsAsync(productId)
                 ?? throw new NotFoundException("Product not found");
 
             return _mapper.Map<ProductDto>(loaded);
@@ -93,32 +128,38 @@ namespace ECommerce.Application.Services
         }
 
         #region Private Helpers
-        
-        private static Inventory BuildInventory(ProductSku sku, InventoryCreateDto? dto, int fallbackStock)
+
+        private static Inventory BuildInventory(
+            ProductSku sku,
+            InventoryCreateDto? dto,
+            int fallbackStock
+        )
         {
             var available = dto?.QuantityAvailable ?? fallbackStock;
             var reserved = dto?.QuantityReserved ?? 0;
             var sold = dto?.QuantitySold ?? 0;
-        
+
             if (available < 0 || reserved < 0 || sold < 0)
                 throw new BadRequestException("Inventory values must be non-negative");
-        
+
             if (reserved > available)
                 throw new BadRequestException("Reserved quantity cannot exceed available quantity");
-        
+
             var inventory = Inventory.CreateDefault(sku, available);
             inventory.QuantityReserved = reserved;
             inventory.QuantitySold = sold;
             inventory.ReorderPoint = dto?.ReorderPoint ?? 0;
             inventory.ReorderQuantity = dto?.ReorderQuantity ?? 0;
-            inventory.LastRestockedAt = dto?.LastRestockedAt ?? (available > 0 ? DateTime.UtcNow : null);
-        
+            inventory.LastRestockedAt =
+                dto?.LastRestockedAt ?? (available > 0 ? DateTime.UtcNow : null);
+
             return inventory;
         }
 
         private async Task<Product> GetActiveProductAsync(int productId)
         {
-            var product = await _productRepository.GetByIdWithDetailsAsync(productId)
+            var product =
+                await _productRepository.GetByIdWithDetailsAsync(productId)
                 ?? throw new NotFoundException("Product not found");
 
             if (product.IsDeleted())
@@ -127,42 +168,26 @@ namespace ECommerce.Application.Services
             return product;
         }
 
-        private async Task<string?> ResolveSlugAsync(ProductUpdateDto updateDto, int productId)
+        private static void ApplyUpdates(
+            Product product,
+            ProductUpdateDto updateDto,
+            string? uniqueSlug
+        )
         {
-            var slugSource = updateDto.Slug ?? updateDto.Name;
-            return string.IsNullOrWhiteSpace(slugSource) ? null : await GenerateUniqueSlugAsync(slugSource, productId);
-        }
-
-        private static string GenerateBaseSku() => $"SKU-{Guid.NewGuid():N}"[..12];
-
-        private static string GenerateSlug(string name)
-        {
-            var slug = string.Concat(name.Trim().ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '-'));
-            while (slug.Contains("--")) slug = slug.Replace("--", "-");
-            return slug.Trim('-');
-        }
-
-        private async Task<string> GenerateUniqueSlugAsync(string name, int? excludeProductId = null)
-        {
-            var baseSlug = GenerateSlug(name);
-            var slug = baseSlug;
-            var counter = 1;
-
-            while (await _productRepository.SlugExistsAsync(slug, excludeProductId))
-                slug = $"{baseSlug}-{counter++}";
-
-            return slug;
-        }
-
-        private static void ApplyUpdates(Product product, ProductUpdateDto updateDto, string? uniqueSlug)
-        {
-            if (!string.IsNullOrWhiteSpace(updateDto.Name)) product.ProductName = updateDto.Name;
-            if (uniqueSlug != null) product.Slug = uniqueSlug;
-            if (updateDto.Description != null) product.Description = updateDto.Description;
-            if (updateDto.Brand != null) product.Brand = updateDto.Brand;
-            if (updateDto.WeightKg.HasValue) product.WeightKg = updateDto.WeightKg;
-            if (updateDto.DimensionsCm != null) product.DimensionsCm = updateDto.DimensionsCm;
-            if (Enum.TryParse<ProductStatus>(updateDto.Status, true, out var status)) product.Status = status;
+            if (!string.IsNullOrWhiteSpace(updateDto.Name))
+                product.ProductName = updateDto.Name;
+            if (uniqueSlug != null)
+                product.Slug = uniqueSlug;
+            if (updateDto.Description != null)
+                product.Description = updateDto.Description;
+            if (updateDto.Brand != null)
+                product.Brand = updateDto.Brand;
+            if (updateDto.WeightKg.HasValue)
+                product.WeightKg = updateDto.WeightKg;
+            if (updateDto.DimensionsCm != null)
+                product.DimensionsCm = updateDto.DimensionsCm;
+            if (Enum.TryParse<ProductStatus>(updateDto.Status, true, out var status))
+                product.Status = status;
 
             product.UpdatedAt = DateTime.UtcNow;
         }
@@ -177,8 +202,11 @@ namespace ECommerce.Application.Services
             var desired = orderedDistinctIds.ToHashSet();
 
             // remove missing (deletes join rows)
-            var toRemove = product.ProductCategories.Where(pc => !desired.Contains(pc.CategoryId)).ToList();
-            foreach (var pc in toRemove) product.ProductCategories.Remove(pc);
+            var toRemove = product
+                .ProductCategories.Where(pc => !desired.Contains(pc.CategoryId))
+                .ToList();
+            foreach (var pc in toRemove)
+                product.ProductCategories.Remove(pc);
 
             // add new
             var existing = product.ProductCategories.Select(pc => pc.CategoryId).ToHashSet();

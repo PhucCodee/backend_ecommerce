@@ -364,7 +364,7 @@ VALUES (
                 slug = 'classic-crew-tshirt'
         ),
         'CLOTH-101-DEFAULT',
-        190000,
+        450000,
         TRUE
     ),
     (
@@ -375,7 +375,7 @@ VALUES (
                 slug = 'oversized-graphic-tee'
         ),
         'CLOTH-102-DEFAULT',
-        290000,
+        490000,
         TRUE
     ),
     (
@@ -386,7 +386,7 @@ VALUES (
                 slug = 'slim-fit-jeans'
         ),
         'CLOTH-103-DEFAULT',
-        590000,
+        690000,
         TRUE
     ),
     (
@@ -397,7 +397,7 @@ VALUES (
                 slug = 'high-rise-straight-jeans'
         ),
         'CLOTH-104-DEFAULT',
-        640000,
+        600000,
         TRUE
     ),
     (
@@ -408,7 +408,7 @@ VALUES (
                 slug = 'pleated-midi-skirt'
         ),
         'CLOTH-105-DEFAULT',
-        440000,
+        490000,
         TRUE
     ),
     (
@@ -419,7 +419,7 @@ VALUES (
                 slug = 'fleece-pullover-hoodie'
         ),
         'CLOTH-106-DEFAULT',
-        490000,
+        1390000,
         TRUE
     ),
     (
@@ -430,7 +430,7 @@ VALUES (
                 slug = 'bomber-jacket'
         ),
         'CLOTH-107-DEFAULT',
-        790000,
+        1900000,
         TRUE
     ),
     (
@@ -441,7 +441,7 @@ VALUES (
                 slug = 'trench-coat'
         ),
         'CLOTH-108-DEFAULT',
-        990000,
+        1800000,
         TRUE
     ),
     (
@@ -452,7 +452,7 @@ VALUES (
                 slug = 'performance-running-sneakers'
         ),
         'CLOTH-109-DEFAULT',
-        890000,
+        6900000,
         TRUE
     ),
     (
@@ -463,7 +463,7 @@ VALUES (
                 slug = 'canvas-lowtop-sneakers'
         ),
         'CLOTH-110-DEFAULT',
-        540000,
+        2500000,
         TRUE
     ),
     (
@@ -474,7 +474,7 @@ VALUES (
                 slug = 'leather-belt'
         ),
         'CLOTH-111-DEFAULT',
-        240000,
+        500000,
         TRUE
     ),
     (
@@ -485,7 +485,7 @@ VALUES (
                 slug = 'baseball-cap'
         ),
         'CLOTH-112-DEFAULT',
-        180000,
+        800000,
         TRUE
     ),
     (
@@ -496,7 +496,7 @@ VALUES (
                 slug = 'knit-beanie'
         ),
         'CLOTH-113-DEFAULT',
-        160000,
+        800000,
         TRUE
     ),
     (
@@ -507,7 +507,7 @@ VALUES (
                 slug = 'yoga-leggings'
         ),
         'CLOTH-114-DEFAULT',
-        390000,
+        780000,
         TRUE
     ),
     (
@@ -518,7 +518,7 @@ VALUES (
                 slug = 'sports-bra'
         ),
         'CLOTH-115-DEFAULT',
-        290000,
+        500000,
         TRUE
     ),
     (
@@ -529,7 +529,7 @@ VALUES (
                 slug = 'kids-hoodie'
         ),
         'CLOTH-116-DEFAULT',
-        340000,
+        600000,
         TRUE
     ),
     (
@@ -540,7 +540,7 @@ VALUES (
                 slug = 'kids-sneakers'
         ),
         'CLOTH-117-DEFAULT',
-        390000,
+        450000,
         TRUE
     ),
     (
@@ -551,7 +551,7 @@ VALUES (
                 slug = 'lightweight-windbreaker'
         ),
         'CLOTH-118-DEFAULT',
-        590000,
+        1200000,
         TRUE
     ),
     (

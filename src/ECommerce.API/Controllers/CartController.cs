@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using ECommerce.Application.DTOs.cart;
-using ECommerce.Application.Interfaces;
 using ECommerce.Application.Common.Responses;
+using ECommerce.Application.DTOs.cart;
 using ECommerce.Application.Exceptions;
-using System.Linq;
+using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -38,10 +38,18 @@ namespace ECommerce.API.Controllers
 
         // Update cart item quantity
         [HttpPut("items/{cartItemId}")]
-        public async Task<IActionResult> UpdateCartItem(int cartItemId, [FromBody] UpdateCartItemDto updateDto)
+        public async Task<IActionResult> UpdateCartItem(
+            int cartItemId,
+            [FromBody] UpdateCartItemDto updateDto
+        )
         {
             var (userId, sessionId) = GetCartIdentifiers();
-            var cart = await _cartService.UpdateCartItemAsync(userId, sessionId, cartItemId, updateDto);
+            var cart = await _cartService.UpdateCartItemAsync(
+                userId,
+                sessionId,
+                cartItemId,
+                updateDto
+            );
             return Ok(ApiResponse<CartDto>.Ok(cart, "Cart item updated"));
         }
 
@@ -72,7 +80,12 @@ namespace ECommerce.API.Controllers
             var sessionId = GetSessionId();
 
             if (string.IsNullOrEmpty(sessionId))
-                return Ok(ApiResponse<CartDto>.Ok(await _cartService.GetCartAsync(userId, null), "No guest cart to merge"));
+                return Ok(
+                    ApiResponse<CartDto>.Ok(
+                        await _cartService.GetCartAsync(userId, null),
+                        "No guest cart to merge"
+                    )
+                );
 
             var cart = await _cartService.MergeCartsAsync(userId, sessionId);
             return Ok(ApiResponse<CartDto>.Ok(cart, "Carts merged successfully"));

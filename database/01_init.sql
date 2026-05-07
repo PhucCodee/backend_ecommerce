@@ -254,7 +254,6 @@ COMMENT ON COLUMN products.moderation_status IS 'Admin moderation status: pendin
 
 CREATE INDEX trgm_idx_products_name ON products USING gin (product_name gin_trgm_ops);
 
--- (Optional) Add this if you want to fuzzy search descriptions too
 CREATE INDEX trgm_idx_products_desc ON products USING gin (description gin_trgm_ops);
 
 CREATE TABLE product_categories (

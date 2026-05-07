@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using ECommerce.Application.DTOs.auth;
-using ECommerce.Application.Interfaces;
-using System.Threading.Tasks;
-using ECommerce.Application.Common.Responses;
-using ECommerce.Application.Common.Authorization;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using ECommerce.Application.Common.Authorization;
+using ECommerce.Application.Common.Responses;
+using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.Exceptions;
+using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -35,7 +35,11 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
             var userId = GetCurrentUserId();
-            var result = await _authService.ChangePasswordAsync(userId, dto.CurrentPassword, dto.NewPassword);
+            var result = await _authService.ChangePasswordAsync(
+                userId,
+                dto.CurrentPassword,
+                dto.NewPassword
+            );
             return Ok(ApiResponse<AuthOperationResultDto>.Ok(result, result.Message));
         }
 

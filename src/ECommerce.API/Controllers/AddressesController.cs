@@ -1,14 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using ECommerce.Application.Common.Responses;
 using ECommerce.Application.Common.Authorization;
+using ECommerce.Application.Common.Responses;
 using ECommerce.Application.DTOs.address;
-using ECommerce.Application.Interfaces;
 using ECommerce.Application.Exceptions;
+using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -34,7 +34,8 @@ namespace ECommerce.API.Controllers
             var address = await _addressService.CreateAsync(userId, createDto);
             return StatusCode(
                 StatusCodes.Status201Created,
-                ApiResponse<AddressDto>.Ok(address, "Address created successfully"));
+                ApiResponse<AddressDto>.Ok(address, "Address created successfully")
+            );
         }
 
         [HttpPut("{id:int}")]
