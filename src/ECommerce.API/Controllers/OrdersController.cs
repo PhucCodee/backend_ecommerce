@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ECommerce.Application.Common.Authorization;
 using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Common.Responses;
 using ECommerce.Application.DTOs.order;
@@ -26,7 +27,8 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         var order = await _orderService.CreateAsync(userId, request);
         return StatusCode(
             StatusCodes.Status201Created,
-            ApiResponse<OrderDto>.Ok(order, "Order created successfully"));
+            ApiResponse<OrderDto>.Ok(order, "Order created successfully")
+        );
     }
 
     // Get a specific order by ID
@@ -62,6 +64,56 @@ public class OrdersController(IOrderService orderService) : ControllerBase
             return NotFound(ApiResponse<object>.Fail("Order not found"));
 
         return Ok(ApiResponse<OrderDto>.Ok(order, "Order cancelled successfully"));
+    }
+
+    // Admin: get all orders (paged)
+    [HttpGet("admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
+    public async Task<IActionResult> GetAllOrders([FromQuery] PaginationParams paginationParams)
+    {
+        var orders = await _orderService.GetAllOrdersAsync(paginationParams);
+        return Ok(ApiResponse<PagedResult<OrderSummaryDto>>.Ok(orders));
+    }
+
+    // Seller: get orders (paged)
+    [HttpGet("seller")]
+    [Authorize(Policy = Policies.SellerOnly)]
+    public async Task<IActionResult> GetSellerOrders([FromQuery] PaginationParams paginationParams)
+    {
+        var sellerId = GetCurrentUserId();
+        var orders = await _orderService.GetSellerOrdersAsync(sellerId, paginationParams);
+        return Ok(ApiResponse<PagedResult<OrderSummaryDto>>.Ok(orders));
+    }
+
+    // Seller: get order detail
+    [HttpGet("seller/{orderId:int}")]
+    [Authorize(Policy = Policies.SellerOnly)]
+    public async Task<IActionResult> GetSellerOrder(int orderId)
+    {
+        var sellerId = GetCurrentUserId();
+        var order = await _orderService.GetSellerOrderByIdAsync(sellerId, orderId);
+
+        if (order == null)
+            return NotFound(ApiResponse<object>.Fail("Order not found"));
+
+        return Ok(ApiResponse<OrderDto>.Ok(order));
+    }
+
+    // Seller: update status
+    [HttpPut("seller/{orderId:int}/status")]
+    [Authorize(Policy = Policies.SellerOnly)]
+    public async Task<IActionResult> UpdateSellerOrderStatus(
+        int orderId,
+        [FromBody] UpdateOrderStatusRequest request
+    )
+    {
+        var sellerId = GetCurrentUserId();
+        var order = await _orderService.UpdateStatusAsSellerAsync(sellerId, orderId, request);
+
+        if (order == null)
+            return NotFound(ApiResponse<object>.Fail("Order not found"));
+
+        return Ok(ApiResponse<OrderDto>.Ok(order, "Order status updated successfully"));
     }
 
     private int GetCurrentUserId()

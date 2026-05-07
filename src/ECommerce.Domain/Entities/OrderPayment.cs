@@ -34,5 +34,5 @@ public partial class OrderPayment
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual Order Order { get; set; }
+    public virtual required Order Order { get; set; }
 }

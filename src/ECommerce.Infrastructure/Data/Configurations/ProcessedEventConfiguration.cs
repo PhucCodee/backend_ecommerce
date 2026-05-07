@@ -10,9 +10,15 @@ namespace ECommerce.Infrastructure.Data.Configurations
         {
             builder.ToTable("processed_events");
 
-            // Primary key
-            builder.HasKey(pe => pe.EventId);
             builder.Property(pe => pe.EventId).HasColumnName("event_id");
+
+            builder.Property(pe => pe.ProcessedBy)
+                .IsRequired()
+                .HasMaxLength(255)
+                .HasColumnName("processed_by");
+
+            // Composite key: same event can be processed by different workers once each
+            builder.HasKey(pe => new { pe.EventId, pe.ProcessedBy });
 
             builder.Property(pe => pe.EventType)
                 .IsRequired()
@@ -23,12 +29,6 @@ namespace ECommerce.Infrastructure.Data.Configurations
                 .HasColumnName("processed_at")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            builder.Property(pe => pe.ProcessedBy)
-                .IsRequired()
-                .HasMaxLength(255)
-                .HasColumnName("processed_by");
-
-            // Indexes
             builder.HasIndex(pe => pe.EventType);
             builder.HasIndex(pe => pe.ProcessedAt);
         }

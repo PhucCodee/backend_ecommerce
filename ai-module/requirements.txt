@@ -31,3 +31,5 @@ email-validator
 
 pypdf
 
+#--------Testing
+pytest

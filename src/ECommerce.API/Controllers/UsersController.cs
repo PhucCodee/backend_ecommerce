@@ -61,7 +61,10 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> Create([FromBody] UserCreateDto createDto)
         {
             var user = await userService.CreateAsync(createDto);
-            return StatusCode(StatusCodes.Status201Created, ApiResponse<UserProfileDto>.Ok(user, "User created successfully"));
+            return StatusCode(
+                StatusCodes.Status201Created,
+                ApiResponse<UserProfileDto>.Ok(user, "User created successfully")
+            );
         }
 
         // Update user

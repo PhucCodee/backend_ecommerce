@@ -1,0 +1,26 @@
+meta {
+  name: Create payment request
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/payments/zalopay/create
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJqdXN0aW50cmFuMjkwMUBnbWFpbC5jb20iLCJqdGkiOiI5YmFlMDVjNi1jZTFmLTRkYTctODY4ZS1kYmVhOWUxZTFhNTciLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJidXllciIsImV4cCI6MTc3NzUzNzY3NCwiaXNzIjoiRUNvbW1lcmNlLkFQSSIsImF1ZCI6IkVDb21tZXJjZS5DbGllbnQifQ.oi1WrnUFEuGUsye5tfpO7Q7w9xWGUMPwht0atUJd1sk
+}
+
+body:json {
+  {
+    "orderId": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

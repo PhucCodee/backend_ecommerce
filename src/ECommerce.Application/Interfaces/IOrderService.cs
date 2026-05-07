@@ -8,6 +8,20 @@ public interface IOrderService
 {
     Task<OrderDto> CreateAsync(int userId, CreateOrderRequest request);
     Task<OrderDto?> GetByIdAsync(int userId, int orderId);
-    Task<PagedResult<OrderSummaryDto>> GetUserOrdersAsync(int userId, PaginationParams paginationParams);
+    Task<PagedResult<OrderSummaryDto>> GetUserOrdersAsync(
+        int userId,
+        PaginationParams paginationParams
+    );
     Task<OrderDto?> CancelAsync(int userId, int orderId);
+    Task<PagedResult<OrderSummaryDto>> GetAllOrdersAsync(PaginationParams paginationParams);
+    Task<PagedResult<OrderSummaryDto>> GetSellerOrdersAsync(
+        int sellerId,
+        PaginationParams paginationParams
+    );
+    Task<OrderDto?> GetSellerOrderByIdAsync(int sellerId, int orderId);
+    Task<OrderDto?> UpdateStatusAsSellerAsync(
+        int sellerId,
+        int orderId,
+        UpdateOrderStatusRequest request
+    );
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using ECommerce.Application.DTOs.inventory;
 
 namespace ECommerce.Application.DTOs.product
 {
@@ -31,5 +32,7 @@ namespace ECommerce.Application.DTOs.product
 
         [MaxLength(50)]
         public string? DimensionsCm { get; set; }
+
+        public InventoryCreateDto? DefaultSkuInventory { get; set; }
     }
 }
