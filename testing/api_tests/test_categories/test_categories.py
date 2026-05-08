@@ -19,9 +19,10 @@ def temp_category(base_url, admin_headers):
         2. `yield` (tạm dừng) và giao danh mục này cho các hàm test sử dụng.
         3. Sau khi hàm test chạy xong, đoạn code bên dưới `yield` sẽ chạy để gọi API DELETE xóa danh mục đó đi.
     """
+    random_str = str(uuid.uuid4())[:6]
     payload = {
-        "name": f"Updated Name Automation",
-        "parentCategoryId": None, 
+        "name": f"Updated Name Automation {random_str}",
+        "parentCategoryId": 1, 
         "description": "This is an automated test category",
         "imageUrl": "https://example.com/image.jpg",
         "displayOrder": 1,
@@ -30,7 +31,7 @@ def temp_category(base_url, admin_headers):
     }
     
     create_res = requests.post(f"{base_url}/categories", json=payload, headers=admin_headers)
-    assert create_res.status_code in [200, 201], "Không thể tạo Category để test"
+    assert create_res.status_code in [200, 201], f"Không thể tạo Category để test với status: {create_res.status_code}"
     
     category_data = create_res.json()
     
@@ -142,17 +143,18 @@ def test_admin_update_category(base_url, admin_headers, temp_category):
         2. Gọi lại API GET để xác minh rằng dữ liệu trong Database THỰC SỰ ĐÃ BỊ ĐỔI thành tên mới.
     """
     cat_id = temp_category["data"]['categoryId']
-    update_payload = temp_category.copy()
-    update_payload["data"]["categoryName"] = "Updated Name Automation"
-    update_payload["data"]["description"] = "Updated description"
+
+    payload = {
+        'name': "Updated Name Automation"
+    }
     
-    response = requests.put(f"{base_url}/categories/{cat_id}", json=update_payload, headers=admin_headers)
+    response = requests.put(f"{base_url}/categories/{cat_id}", json=payload, headers=admin_headers)
     assert response.status_code in [200, 204] 
     
     get_res = requests.get(f"{base_url}/categories/{cat_id}")
     assert get_res.json()["data"]["categoryName"] == "Updated Name Automation"
 
-def test_admin_delete_category(base_url, admin_headers):
+def test_admin_delete_category(base_url, admin_headers, temp_category):
     """
     TC_CAT_07: ADMIN XÓA DANH MỤC
     - Tiền điều kiện: Có quyền Admin. Test này tự tạo ra 1 danh mục dùng riêng để "hiến tế".
@@ -164,9 +166,8 @@ def test_admin_delete_category(base_url, admin_headers):
         3. API phải báo lỗi 404 (Not Found), chứng tỏ dữ liệu đã biến mất khỏi Database hoàn toàn.
     """
     # 1. Tạo danh mục hiến tế
-    payload = {"name": "Cat to be deleted"}
-    create_res = requests.post(f"{base_url}/categories", json=payload, headers=admin_headers)
-    cat_id = create_res.json()["data"]["categoryId"]
+
+    cat_id = temp_category["data"]["categoryId"]
     
     # 2. Xóa danh mục
     delete_res = requests.delete(f"{base_url}/categories/{cat_id}", headers=admin_headers)

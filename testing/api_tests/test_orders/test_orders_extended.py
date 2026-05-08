@@ -155,7 +155,6 @@ class TestOrderCreation:
             },
             "saveNewShippingAddress": False, 
             "billingAddressId": 15,
-            "couponCode": "SALE10",
             "customerNotes": "Leave at reception"
         }
         response = requests.post(f"{base_url}/orders", json=order_payload, headers=user_headers)

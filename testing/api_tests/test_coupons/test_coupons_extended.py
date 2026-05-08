@@ -209,10 +209,10 @@ class TestCouponRetrieval:
         create_res = requests.post(f"{base_url}/coupons", json=create_payload, headers=admin_headers)
         assert create_res.status_code in [200, 201]
         
-        coupon_id = create_res.json()["data"].get("id") or create_res.json()["data"].get("couponId")
-        
+        code = create_res.json()["data"].get("code")
+        coupon_id = create_res.json()["data"].get("couponId")
         # Try to validate
-        validate_res = requests.get(f"{base_url}/coupons/validate", params={"code": code}, headers=user_headers)
+        validate_res = requests.get(f"{base_url}/coupons/code/{code}", params={"code": code}, headers=user_headers)
         # May return 200 or potentially 404 if endpoint doesn't exist
         assert validate_res.status_code in [200, 404]
         

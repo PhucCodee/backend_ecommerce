@@ -411,7 +411,7 @@ class TestUserLogin:
         token = response.json()['data']['accessToken']
         assert "eyJ" in token, "Token is not a valid JWT"
 
-    def test_user_login_success_with_email(self, base_url):
+    def test_user_login_success_with_email(self, base_url, cleanup_new_users):
         """
         🏷️ TC_AUTH_11 - LOGIN WITH EMAIL
         
@@ -431,6 +431,25 @@ class TestUserLogin:
         - Status: 200 OK
         - accessToken present
         """
+        payload = {
+            "email": "phuc1@gmail.com",
+            "username": "phuc1",
+            "password": "Test123@",
+            "confirmPassword": "Test123@",
+            "firstName": "Phúc",
+            "lastName": "Trần",
+            "phone": "0901548666",
+            "acceptTerms": True
+        }
+        response = requests.post(f"{base_url}/auth/register", json=payload)
+        assert response.status_code in [200, 201], f"Registration failed: {response.text}"
+       
+        # Đánh dấu user này cần được Admin xóa sau khi test xong
+        cleanup_new_users.append({
+            "identifier": payload["username"],
+            "password": payload["password"]
+        })
+
         payload = {"identifier": "phuc1@gmail.com", "password": "Test123@"}
         response = requests.post(f"{base_url}/auth/login", json=payload)
         assert response.status_code == 200
