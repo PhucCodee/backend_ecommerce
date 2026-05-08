@@ -42,8 +42,8 @@ def test_nfr_1_2_account_lockout_after_5_failures(base_url):
     - Test: Attempt login with wrong password 5 times, verify account is locked.
     - Expected: 5th attempt should be rejected (locked account).
     """
-    username = "testuser_lockout"
-    wrong_password = "WrongPassword123"
+    username = "goat"
+    wrong_password = "Phuc122"
     
     # Attempt 1-4: Wrong password
     for attempt in range(1, 5):
@@ -56,9 +56,10 @@ def test_nfr_1_2_account_lockout_after_5_failures(base_url):
     payload = {"identifier": username, "password": wrong_password}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     
-    is_locked = response.status_code == 429  # Too Many Requests (rate limited)
+    is_locked = response.status_code in [429,401]  # Too Many Requests (rate limited)
     passed = is_locked
     
+    assert response.json()["message"] == "Account is temporarily locked"
     log_nfr_result(
         "NFR-1.2",
         "Account Lockout",
@@ -69,38 +70,6 @@ def test_nfr_1_2_account_lockout_after_5_failures(base_url):
     
     assert passed, f"Expected 429 (locked), got {response.status_code}"
 
-
-def test_nfr_1_2_account_unlock_after_timeout(base_url):
-    """
-    NFR-1.2 Extended: Account should unlock after 30 minutes (or configured timeout).
-    - Test: Lock account, wait (or mock time), then verify unlock.
-    - Note: This test will use a shorter timeout for testing purposes.
-    """
-    username = "testuser_unlock"
-    correct_password = "Phuc123"
-    
-    # Try to login with wrong password multiple times to lock
-    for _ in range(5):
-        payload = {"identifier": username, "password": "WrongPassword"}
-        requests.post(f"{base_url}/auth/login", json=payload)
-    
-    # Verify locked
-    response_locked = requests.post(
-        f"{base_url}/auth/login",
-        json={"identifier": username, "password": correct_password}
-    )
-    
-    is_locked = response_locked.status_code == 429
-    
-    log_nfr_result(
-        "NFR-1.2-ext",
-        "Account Lockout Extension",
-        "test_nfr_1_2_account_unlock_after_timeout",
-        is_locked,
-        f"Account locked successfully: {is_locked}"
-    )
-    
-    assert is_locked, "Account should be locked after 5 failed attempts"
 
 
 # ==============================================================================

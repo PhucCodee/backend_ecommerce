@@ -142,17 +142,19 @@ def test_admin_update_category(base_url, admin_headers, temp_category):
         1. API PUT trả về thành công (200 hoặc 204).
         2. Gọi lại API GET để xác minh rằng dữ liệu trong Database THỰC SỰ ĐÃ BỊ ĐỔI thành tên mới.
     """
+    random_str = str(uuid.uuid4())[:6]
+
     cat_id = temp_category["data"]['categoryId']
 
     payload = {
-        'name': "Updated Name Automation"
+        'name': f"Updated Name Automation {random_str}"
     }
     
     response = requests.put(f"{base_url}/categories/{cat_id}", json=payload, headers=admin_headers)
     assert response.status_code in [200, 204] 
     
     get_res = requests.get(f"{base_url}/categories/{cat_id}")
-    assert get_res.json()["data"]["categoryName"] == "Updated Name Automation"
+    assert get_res.json()["data"]["categoryName"] == f"Updated Name Automation {random_str}"
 
 def test_admin_delete_category(base_url, admin_headers, temp_category):
     """

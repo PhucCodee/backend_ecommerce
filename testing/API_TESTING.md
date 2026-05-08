@@ -2,102 +2,477 @@
 
 **Project:** E-Commerce Platform  
 **Test Framework:** Pytest + Requests  
-**Base URL:** `http://localhost:8080/api`
+**Base URL:** `http://localhost:8080/api`  
+**Configuration:** Located in `conftest.py` with fixtures for authentication
 
 ---
 
 ## 📋 TABLE OF CONTENTS
 
-1. [Authentication Tests](#1-authentication-tests)
-2. [User & Profile Tests](#2-user--profile-tests)
-3. [Address Tests](#3-address-tests)
-4. [Category Tests](#4-category-tests)
-5. [Product Tests](#5-product-tests)
-6. [SKU Tests](#6-sku-tests)
-7. [Cart Tests](#7-cart-tests)
-8. [Order Tests](#8-order-tests)
-9. [Coupon Tests](#9-coupon-tests)
-10. [Payment Tests](#10-payment-tests)
+1. [Overview & Setup](#overview--setup)
+2. [Authentication Tests](#authentication-tests)
+3. [User & Profile Tests](#user--profile-tests)
+4. [Address Tests](#address-tests)
+5. [Category Tests](#category-tests)
+6. [Product Tests](#product-tests)
+7. [SKU Tests](#sku-tests)
+8. [Cart Tests](#cart-tests)
+9. [Order Tests](#order-tests)
+10. [Coupon Tests](#coupon-tests)
+11. [Payment Tests](#payment-tests)
+12. [Inventory Tests](#inventory-tests)
+13. [Running Tests](#running-tests)
 
 ---
 
-## 1. AUTHENTICATION TESTS
+## OVERVIEW & SETUP
 
-### TC_AUTH_01: User Registration Success
-
-| Field | Value |
-|-------|-------|
-| **Test ID** | TC_AUTH_01 |
-| **Test Name** | User Registration with Valid Data |
-| **Endpoint** | `POST /auth/register` |
-| **Method** | POST |
-| **Authentication** | None (Public) |
-
-**Test Intent:**  
-Verify that a new user can successfully register with valid credentials.
-
-**Input (Request Body):**
-```json
-{
-  "email": "valid_user_<random>@gmail.com",
-  "username": "validuser_<random>",
-  "password": "Test123@Password!",
-  "confirmPassword": "Test123@Password!",
-  "firstName": "Valid",
-  "lastName": "User",
-  "phone": "0901234567",
-  "acceptTerms": true
-}
+### Test Structure
+```
+api_tests/
+├── conftest.py                 # Shared fixtures & configuration
+├── test_auth/                  # Authentication tests
+│   ├── test_auth.py           # Basic auth tests
+│   └── test_auth_extended.py  # Extended auth scenarios
+├── test_users/                 # User profile & management tests
+├── test_addresses/             # User address management tests
+├── test_categories/            # Category CRUD tests
+├── test_products/              # Product management tests
+├── test_skus/                  # SKU management tests
+├── test_cart/                  # Shopping cart tests
+├── test_orders/                # Order management tests
+├── test_coupons/               # Coupon & discount tests
+├── test_payment/               # Payment processing tests
+├── test_inventory/             # Inventory management tests
+└── test_nfr/                   # Non-functional requirement tests
+    ├── test_nfr_security.py
+    ├── test_nfr_performance.py
+    ├── test_nfr_reliability.py
+    └── test_nfr_data_integrity.py
 ```
 
-**Expected Output:**
-- **Status Code:** 200 OK or 201 Created
-- **Response Body:**
-```json
-{
-  "success": true,
-  "data": {
-    "userId": "...",
-    "email": "valid_user_<random>@gmail.com",
-    "username": "validuser_<random>",
-    "message": "User registered successfully"
-  }
-}
-```
+### Pytest Fixtures (conftest.py)
 
-**Assertions:**
-- Status code is 200 or 201
-- User can login with provided credentials
+**Global Fixtures:**
+- `base_url`: API base URL (http://localhost:8080/api)
+- `admin_headers`: JWT token headers for admin user (username: "west")
+- `seller_headers`: JWT token headers for seller user (email: "stephen@gmail.com")
+- `user_headers`: JWT token headers for regular user (username: "goat")
+
+**Usage Example:**
+```python
+def test_example(base_url, admin_headers):
+    response = requests.get(
+        f"{base_url}/categories",
+        headers=admin_headers
+    )
+    assert response.status_code == 200
+```
 
 ---
 
-### TC_AUTH_02: Duplicate Email Prevention
+## AUTHENTICATION TESTS
 
-| Field | Value |
-|-------|-------|
-| **Test ID** | TC_AUTH_02 |
-| **Test Name** | Registration Duplicate Email Rejection |
-| **Endpoint** | `POST /auth/register` |
-| **Method** | POST |
-| **Authentication** | None |
+**Location:** `api_tests/test_auth/`
 
-**Test Intent:**  
-Ensure system prevents registration with duplicate email addresses.
+### Basic Tests (test_auth.py)
 
-**Input (Request Body):**
-```json
-{
-  "email": "duplicate_test@gmail.com",
-  "username": "user_<random>",
-  "password": "Test123@",
-  "confirmPassword": "Test123@",
-  "firstName": "First",
-  "lastName": "User",
-  "phone": "0901234567",
-  "acceptTerms": true
-}
+| Test Name | Endpoint | Method | Purpose |
+|-----------|----------|--------|---------|
+| `test_user_registration_success` | POST /auth/register | POST | Verify successful user registration |
+| `test_login_success` | POST /auth/login | POST | Verify successful login returns JWT token |
+| `test_login_fail_wrong_password` | POST /auth/login | POST | Verify login rejection with wrong password |
+
+### Extended Tests (test_auth_extended.py)
+
+**Registration Validation Tests:**
+- `test_user_registration_success_with_valid_data` - Valid credentials and data
+- `test_user_registration_duplicate_email_rejection` - Duplicate email prevention
+- `test_user_registration_duplicate_username_rejection` - Duplicate username prevention
+- `test_registration_password_mismatch_rejection` - Password confirmation validation
+- `test_registration_weak_password_rejection` - Password strength validation
+- `test_registration_missing_required_fields` - Required field validation
+- `test_registration_invalid_email_format` - Email format validation
+- `test_registration_invalid_phone_format` - Phone format validation
+- `test_registration_terms_not_accepted` - Terms acceptance enforcement
+
+**Login Tests:**
+- `test_user_login_success_with_username` - Login using username
+- `test_user_login_success_with_email` - Login using email
+- `test_login_fail_wrong_password` - Wrong password rejection
+- `test_login_fail_nonexistent_user` - Non-existent user handling
+- `test_login_fail_empty_credentials` - Empty credentials validation
+- `test_seller_login_success` - Seller account login
+- `test_admin_login_success` - Admin account login
+- `test_login_returns_user_data` - Verify user data in response
+- `test_token_used_in_protected_endpoint` - JWT token validation in protected routes
+
+---
+
+## USER & PROFILE TESTS
+
+**Location:** `api_tests/test_users/`
+
+### User Profile Tests
+
+**Available Tests:**
+- `test_get_user_profile` - Retrieve authenticated user profile
+- `test_update_user_profile` - Update user information (firstName, lastName, bio, etc.)
+- `test_get_user_by_id` - Get user details by ID (admin/authorized users)
+- `test_list_all_users` - List users (admin only)
+- `test_user_profile_validation` - Profile field validation
+- `test_unauthorized_profile_access` - Verify access control
+
+### User Role Tests
+- `test_user_role_assignment` - Verify role-based access control
+- `test_seller_role_privileges` - Seller-specific permissions
+- `test_admin_role_privileges` - Admin-specific permissions
+
+---
+
+## ADDRESS TESTS
+
+**Location:** `api_tests/test_addresses/`
+
+### Address CRUD Operations
+
+| Operation | Endpoint | Purpose |
+|-----------|----------|---------|
+| Create | POST /users/addresses | Add new user address |
+| Read | GET /users/addresses | List user addresses |
+| Read | GET /users/addresses/{id} | Get specific address |
+| Update | PUT /users/addresses/{id} | Update address details |
+| Delete | DELETE /users/addresses/{id} | Remove address |
+
+### Address Tests
+- `test_create_user_address` - Create new address with valid data
+- `test_get_user_addresses` - List all user addresses
+- `test_get_user_address_by_id` - Retrieve specific address
+- `test_update_user_address` - Update address information
+- `test_delete_user_address` - Delete address
+- `test_address_validation` - Validate address fields (postal code, phone, etc.)
+- `test_default_address_management` - Set/change default address
+- `test_address_access_control` - Verify users can only access own addresses
+
+---
+
+## CATEGORY TESTS
+
+**Location:** `api_tests/test_categories/`
+
+### Category CRUD Operations
+
+| Operation | Endpoint | Authentication | Purpose |
+|-----------|----------|-----------------|---------|
+| Create | POST /categories | Admin | Create new product category |
+| Read | GET /categories | Public | List all categories |
+| Read | GET /categories/{id} | Public | Get category details |
+| Update | PUT /categories/{id} | Admin | Update category information |
+| Delete | DELETE /categories/{id} | Admin | Remove category |
+
+### Category Tests
+- `test_get_all_categories` - List all product categories
+- `test_create_category` - Create new category (admin only)
+- `test_create_category_unauthorized` - Verify non-admin rejection
+- `test_update_category` - Update category details
+- `test_delete_category` - Delete category
+- `test_category_hierarchy` - Test parent/child relationships
+- `test_get_child_categories` - Retrieve subcategories
+- `test_get_category_by_slug` - Category slug lookup
+
+---
+
+## PRODUCT TESTS
+
+**Location:** `api_tests/test_products/`
+
+### Product Operations
+
+**Public Endpoints:**
+- `test_get_all_products_public` - List products (public)
+- `test_get_products_with_pagination` - Pagination support
+- `test_get_product_by_id` - Get product details
+- `test_get_products_filter_by_category` - Filter by category
+- `test_get_products_filter_by_price_range` - Price range filtering
+- `test_get_products_filter_by_brand` - Brand filtering
+- `test_get_products_with_sorting` - Sort by price, rating, name, etc.
+- `test_search_products_by_name` - Full-text search
+
+**Seller Operations:**
+- `test_seller_create_product` - Create product as seller
+- `test_seller_get_own_products` - List own products
+- `test_seller_update_product` - Update product details
+- `test_seller_delete_product` - Delete own product
+
+**Admin Operations:**
+- `test_admin_delete_product` - Admin product removal
+- `test_admin_approve_product` - Product approval workflow
+- `test_admin_manage_visibility` - Control product visibility
+
+**Security Tests:**
+- `test_api_prevent_sql_injection_on_search` - SQL injection prevention
+- `test_api_prevent_sql_injection_on_sort` - SQL injection in sorting
+
+---
+
+## SKU TESTS
+
+**Location:** `api_tests/test_skus/`
+
+### SKU Management
+
+| Operation | Endpoint | Purpose |
+|-----------|----------|---------|
+| Create | POST /products/{id}/skus | Add product variant |
+| Read | GET /products/{id}/skus | List product variants |
+| Update | PUT /products/{id}/skus/{skuId} | Update SKU details |
+| Delete | DELETE /products/{id}/skus/{skuId} | Remove variant |
+
+### SKU Tests
+- `test_create_product_sku` - Create new SKU/variant
+- `test_get_product_skus` - List all SKUs for product
+- `test_update_sku` - Update SKU price, stock, attributes
+- `test_delete_sku` - Delete SKU variant
+- `test_sku_price_tracking` - Price history tracking
+- `test_sku_stock_management` - Stock level management
+
+---
+
+## CART TESTS
+
+**Location:** `api_tests/test_cart/`
+
+### Cart Operations
+
+**Guest Cart (Session-based):**
+- `test_guest_get_empty_cart` - Retrieve empty guest cart
+- `test_guest_add_multiple_items` - Add multiple items to guest cart
+- `test_guest_update_item_quantity` - Update item quantity
+- `test_guest_delete_item` - Remove item from cart
+- `test_guest_cart_session_persistence` - Cart persistence across requests
+
+**User Cart (Persistent):**
+- `test_user_get_cart` - Get user's persistent cart
+- `test_user_add_to_cart` - Add item to user cart
+- `test_user_cart_persistent` - Verify persistence after logout
+- `test_cart_merge_on_login` - Merge guest & user cart on login
+
+**Cart Operations:**
+- `test_add_item_to_cart` - Add product with quantity
+- `test_update_cart_item` - Update item quantity
+- `test_delete_cart_item` - Remove item
+- `test_clear_cart` - Clear all items
+- `test_merge_cart_on_login` - Guest to user cart merge
+- `test_cart_merge_resolves_duplicates` - Handle duplicate items
+- `test_cart_subtotal_calculation` - Verify cart calculations
+
+**Cart Validation:**
+- `test_cart_stock_availability` - Check stock before add
+- `test_cart_item_limits` - Maximum items validation
+- `test_cart_price_recalculation` - Recalculate on price changes
+
+---
+
+## ORDER TESTS
+
+**Location:** `api_tests/test_orders/`
+
+### Order Operations
+
+| Operation | Endpoint | Purpose |
+|-----------|----------|---------|
+| Create | POST /orders | Create order from cart |
+| Read | GET /orders | List user orders |
+| Read | GET /orders/{id} | Get order details |
+| Update | PUT /orders/{id}/status | Update order status |
+
+### Order Tests
+- `test_create_order_from_cart` - Convert cart to order
+- `test_get_user_orders` - List user's orders
+- `test_get_order_by_id` - Retrieve specific order
+- `test_order_status_tracking` - Order status progression
+- `test_seller_view_orders` - Seller order visibility
+- `test_admin_manage_orders` - Admin order management
+- `test_order_total_calculation` - Server-side total verification
+- `test_order_payment_linking` - Link payment to order
+
+**Order Workflow:**
+- `test_order_status_pending` - Initial pending status
+- `test_order_status_confirmed` - Confirm order
+- `test_order_status_shipped` - Mark as shipped
+- `test_order_status_delivered` - Mark as delivered
+- `test_order_cancellation` - Cancel order flow
+
+---
+
+## COUPON TESTS
+
+**Location:** `api_tests/test_coupons/`
+
+### Coupon Operations
+
+| Operation | Endpoint | Authentication | Purpose |
+|-----------|----------|-----------------|---------|
+| Create | POST /coupons | Admin | Create discount coupon |
+| Read | GET /coupons | Public | List available coupons |
+| Validate | POST /coupons/validate | Public | Check coupon validity |
+| Apply | POST /cart/apply-coupon | User | Apply coupon to cart |
+
+### Coupon Tests
+- `test_create_coupon` - Create new coupon (admin)
+- `test_apply_valid_coupon_to_cart` - Apply active coupon
+- `test_coupon_discount_calculation` - Verify discount amount
+- `test_coupon_usage_limit` - Enforce usage limits
+- `test_coupon_expiration` - Expired coupon rejection
+- `test_coupon_minimum_amount` - Minimum order requirement
+- `test_coupon_category_restriction` - Category-specific coupons
+- `test_coupon_user_limit` - Per-user usage limits
+- `test_remove_coupon_from_cart` - Remove applied coupon
+
+---
+
+## PAYMENT TESTS
+
+**Location:** `api_tests/test_payment/`
+
+### Payment Processing
+
+| Operation | Endpoint | Purpose |
+|-----------|----------|---------|
+| Create | POST /payments | Initiate payment |
+| Verify | POST /payments/verify | Verify payment status |
+| Callback | POST /payments/callback | Payment gateway webhook |
+
+### Payment Tests
+- `test_initiate_payment` - Start payment process
+- `test_payment_status_processing` - Processing status
+- `test_payment_status_success` - Successful payment
+- `test_payment_status_failed` - Failed payment handling
+- `test_payment_verification` - Verify payment completion
+- `test_payment_gateway_callback` - Handle webhook callbacks
+- `test_refund_process` - Process refunds
+- `test_payment_idempotency` - Prevent duplicate charges
+
+---
+
+## INVENTORY TESTS
+
+**Location:** `api_tests/test_inventory/`
+
+### Inventory Management
+
+| Operation | Endpoint | Purpose |
+|-----------|----------|---------|
+| Read | GET /inventory/{skuId} | Check stock levels |
+| Update | PUT /inventory/{skuId} | Update stock |
+| Track | GET /inventory/history | View stock changes |
+
+### Inventory Tests
+- `test_get_inventory_status` - Check current stock
+- `test_update_inventory` - Update stock levels
+- `test_prevent_negative_inventory` - Prevent negative stock
+- `test_inventory_reservation` - Reserve stock on order
+- `test_inventory_release` - Release reserved stock
+- `test_low_stock_alerts` - Monitor low stock
+- `test_inventory_history_tracking` - Track all changes
+
+---
+
+## RUNNING TESTS
+
+### Run All Tests
+```bash
+cd backend_ecommerce/testing
+pytest api_tests/ -v
 ```
-*(Same email used twice)*
+
+### Run Specific Test Module
+```bash
+# All auth tests
+pytest api_tests/test_auth/ -v
+
+# Basic auth tests only
+pytest api_tests/test_auth/test_auth.py -v
+
+# Extended tests only
+pytest api_tests/test_auth/test_auth_extended.py -v
+```
+
+### Run Specific Test
+```bash
+pytest api_tests/test_auth/test_auth_extended.py::TestAuthentication::test_user_registration_success_with_valid_data -v
+```
+
+### Run with Output
+```bash
+# Show print statements
+pytest api_tests/ -v -s
+
+# Show coverage
+pytest api_tests/ --cov=. --cov-report=html
+```
+
+### Run by Markers
+```bash
+# Run only smoke tests
+pytest api_tests/ -m smoke -v
+
+# Run excluding slow tests
+pytest api_tests/ -m "not slow" -v
+```
+
+### Parallel Execution
+```bash
+# Install pytest-xdist first
+pip install pytest-xdist
+
+# Run tests in parallel (4 workers)
+pytest api_tests/ -n 4 -v
+```
+
+---
+
+## Test Configuration
+
+**Configuration File:** `pytest.ini`
+```ini
+[pytest]
+testpaths = 
+    api_tests
+    e2e_tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+pythonpath = .
+```
+
+**Requirements:** `requirements.txt`
+```
+pytest>=7.0
+requests>=2.28.0
+python-dotenv
+```
+
+---
+
+## Environment Setup
+
+**1. Install Dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+**2. Set Base URL (if needed):**
+Edit `shared/config.py`:
+```python
+class Config:
+    API_URL = "http://localhost:8080/api"
+```
+
+**3. Prepare Test Data:**
+- Ensure test user accounts exist (west, stephen@gmail.com, goat)
+- API server running and accessible
+- Database seeded with test categories and products
 
 **Expected Output:**
 - **First Request:** 200 or 201 Created ✓

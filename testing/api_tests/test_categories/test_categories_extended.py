@@ -443,6 +443,8 @@ class TestCategoryUpdate:
         - Status: 200 OK
         - Name updated, other fields preserved
         """
+
+        random_str = str(uuid.uuid4())[:6]
         # Create
         create_payload = {
             "name": "Pants",
@@ -458,7 +460,7 @@ class TestCategoryUpdate:
         cat_id = create_response.json()["data"].get("categoryId")
         assert cat_id is not None
         # Update only name
-        update_payload = {"name": "Pants new"}
+        update_payload = {"name": f"Pants new {random_str}"}
         response = requests.put(f"{base_url}/categories/{cat_id}", json=update_payload, headers=admin_headers)
         assert response.status_code in [200, 204]
 
