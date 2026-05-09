@@ -26,7 +26,7 @@ class Config:
     
     # Playwright config
     HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"
-    SLOW_MO = 5000
+    SLOW_MO = 1000
     TIMEOUT = int(os.getenv("TIMEOUT", "30000"))
     
     # Test config
