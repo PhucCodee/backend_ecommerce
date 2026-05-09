@@ -16,6 +16,13 @@ namespace ECommerce.Infrastructure.Repositories
         {
             return await _context
                 .Orders.Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.Product)
+                            .ThenInclude(p => p.ProductSkus)
+                                .ThenInclude(ps => ps.ProductImages)
                 .Include(o => o.OrderShipping)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }

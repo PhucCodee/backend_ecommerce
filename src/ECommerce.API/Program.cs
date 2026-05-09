@@ -27,6 +27,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
+// Npgsql 6+ rejects mixed DateTime kinds in a single insert (UTC for
+// CreatedAt/UpdatedAt vs Unspecified for date-picker fields like ValidFrom).
+// All our timestamp columns are `TIMESTAMP WITHOUT TIME ZONE`, so the legacy
+// behavior — treat all DateTime values as local/unspecified — is what we want.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ── In-memory log buffer (must be registered before Serilog config) ───────────

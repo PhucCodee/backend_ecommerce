@@ -30,6 +30,15 @@ namespace ECommerce.Application.DTOs.product
         public int? CategoryId { get; set; }
 
         /// <summary>
+        /// When <c>true</c> and <see cref="CategoryId"/> is set, the filter
+        /// matches products in the given category <i>or any descendant</i>
+        /// (so picking "Shoes" returns "Sneakers", "Boots", etc. as well).
+        /// Defaults to <c>false</c> to preserve exact-match behavior for
+        /// admin/seller queries; the buyer frontend opts in explicitly.
+        /// </summary>
+        public bool IncludeSubcategories { get; set; } = false;
+
+        /// <summary>
         /// Filter by brand name
         /// </summary>
         public string? Brand { get; set; }

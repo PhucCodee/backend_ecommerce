@@ -33,7 +33,17 @@ namespace ECommerce.Application.Services
                 ? _context.Products.AsNoTracking()
                 : _context.Products.AsNoTracking().Where(p => p.RemovedAt == null);
 
-            dbQuery = ApplyFilters(dbQuery, productQueryParams);
+            // Expand the requested category into its descendant set when the
+            // caller asks for it. This lets the buyer page show every product
+            // under "Shoes" when "Shoes" is selected, not just the ones tagged
+            // directly with that category.
+            List<int>? categoryIdSet = null;
+            if (productQueryParams.CategoryId.HasValue && productQueryParams.IncludeSubcategories)
+            {
+                categoryIdSet = await GetCategorySubtreeIdsAsync(productQueryParams.CategoryId.Value);
+            }
+
+            dbQuery = ApplyFilters(dbQuery, productQueryParams, categoryIdSet);
 
             var totalCount = await dbQuery.CountAsync();
 
@@ -110,8 +120,42 @@ namespace ECommerce.Application.Services
                     .ThenInclude(sku => sku.ProductImages.Where(img => !img.IsDeleted))
                 .Include(p => p.ProductMetrics);
 
+        /// <summary>
+        /// Walks the category tree starting at <paramref name="rootId"/> and
+        /// returns the root plus every active descendant (BFS). Used to
+        /// implement <c>IncludeSubcategories</c>.
+        /// </summary>
+        private async Task<List<int>> GetCategorySubtreeIdsAsync(int rootId)
+        {
+            var lookup = await _context.Categories
+                .Where(c => c.IsActive)
+                .Select(c => new { c.CategoryId, c.ParentCategoryId })
+                .ToListAsync();
+
+            var byParent = lookup
+                .Where(c => c.ParentCategoryId.HasValue)
+                .GroupBy(c => c.ParentCategoryId!.Value)
+                .ToDictionary(g => g.Key, g => g.Select(c => c.CategoryId).ToList());
+
+            var result = new HashSet<int> { rootId };
+            var queue = new Queue<int>();
+            queue.Enqueue(rootId);
+            while (queue.Count > 0)
+            {
+                var id = queue.Dequeue();
+                if (!byParent.TryGetValue(id, out var children)) continue;
+                foreach (var childId in children)
+                {
+                    if (result.Add(childId)) queue.Enqueue(childId);
+                }
+            }
+            return result.ToList();
+        }
+
         private static IQueryable<Domain.Entities.Product> ApplyFilters(
-            IQueryable<Domain.Entities.Product> query, ProductQueryParams p)
+            IQueryable<Domain.Entities.Product> query,
+            ProductQueryParams p,
+            List<int>? categoryIdSet)
         {
             if (p.MinPrice.HasValue)
                 query = query.Where(x => x.ProductSkus.Any(s => s.IsDefault && s.Price >= p.MinPrice.Value));
@@ -119,7 +163,9 @@ namespace ECommerce.Application.Services
             if (p.MaxPrice.HasValue)
                 query = query.Where(x => x.ProductSkus.Any(s => s.IsDefault && s.Price <= p.MaxPrice.Value));
 
-            if (p.CategoryId.HasValue)
+            if (categoryIdSet is { Count: > 0 })
+                query = query.Where(x => x.ProductCategories.Any(pc => categoryIdSet.Contains(pc.CategoryId)));
+            else if (p.CategoryId.HasValue)
                 query = query.Where(x => x.ProductCategories.Any(pc => pc.CategoryId == p.CategoryId.Value));
 
             if (!string.IsNullOrWhiteSpace(p.Brand))

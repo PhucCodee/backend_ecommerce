@@ -202,7 +202,30 @@ namespace ECommerce.Application.Mappings
 
             CreateMap<OrderItem, OrderItemDto>()
                 .ForMember(dest => dest.Subtotal,
-                    opt => opt.MapFrom(src => src.UnitPrice * src.Quantity));
+                    opt => opt.MapFrom(src => src.UnitPrice * src.Quantity))
+                .ForMember(dest => dest.VariantImageUrl, opt => opt.MapFrom(src =>
+                    src.SkuNavigation != null
+                        ? (src.SkuNavigation.ProductImages
+                                .Where(i => !i.IsDeleted && i.IsPrimary)
+                                .Select(i => i.ImageUrl)
+                                .FirstOrDefault()
+                            ?? src.SkuNavigation.ProductImages
+                                .Where(i => !i.IsDeleted)
+                                .Select(i => i.ImageUrl)
+                                .FirstOrDefault()
+                            ?? src.SkuNavigation.Product.ProductSkus
+                                .Where(ps => ps.IsDefault)
+                                .SelectMany(ps => ps.ProductImages)
+                                .Where(i => !i.IsDeleted && i.IsPrimary)
+                                .Select(i => i.ImageUrl)
+                                .FirstOrDefault()
+                            ?? src.SkuNavigation.Product.ProductSkus
+                                .Where(ps => ps.IsDefault)
+                                .SelectMany(ps => ps.ProductImages)
+                                .Where(i => !i.IsDeleted)
+                                .Select(i => i.ImageUrl)
+                                .FirstOrDefault())
+                        : null));
 
             CreateMap<Order, OrderSummaryDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
