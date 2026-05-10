@@ -30,7 +30,11 @@ public class Cart
 
     public virtual ICollection<CartItem> CartItems { get; set; } = [];
 
-    public static Cart CreateDefault(int? userId = null, string? sessionId = null, string? ipAddress = null)
+    public static Cart CreateDefault(
+        int? userId = null,
+        string? sessionId = null,
+        string? ipAddress = null
+    )
     {
         return new Cart
         {
@@ -41,7 +45,7 @@ public class Cart
             TotalItems = 0,
             IpAddress = ipAddress,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 

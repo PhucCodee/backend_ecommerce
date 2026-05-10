@@ -42,22 +42,23 @@ public partial class UserAddress
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 
     public static UserAddress CreateDefault(
-    User user,
-    AddressType type,
-    string label,
-    string recipientName,
-    string phone,
-    string addressLine1,
-    string city,
-    string stateProvince,
-    string postalCode,
-    string country,
-    string? addressLine2 = null,
-    bool isDefaultShipping = false,
-    bool isDefaultBilling = false)
+        User user,
+        AddressType type,
+        string label,
+        string recipientName,
+        string phone,
+        string addressLine1,
+        string city,
+        string stateProvince,
+        string postalCode,
+        string country,
+        string? addressLine2 = null,
+        bool isDefaultShipping = false,
+        bool isDefaultBilling = false
+    )
     {
         return new UserAddress
         {
@@ -76,7 +77,7 @@ public partial class UserAddress
             IsDefaultShipping = isDefaultShipping,
             IsDefaultBilling = isDefaultBilling,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 }

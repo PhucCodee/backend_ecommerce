@@ -18,9 +18,9 @@ public partial class CartItem
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual ProductSku Sku { get; set; }
+    public virtual required ProductSku Sku { get; set; }
 
-    public required virtual Cart Cart { get; set; }
+    public virtual required Cart Cart { get; set; }
 
     public static CartItem CreateDefault(Cart cart, ProductSku sku, int quantity)
     {
@@ -33,7 +33,7 @@ public partial class CartItem
             Quantity = quantity,
             PriceSnapshot = sku.Price,
             AddedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 }

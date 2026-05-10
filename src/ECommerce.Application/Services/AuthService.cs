@@ -1,15 +1,15 @@
-using ECommerce.Application.Exceptions;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using ECommerce.Application.DTOs.auth;
 using ECommerce.Application.DTOs.user;
+using ECommerce.Application.Exceptions;
 using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
-using AutoMapper;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ECommerce.Application.Services
 {
@@ -19,18 +19,27 @@ namespace ECommerce.Application.Services
         IJwtService jwtService,
         IPasswordService passwordService,
         IMapper mapper,
-        UserValidationHelper validationHelper) : IAuthService
+        UserValidationHelper validationHelper
+    ) : IAuthService
     {
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
             DtoNormalizer.Normalize(registerDto);
-            await validationHelper.EnsureEmailAndUsernameAreUniqueAsync(registerDto.Email, registerDto.Username);
+            await validationHelper.EnsureEmailAndUsernameAreUniqueAsync(
+                registerDto.Email,
+                registerDto.Username
+            );
 
             var (passwordHash, passwordSalt) = passwordService.HashPassword(registerDto.Password);
 
             var user = User.CreateDefault(registerDto.Email, registerDto.Username);
             user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
-            user.UserProfile = UserProfile.CreateDefault(user, registerDto.FirstName, registerDto.LastName, registerDto.Phone);
+            user.UserProfile = UserProfile.CreateDefault(
+                user,
+                registerDto.FirstName,
+                registerDto.LastName,
+                registerDto.Phone
+            );
 
             // Assign default role (buyer)
             var defaultRole = UserRole.CreateDefault(user, UserRoleType.buyer);
@@ -61,10 +70,19 @@ namespace ECommerce.Application.Services
             if (user.Status != UserStatus.active)
                 throw new UnauthorizedException("Invalid credentials");
 
-            if (user.UserCredential.LockedUntil.HasValue && user.UserCredential.LockedUntil > DateTime.UtcNow)
+            if (
+                user.UserCredential.LockedUntil.HasValue
+                && user.UserCredential.LockedUntil > DateTime.UtcNow
+            )
                 throw new UnauthorizedException("Account is temporarily locked");
 
-            if (!passwordService.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash, user.UserCredential.PasswordSalt))
+            if (
+                !passwordService.VerifyPassword(
+                    loginDto.Password,
+                    user.UserCredential.PasswordHash,
+                    user.UserCredential.PasswordSalt
+                )
+            )
             {
                 user.UserCredential.FailedLoginAttempts++;
                 if (user.UserCredential.FailedLoginAttempts >= 5)
@@ -89,12 +107,21 @@ namespace ECommerce.Application.Services
             return CreateAuthResponse(accessToken, refreshToken, user);
         }
 
-        public Task<AuthResponseDto> RefreshTokenAsync(string refreshToken) => throw new NotImplementedException();
-        public Task<AuthOperationResultDto> LogoutAsync(string accessToken) => throw new NotImplementedException();
+        public Task<AuthResponseDto> RefreshTokenAsync(string refreshToken) =>
+            throw new NotImplementedException();
 
-        public async Task<AuthOperationResultDto> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        public Task<AuthOperationResultDto> LogoutAsync(string accessToken) =>
+            throw new NotImplementedException();
+
+        public async Task<AuthOperationResultDto> ChangePasswordAsync(
+            int userId,
+            string currentPassword,
+            string newPassword
+        )
         {
-            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            if (
+                string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword)
+            )
                 throw new BadRequestException("Current password and new password are required.");
 
             var user = await userRepository.GetUserWithAllDetailsAsync(userId);
@@ -105,20 +132,28 @@ namespace ECommerce.Application.Services
             if (user.Status != UserStatus.active)
                 throw new UnauthorizedException("Invalid credentials");
 
-            if (!passwordService.VerifyPassword(
-                currentPassword,
-                user.UserCredential.PasswordHash,
-                user.UserCredential.PasswordSalt))
+            if (
+                !passwordService.VerifyPassword(
+                    currentPassword,
+                    user.UserCredential.PasswordHash,
+                    user.UserCredential.PasswordSalt
+                )
+            )
             {
                 throw new UnauthorizedException("Current password is incorrect");
             }
 
-            if (passwordService.VerifyPassword(
-                newPassword,
-                user.UserCredential.PasswordHash,
-                user.UserCredential.PasswordSalt))
+            if (
+                passwordService.VerifyPassword(
+                    newPassword,
+                    user.UserCredential.PasswordHash,
+                    user.UserCredential.PasswordSalt
+                )
+            )
             {
-                throw new BadRequestException("New password must be different from current password");
+                throw new BadRequestException(
+                    "New password must be different from current password"
+                );
             }
 
             var (passwordHash, passwordSalt) = passwordService.HashPassword(newPassword);
@@ -136,24 +171,33 @@ namespace ECommerce.Application.Services
             return AuthOperationResultDto.SuccessResult("Password changed successfully");
         }
 
-        public Task<AuthOperationResultDto> ResetPasswordAsync(string email) => throw new NotImplementedException();
-        public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) => throw new NotImplementedException();
+        public Task<AuthOperationResultDto> ResetPasswordAsync(string email) =>
+            throw new NotImplementedException();
+
+        public Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email) =>
+            throw new NotImplementedException();
 
         private static string[] GetActiveRoleNames(User user) =>
-            [.. user.UserRoleUsers
-                .Where(r => r.IsActive())
-                .Select(r => r.Role.ToString())];
+            [.. user.UserRoleUsers.Where(r => r.IsActive()).Select(r => r.Role.ToString())];
 
-        private AuthResponseDto CreateAuthResponse(string accessToken, string refreshToken, User user) =>
+        private AuthResponseDto CreateAuthResponse(
+            string accessToken,
+            string refreshToken,
+            User user
+        ) =>
             new()
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddHours(1),
-                User = mapper.Map<UserProfileDto>(user)
+                User = mapper.Map<UserProfileDto>(user),
             };
 
-        private (string accessToken, string refreshToken, UserSession session) GenerateTokensAndSession(User user, string[] roles)
+        private (
+            string accessToken,
+            string refreshToken,
+            UserSession session
+        ) GenerateTokensAndSession(User user, string[] roles)
         {
             var accessToken = jwtService.GenerateAccessToken(user.UserId, user.Email, roles);
             var refreshToken = jwtService.GenerateRefreshToken();

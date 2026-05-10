@@ -39,9 +39,9 @@ public partial class Review
 
     public virtual ICollection<ReviewImage> ReviewImages { get; set; } = [];
 
-    public required virtual OrderItem OrderItem { get; set; }
+    public virtual required OrderItem OrderItem { get; set; }
 
-    public required virtual Product Product { get; set; }
+    public virtual required Product Product { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 }
