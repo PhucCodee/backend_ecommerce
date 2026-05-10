@@ -30,9 +30,14 @@ public partial class UserSession
 
     public DateTime? RevokedAt { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 
-    public static UserSession CreateDefault(User user, string accessTokenHash, string refreshTokenHash, int expirationDays = 7)
+    public static UserSession CreateDefault(
+        User user,
+        string accessTokenHash,
+        string refreshTokenHash,
+        int expirationDays = 7
+    )
     {
         return new UserSession
         {
@@ -45,7 +50,7 @@ public partial class UserSession
             DeviceName = string.Empty,
             CreatedAt = DateTime.UtcNow,
             LastActivityAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddDays(expirationDays)
+            ExpiresAt = DateTime.UtcNow.AddDays(expirationDays),
         };
     }
 }

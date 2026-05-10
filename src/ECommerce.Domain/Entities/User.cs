@@ -62,9 +62,7 @@ public partial class User
 
     public virtual UserProfile? UserProfile { get; set; }
 
-    public static User CreateDefault(
-        string email,
-        string username)
+    public static User CreateDefault(string email, string username)
     {
         return new User
         {
@@ -73,7 +71,7 @@ public partial class User
             Status = UserStatus.active,
             EmailVerified = false,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 

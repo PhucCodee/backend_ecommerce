@@ -22,7 +22,7 @@ public partial class OrderStatusHistory
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual User ChangedByNavigation { get; set; }
+    public virtual required User ChangedByNavigation { get; set; }
 
-    public required virtual Order Order { get; set; }
+    public virtual required Order Order { get; set; }
 }

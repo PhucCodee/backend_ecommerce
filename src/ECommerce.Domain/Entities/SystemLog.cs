@@ -27,5 +27,5 @@ public partial class SystemLog
 
     public DateTime CreatedAt { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 }
