@@ -1,16 +1,16 @@
-using ECommerce.Application.DTOs.user;
-using ECommerce.Application.Interfaces;
-using ECommerce.Application.Helpers;
-using ECommerce.Application.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.DTOs.user;
+using ECommerce.Application.Exceptions;
+using ECommerce.Application.Helpers;
+using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
-using AutoMapper;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ECommerce.Application.Services
 {
@@ -19,11 +19,13 @@ namespace ECommerce.Application.Services
         IUnitOfWork unitOfWork,
         IPasswordService passwordService,
         IMapper mapper,
-        UserValidationHelper validationHelper) : IUserService
+        UserValidationHelper validationHelper
+    ) : IUserService
     {
         public async Task<UserProfileDto> GetProfileAsync(int userId)
         {
-            var user = await userRepository.GetUserWithProfileAsync(userId)
+            var user =
+                await userRepository.GetUserWithProfileAsync(userId)
                 ?? throw new NotFoundException("User not found");
             return mapper.Map<UserProfileDto>(user);
         }
@@ -34,16 +36,27 @@ namespace ECommerce.Application.Services
             return mapper.Map<IEnumerable<UserProfileDto>>(users);
         }
 
-        public async Task<PagedResult<UserProfileDto>> GetAllPagedAsync(PaginationParams paginationParams)
+        public async Task<PagedResult<UserProfileDto>> GetAllPagedAsync(
+            PaginationParams paginationParams
+        )
         {
-            var (users, totalCount) = await userRepository.GetPagedAsync(paginationParams.PageNumber, paginationParams.PageSize);
+            var (users, totalCount) = await userRepository.GetPagedAsync(
+                paginationParams.PageNumber,
+                paginationParams.PageSize
+            );
             var userDtos = mapper.Map<IEnumerable<UserProfileDto>>(users);
-            return PagedResult<UserProfileDto>.Create(userDtos, paginationParams.PageNumber, paginationParams.PageSize, totalCount);
+            return PagedResult<UserProfileDto>.Create(
+                userDtos,
+                paginationParams.PageNumber,
+                paginationParams.PageSize,
+                totalCount
+            );
         }
 
         public async Task<UserProfileDto> GetByIdAsync(int userId)
         {
-            var user = await userRepository.GetUserWithProfileAsync(userId)
+            var user =
+                await userRepository.GetUserWithProfileAsync(userId)
                 ?? throw new NotFoundException("User not found");
             return mapper.Map<UserProfileDto>(user);
         }
@@ -51,18 +64,27 @@ namespace ECommerce.Application.Services
         public async Task<UserProfileDto> CreateAsync(UserCreateDto createDto)
         {
             DtoNormalizer.Normalize(createDto);
-            await validationHelper.EnsureEmailAndUsernameAreUniqueAsync(createDto.Email, createDto.Username);
+            await validationHelper.EnsureEmailAndUsernameAreUniqueAsync(
+                createDto.Email,
+                createDto.Username
+            );
 
-            var (passwordHash, passwordSalt) = passwordService.HashPassword(createDto.Password);
+            var passwordHash = passwordService.HashPassword(createDto.Password);
 
             var user = User.CreateDefault(createDto.Email, createDto.Username);
-            user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
-            user.UserProfile = UserProfile.CreateDefault(user, createDto.FirstName, createDto.LastName, createDto.Phone);
+            user.UserCredential = UserCredential.CreateDefault(user, passwordHash);
+            user.UserProfile = UserProfile.CreateDefault(
+                user,
+                createDto.FirstName,
+                createDto.LastName,
+                createDto.Phone
+            );
 
             // Assign roles from DTO
-            var rolesToAssign = createDto.Roles != null && createDto.Roles.Length > 0
-                ? createDto.Roles.Select(r => (UserRoleType)r).Distinct().ToArray()
-                : [UserRoleType.buyer];
+            var rolesToAssign =
+                createDto.Roles != null && createDto.Roles.Length > 0
+                    ? createDto.Roles.Select(r => (UserRoleType)r).Distinct().ToArray()
+                    : [UserRoleType.buyer];
 
             foreach (var role in rolesToAssign)
             {
@@ -81,7 +103,8 @@ namespace ECommerce.Application.Services
 
         public async Task<UserProfileDto> UpdateAsync(int userId, UserUpdateDto updateDto)
         {
-            var user = await userRepository.GetUserWithAllDetailsAsync(userId)
+            var user =
+                await userRepository.GetUserWithAllDetailsAsync(userId)
                 ?? throw new NotFoundException("User not found");
 
             DtoNormalizer.Normalize(updateDto);
@@ -90,7 +113,7 @@ namespace ECommerce.Application.Services
             UpdateProfile(user, updateDto);
             UpdatePasswordIfProvided(user, updateDto.Password);
 
-            // Update roles 
+            // Update roles
             if (updateDto.Roles != null)
             {
                 UpdateUserRoles(user, updateDto.Roles);
@@ -104,7 +127,8 @@ namespace ECommerce.Application.Services
 
         public async Task<UserProfileDto> UpdateProfileAsync(int userId, UserUpdateDto updateDto)
         {
-            var user = await userRepository.GetWithProfileAsync(userId)
+            var user =
+                await userRepository.GetWithProfileAsync(userId)
                 ?? throw new NotFoundException("User not found");
 
             DtoNormalizer.Normalize(updateDto);
@@ -121,7 +145,8 @@ namespace ECommerce.Application.Services
 
         public async Task<bool> DeleteAsync(int userId)
         {
-            var user = await userRepository.GetByIdAsync(userId)
+            var user =
+                await userRepository.GetByIdAsync(userId)
                 ?? throw new NotFoundException("User not found");
 
             if (user.IsDeleted())
@@ -135,7 +160,10 @@ namespace ECommerce.Application.Services
 
         private async Task UpdateEmailIfChanged(User user, string? newEmail)
         {
-            if (string.IsNullOrWhiteSpace(newEmail) || string.Equals(user.Email, newEmail, StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrWhiteSpace(newEmail)
+                || string.Equals(user.Email, newEmail, StringComparison.OrdinalIgnoreCase)
+            )
                 return;
 
             await validationHelper.EnsureEmailIsUniqueAsync(newEmail);
@@ -144,7 +172,10 @@ namespace ECommerce.Application.Services
 
         private async Task UpdateUsernameIfChanged(User user, string? newUsername)
         {
-            if (string.IsNullOrWhiteSpace(newUsername) || string.Equals(user.Username, newUsername, StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrWhiteSpace(newUsername)
+                || string.Equals(user.Username, newUsername, StringComparison.OrdinalIgnoreCase)
+            )
                 return;
 
             await validationHelper.EnsureUsernameIsUniqueAsync(newUsername);
@@ -153,7 +184,8 @@ namespace ECommerce.Application.Services
 
         private static void UpdateProfile(User user, UserUpdateDto updateDto)
         {
-            if (user.UserProfile == null) return;
+            if (user.UserProfile == null)
+                return;
 
             if (updateDto.FirstName != null)
                 user.UserProfile.FirstName = updateDto.FirstName;
@@ -163,15 +195,24 @@ namespace ECommerce.Application.Services
                 user.UserProfile.Phone = updateDto.Phone;
             if (updateDto.DateOfBirth.HasValue)
                 user.UserProfile.DateOfBirth = updateDto.DateOfBirth;
-            if (updateDto.Gender != null && Enum.TryParse<UserGender>(updateDto.Gender, true, out var gender))
+            if (
+                updateDto.Gender != null
+                && Enum.TryParse<UserGender>(updateDto.Gender, true, out var gender)
+            )
                 user.UserProfile.Gender = gender;
             if (updateDto.AvatarUrl != null)
                 user.UserProfile.AvatarUrl = updateDto.AvatarUrl;
             if (updateDto.Bio != null)
                 user.UserProfile.Bio = updateDto.Bio;
-            if (updateDto.PreferredLanguage != null && Enum.TryParse<Language>(updateDto.PreferredLanguage, true, out var lang))
+            if (
+                updateDto.PreferredLanguage != null
+                && Enum.TryParse<Language>(updateDto.PreferredLanguage, true, out var lang)
+            )
                 user.UserProfile.PreferredLanguage = lang;
-            if (updateDto.PreferredCurrency != null && Enum.TryParse<Currency>(updateDto.PreferredCurrency, true, out var currency))
+            if (
+                updateDto.PreferredCurrency != null
+                && Enum.TryParse<Currency>(updateDto.PreferredCurrency, true, out var currency)
+            )
                 user.UserProfile.PreferredCurrency = currency;
             if (updateDto.Timezone != null)
                 user.UserProfile.Timezone = updateDto.Timezone;
@@ -184,9 +225,8 @@ namespace ECommerce.Application.Services
             if (string.IsNullOrWhiteSpace(newPassword) || user.UserCredential == null)
                 return;
 
-            var (passwordHash, passwordSalt) = passwordService.HashPassword(newPassword);
+            var passwordHash = passwordService.HashPassword(newPassword);
             user.UserCredential.PasswordHash = passwordHash;
-            user.UserCredential.PasswordSalt = passwordSalt;
             user.UserCredential.PasswordUpdatedAt = DateTime.UtcNow;
             user.UserCredential.UpdatedAt = DateTime.UtcNow;
         }
