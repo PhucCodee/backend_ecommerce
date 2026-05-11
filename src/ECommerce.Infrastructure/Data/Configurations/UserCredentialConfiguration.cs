@@ -1,6 +1,6 @@
+using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ECommerce.Domain.Entities;
 
 namespace ECommerce.Infrastructure.Data.Configurations
 {
@@ -17,55 +17,52 @@ namespace ECommerce.Infrastructure.Data.Configurations
             // Properties
             builder.Property(uc => uc.UserId).HasColumnName("user_id");
 
-            builder.Property(uc => uc.PasswordHash)
+            builder
+                .Property(uc => uc.PasswordHash)
                 .IsRequired()
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
 
-            builder.Property(uc => uc.PasswordSalt)
-                .IsRequired()
-                .HasMaxLength(255)
-                .HasColumnName("password_salt");
+            builder.Property(uc => uc.PasswordUpdatedAt).HasColumnName("password_updated_at");
 
-            builder.Property(uc => uc.PasswordUpdatedAt)
-                .HasColumnName("password_updated_at");
-
-            builder.Property(uc => uc.FailedLoginAttempts)
+            builder
+                .Property(uc => uc.FailedLoginAttempts)
                 .HasColumnName("failed_login_attempts")
                 .HasDefaultValue(0);
 
-            builder.Property(uc => uc.LastFailedAttemptAt)
-                .HasColumnName("last_failed_attempt_at");
+            builder.Property(uc => uc.LastFailedAttemptAt).HasColumnName("last_failed_attempt_at");
 
-            builder.Property(uc => uc.LockedUntil)
-                .HasColumnName("locked_until");
+            builder.Property(uc => uc.LockedUntil).HasColumnName("locked_until");
 
-            builder.Property(uc => uc.LastLoginAt)
-                .HasColumnName("last_login_at");
+            builder.Property(uc => uc.LastLoginAt).HasColumnName("last_login_at");
 
-            builder.Property(uc => uc.LastLoginIp)
+            builder
+                .Property(uc => uc.LastLoginIp)
                 .IsRequired()
                 .HasMaxLength(45)
                 .HasColumnName("last_login_ip");
 
-            builder.Property(uc => uc.ResetTokenHash)
+            builder
+                .Property(uc => uc.ResetTokenHash)
                 .IsRequired()
                 .HasMaxLength(255)
                 .HasColumnName("reset_token_hash");
 
-            builder.Property(uc => uc.ResetTokenExpiresAt)
-                .HasColumnName("reset_token_expires_at");
+            builder.Property(uc => uc.ResetTokenExpiresAt).HasColumnName("reset_token_expires_at");
 
-            builder.Property(uc => uc.CreatedAt)
+            builder
+                .Property(uc => uc.CreatedAt)
                 .HasColumnName("created_at")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            builder.Property(uc => uc.UpdatedAt)
+            builder
+                .Property(uc => uc.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Relationships
-            builder.HasOne(uc => uc.User)
+            builder
+                .HasOne(uc => uc.User)
                 .WithOne(u => u.UserCredential)
                 .HasForeignKey<UserCredential>(uc => uc.UserId)
                 .OnDelete(DeleteBehavior.Cascade);

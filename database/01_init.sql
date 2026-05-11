@@ -40,7 +40,6 @@ CREATE TABLE
         credential_id SERIAL PRIMARY KEY,
         user_id INTEGER UNIQUE NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
         password_hash VARCHAR(255) NOT NULL,
-        password_salt VARCHAR(255) NOT NULL,
         password_updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         failed_login_attempts INTEGER NOT NULL DEFAULT 0,
         last_failed_attempt_at TIMESTAMP,
