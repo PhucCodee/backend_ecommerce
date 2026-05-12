@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using ECommerce.Application.DTOs.inventory;
-using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Helpers;
@@ -12,8 +11,6 @@ using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace ECommerce.Application.Services
 {
@@ -67,16 +64,7 @@ namespace ECommerce.Application.Services
                 createDto.DefaultSkuInventory,
                 createDto.DefaultSkuStock
             );
-            var defaultSku = ProductSku.CreateDefault(
-                product,
-                $"{baseSku}-DEFAULT",
-                createDto.DefaultSkuPrice
-            );
-            defaultSku.Inventory = BuildInventory(
-                defaultSku,
-                createDto.DefaultSkuInventory,
-                createDto.DefaultSkuStock
-            );
+
             product.ProductSkus.Add(defaultSku);
 
             await _productRepository.AddAsync(product);
@@ -164,32 +152,6 @@ namespace ECommerce.Application.Services
 
         #region Private Helpers
 
-        private static Inventory BuildInventory(
-            ProductSku sku,
-            InventoryCreateDto? dto,
-            int fallbackStock
-        )
-        {
-            var available = dto?.QuantityAvailable ?? fallbackStock;
-            var reserved = dto?.QuantityReserved ?? 0;
-            var sold = dto?.QuantitySold ?? 0;
-
-            if (available < 0 || reserved < 0 || sold < 0)
-                throw new BadRequestException("Inventory values must be non-negative");
-
-            if (reserved > available)
-                throw new BadRequestException("Reserved quantity cannot exceed available quantity");
-
-            var inventory = Inventory.CreateDefault(sku, available);
-            inventory.QuantityReserved = reserved;
-            inventory.QuantitySold = sold;
-            inventory.ReorderPoint = dto?.ReorderPoint ?? 0;
-            inventory.ReorderQuantity = dto?.ReorderQuantity ?? 0;
-            inventory.LastRestockedAt =
-                dto?.LastRestockedAt ?? (available > 0 ? DateTime.UtcNow : null);
-
-            return inventory;
-        }
 
         private static Inventory BuildInventory(
             ProductSku sku,
