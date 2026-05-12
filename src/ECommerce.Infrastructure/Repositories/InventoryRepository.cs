@@ -4,7 +4,7 @@ using ECommerce.Infrastructure.Data;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class InventoryRepository(ApplicationDbContext context) : Repository<Inventory>(context), IInventoryRepository
-    {
-    }
+    public class InventoryRepository(ApplicationDbContext context)
+        : Repository<Inventory>(context),
+            IInventoryRepository { }
 }

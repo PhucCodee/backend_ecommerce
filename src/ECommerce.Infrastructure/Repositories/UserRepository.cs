@@ -1,27 +1,27 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class UserRepository(ApplicationDbContext context) : Repository<User>(context), IUserRepository
+    public class UserRepository(ApplicationDbContext context)
+        : Repository<User>(context),
+            IUserRepository
     {
         private IQueryable<User> GetActiveUsers() => _context.Users.Where(u => u.DeletedAt == null);
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await GetActiveUsers()
-                .FirstOrDefaultAsync(u => u.Email == email);
+            return await GetActiveUsers().FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
-            return await GetActiveUsers()
-                .FirstOrDefaultAsync(u => u.Username == username);
+            return await GetActiveUsers().FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<User?> GetByEmailOrUsernameAsync(string emailOrUsername)
@@ -30,7 +30,9 @@ namespace ECommerce.Infrastructure.Repositories
                 .Include(u => u.UserCredential)
                 .Include(u => u.UserProfile)
                 .Include(u => u.UserRoleUsers.Where(r => r.RevokedAt == null))
-                .FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.Username == emailOrUsername);
+                .FirstOrDefaultAsync(u =>
+                    u.Email == emailOrUsername || u.Username == emailOrUsername
+                );
         }
 
         public async Task<User?> GetUserWithCredentialsAsync(string email)
@@ -75,9 +77,7 @@ namespace ECommerce.Infrastructure.Repositories
 
         public async Task<IEnumerable<User>> GetAllWithProfileAsync()
         {
-            return await GetActiveUsers()
-                .Include(u => u.UserProfile)
-                .ToListAsync();
+            return await GetActiveUsers().Include(u => u.UserProfile).ToListAsync();
         }
 
         public async Task<User?> GetWithProfileAsync(int userId)
@@ -93,7 +93,10 @@ namespace ECommerce.Infrastructure.Repositories
             return await GetActiveUsers().ToListAsync();
         }
 
-        public async Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        public async Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize
+        )
         {
             var query = GetActiveUsers()
                 .Include(u => u.UserProfile)

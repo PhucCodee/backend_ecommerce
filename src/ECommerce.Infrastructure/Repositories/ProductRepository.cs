@@ -41,8 +41,8 @@ namespace ECommerce.Infrastructure.Repositories
 
         public async Task<Product?> GetByIdIncludingRemovedAsync(int id)
         {
-            return await _context.Products
-                .Include(p => p.ProductCategories)
+            return await _context
+                .Products.Include(p => p.ProductCategories)
                     .ThenInclude(pc => pc.Category)
                 .Include(p => p.Seller)
                 .Include(p => p.ProductSkus)
@@ -58,8 +58,7 @@ namespace ECommerce.Infrastructure.Repositories
             // The DB-level unique constraint on products.slug is not filtered by
             // RemovedAt, so we must check every row (including soft-deleted ones)
             // otherwise the caller can generate a slug that still collides on INSERT.
-            var query = _context.Products.IgnoreQueryFilters()
-                .Where(p => p.Slug == slug);
+            var query = _context.Products.IgnoreQueryFilters().Where(p => p.Slug == slug);
             if (excludeProductId.HasValue)
                 query = query.Where(p => p.ProductId != excludeProductId.Value);
             return await query.AnyAsync();
