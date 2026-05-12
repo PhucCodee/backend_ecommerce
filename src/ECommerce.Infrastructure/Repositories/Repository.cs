@@ -1,15 +1,16 @@
-using Microsoft.EntityFrameworkCore;
-using ECommerce.Infrastructure.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 using ECommerce.Domain.Repositories;
+using ECommerce.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class Repository<T>(ApplicationDbContext context) : IRepository<T> where T : class
+    public class Repository<T>(ApplicationDbContext context) : IRepository<T>
+        where T : class
     {
         protected readonly ApplicationDbContext _context = context;
         protected readonly DbSet<T> _dbSet = context.Set<T>();

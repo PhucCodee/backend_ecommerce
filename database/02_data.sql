@@ -1400,7 +1400,6 @@ VALUES (
         ),
         'CLOTH-119-DEFAULT',
         690000,
-        690000,
         TRUE
     ),
     (
@@ -1410,7 +1409,6 @@ VALUES (
             WHERE slug = 'linen-shortsleeve-shirt'
         ),
         'CLOTH-120-DEFAULT',
-        420000,
         420000,
         TRUE
     );
