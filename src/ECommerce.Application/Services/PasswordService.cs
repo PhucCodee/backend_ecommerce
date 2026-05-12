@@ -1,31 +1,21 @@
-using ECommerce.Application.Interfaces;
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using BCrypt.Net;
+using ECommerce.Application.Interfaces;
 
-namespace ECommerce.Infrastructure.Services
+namespace ECommerce.Application.Services
 {
     public class PasswordService : IPasswordService
     {
-        public (string hash, string salt) HashPassword(string password)
+        public string HashPassword(string password)
         {
-            using var rng = RandomNumberGenerator.Create();
-            var saltBytes = new byte[32];
-            rng.GetBytes(saltBytes);
-            var salt = Convert.ToBase64String(saltBytes);
-
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 10000, HashAlgorithmName.SHA256);
-            var hash = Convert.ToBase64String(pbkdf2.GetBytes(32));
-
-            return (hash, salt);
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        public bool VerifyPassword(string password, string hash, string salt)
+        public bool VerifyPassword(string password, string hash)
         {
-            var saltBytes = Convert.FromBase64String(salt);
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 10000, HashAlgorithmName.SHA256);
-            var computedHash = Convert.ToBase64String(pbkdf2.GetBytes(32));
-            return hash == computedHash;
+            return BCrypt.Net.BCrypt.Verify(password, hash);
         }
 
         public string HashToken(string token)

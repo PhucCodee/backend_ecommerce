@@ -104,7 +104,7 @@ public class PaymentService(
                 OrderId: order.OrderId,
                 OrderNumber: appTransId,
                 Amount: order.TotalAmount,
-                Description: request.Description ?? "Payment for order " + order.OrderNumber
+                Description: request.Description ?? "Payment for order " + order.OrderId
             ),
             ct
         );

@@ -30,10 +30,10 @@ namespace ECommerce.Application.Services
                 registerDto.Username
             );
 
-            var (passwordHash, passwordSalt) = passwordService.HashPassword(registerDto.Password);
+            var passwordHash = passwordService.HashPassword(registerDto.Password);
 
             var user = User.CreateDefault(registerDto.Email, registerDto.Username);
-            user.UserCredential = UserCredential.CreateDefault(user, passwordHash, passwordSalt);
+            user.UserCredential = UserCredential.CreateDefault(user, passwordHash);
             user.UserProfile = UserProfile.CreateDefault(
                 user,
                 registerDto.FirstName,
@@ -77,11 +77,7 @@ namespace ECommerce.Application.Services
                 throw new UnauthorizedException("Account is temporarily locked");
 
             if (
-                !passwordService.VerifyPassword(
-                    loginDto.Password,
-                    user.UserCredential.PasswordHash,
-                    user.UserCredential.PasswordSalt
-                )
+                !passwordService.VerifyPassword(loginDto.Password, user.UserCredential.PasswordHash)
             )
             {
                 user.UserCredential.FailedLoginAttempts++;
@@ -132,33 +128,20 @@ namespace ECommerce.Application.Services
             if (user.Status != UserStatus.active)
                 throw new UnauthorizedException("Invalid credentials");
 
-            if (
-                !passwordService.VerifyPassword(
-                    currentPassword,
-                    user.UserCredential.PasswordHash,
-                    user.UserCredential.PasswordSalt
-                )
-            )
+            if (!passwordService.VerifyPassword(currentPassword, user.UserCredential.PasswordHash))
             {
                 throw new UnauthorizedException("Current password is incorrect");
             }
 
-            if (
-                passwordService.VerifyPassword(
-                    newPassword,
-                    user.UserCredential.PasswordHash,
-                    user.UserCredential.PasswordSalt
-                )
-            )
+            if (passwordService.VerifyPassword(newPassword, user.UserCredential.PasswordHash))
             {
                 throw new BadRequestException(
                     "New password must be different from current password"
                 );
             }
 
-            var (passwordHash, passwordSalt) = passwordService.HashPassword(newPassword);
+            var passwordHash = passwordService.HashPassword(newPassword);
             user.UserCredential.PasswordHash = passwordHash;
-            user.UserCredential.PasswordSalt = passwordSalt;
             user.UserCredential.PasswordUpdatedAt = DateTime.UtcNow;
             user.UserCredential.UpdatedAt = DateTime.UtcNow;
             user.UserCredential.FailedLoginAttempts = 0;

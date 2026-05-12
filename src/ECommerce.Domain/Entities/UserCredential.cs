@@ -11,8 +11,6 @@ public partial class UserCredential
 
     public required string PasswordHash { get; set; } = string.Empty;
 
-    public required string PasswordSalt { get; set; } = string.Empty;
-
     public DateTime PasswordUpdatedAt { get; set; }
 
     public int FailedLoginAttempts { get; set; } = 0;
@@ -35,13 +33,12 @@ public partial class UserCredential
 
     public virtual required User User { get; set; }
 
-    public static UserCredential CreateDefault(User user, string passwordHash, string passwordSalt)
+    public static UserCredential CreateDefault(User user, string passwordHash)
     {
         return new UserCredential
         {
             User = user,
             PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt,
             PasswordUpdatedAt = DateTime.UtcNow,
             FailedLoginAttempts = 0,
             LastLoginIp = string.Empty,
