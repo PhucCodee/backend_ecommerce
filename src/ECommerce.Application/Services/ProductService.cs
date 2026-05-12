@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using ECommerce.Application.DTOs.inventory;
-using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.product;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Helpers;
@@ -12,8 +11,6 @@ using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace ECommerce.Application.Services
 {
