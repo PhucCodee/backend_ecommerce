@@ -75,6 +75,17 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         return Ok(ApiResponse<PagedResult<OrderSummaryDto>>.Ok(orders));
     }
 
+    // Admin: get a specific order by ID
+    [HttpGet("admin/{orderId:int}")]
+    [Authorize(Policy = Policies.AdminOnly)]
+    public async Task<IActionResult> GetAdminOrder(int orderId)
+    {
+        var order = await _orderService.GetByIdAsAdminAsync(orderId);
+        if (order == null)
+            return NotFound(ApiResponse<object>.Fail("Order not found"));
+        return Ok(ApiResponse<OrderDto>.Ok(order));
+    }
+
     // Seller: get orders (paged)
     [HttpGet("seller")]
     [Authorize(Policy = Policies.SellerOnly)]

@@ -7,6 +7,7 @@ using ECommerce.Application.DTOs.coupon;
 using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.DTOs.order;
 using ECommerce.Application.DTOs.product;
+using ECommerce.Application.DTOs.review;
 using ECommerce.Application.DTOs.user;
 using ECommerce.Domain.Entities;
 using System;
@@ -76,6 +77,11 @@ namespace ECommerce.Application.Mappings
             CreateMap<ProductSku, ProductSkuDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductName : null))
                 .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.QuantityAvailable : 0))
+                .ForMember(dest => dest.QuantityReserved, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.QuantityReserved : 0))
+                .ForMember(dest => dest.QuantitySold, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.QuantitySold : 0))
+                .ForMember(dest => dest.ReorderPoint, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.ReorderPoint : 0))
+                .ForMember(dest => dest.ReorderQuantity, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.ReorderQuantity : 0))
+                .ForMember(dest => dest.LastRestockedAt, opt => opt.MapFrom(src => src.Inventory != null ? src.Inventory.LastRestockedAt : null))
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
                     src.ProductImages.Where(pi => !pi.IsDeleted).OrderBy(pi => pi.DisplayOrder).ToList()));
 
@@ -91,6 +97,11 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.CategoryNames, opt => opt.MapFrom(src =>
                     src.ProductCategories
                         .Select(pc => pc.Category.CategoryName)
+                        .ToList()))
+                .ForMember(dest => dest.CategoryIds, opt => opt.MapFrom(src =>
+                    src.ProductCategories
+                        .OrderByDescending(pc => pc.IsPrimary)
+                        .Select(pc => pc.CategoryId)
                         .ToList()))
                 .ForMember(dest => dest.VariantCount, opt => opt.MapFrom(src =>
                     src.ProductSkus.Count(ps => !ps.IsDefault)))
@@ -123,6 +134,16 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.SellerName, opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null))
                 .ForMember(dest => dest.VariantCount, opt => opt.MapFrom(src =>
                     src.ProductSkus.Count(ps => !ps.IsDefault)))
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src =>
+                    src.ProductMetrics
+                        .OrderByDescending(m => m.Date)
+                        .Select(m => m.AverageRating ?? 0)
+                        .FirstOrDefault()))
+                .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src =>
+                    src.ProductMetrics
+                        .OrderByDescending(m => m.Date)
+                        .Select(m => m.ReviewCount)
+                        .FirstOrDefault()))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
                     src.ProductSkus.FirstOrDefault(ps => ps.IsDefault) != null
                         ? src.ProductSkus.First(ps => ps.IsDefault).Price
@@ -137,7 +158,9 @@ namespace ECommerce.Application.Mappings
                     src.ProductSkus.Where(s => s.IsDefault)
                         .SelectMany(s => s.ProductImages)
                         .Where(i => !i.IsDeleted)
-                        .OrderBy(i => i.DisplayOrder)));
+                        .OrderBy(i => i.DisplayOrder)))
+                .ForMember(dest => dest.Skus, opt => opt.MapFrom(src =>
+                    src.ProductSkus.Where(s => s.IsActive).OrderByDescending(s => s.IsDefault).ThenBy(s => s.CreatedAt)));
 
             // Cart - CartDto
             CreateMap<Cart, CartDto>()
@@ -145,6 +168,7 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.CartItems));
 
             CreateMap<CartItem, CartItemDto>()
+                .ForMember(dest => dest.SellerId, opt => opt.MapFrom(src => src.Sku != null && src.Sku.Product != null ? src.Sku.Product.SellerId : 0))
                 .ForMember(dest => dest.Sku, opt => opt.MapFrom(src => src.Sku != null ? src.Sku.Sku : null))
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Sku != null && src.Sku.Product != null ? src.Sku.Product.ProductName : null))
                 .ForMember(dest => dest.VariantAttributes, opt => opt.MapFrom(src => src.Sku != null ? src.Sku.VariantAttributes : null))
@@ -163,13 +187,22 @@ namespace ECommerce.Application.Mappings
                 .ForMember(dest => dest.LineTotal, opt => opt.MapFrom(src => src.PriceSnapshot * src.Quantity));
 
             CreateMap<Category, CategoryDto>()
-                .ForMember(dest => dest.ParentCategoryName, opt => opt.MapFrom(src => src.ParentCategory != null ? src.ParentCategory.CategoryName : null));
+                .ForMember(dest => dest.ParentCategoryName, opt => opt.MapFrom(src => src.ParentCategory != null ? src.ParentCategory.CategoryName : null))
+                .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(src =>
+                    src.ProductCategories.Count(pc => pc.Product != null && pc.Product.RemovedAt == null)))
+                .ForMember(dest => dest.ChildCount, opt => opt.MapFrom(src =>
+                    src.ChildCategories.Count(cc => cc.IsActive)));
 
             // Order mappings
             CreateMap<Order, OrderDto>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                // Source navigation is `OrderItems`, target property is `Items` —
+                // names differ so AutoMapper won't auto-resolve. Map explicitly.
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems));
 
-            CreateMap<OrderItem, OrderItemDto>();
+            CreateMap<OrderItem, OrderItemDto>()
+                .ForMember(dest => dest.Subtotal,
+                    opt => opt.MapFrom(src => src.UnitPrice * src.Quantity));
 
             CreateMap<Order, OrderSummaryDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
@@ -179,6 +212,35 @@ namespace ECommerce.Application.Mappings
             CreateMap<UserAddress, AddressDto>();
 
             CreateMap<Coupon, CouponDto>();
+
+            CreateMap<Inventory, InventoryDto>();
+
+            // Review mappings
+            CreateMap<Review, ReviewDto>()
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User != null ? src.User.Username : string.Empty))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src =>
+                    src.User != null && src.User.UserProfile != null ? src.User.UserProfile.AvatarUrl : null))
+                .ForMember(dest => dest.Sku, opt => opt.MapFrom(src =>
+                    src.OrderItem != null ? src.OrderItem.Sku : null))
+                .ForMember(dest => dest.VariantDescription, opt => opt.MapFrom(src =>
+                    src.OrderItem != null ? src.OrderItem.VariantDescription : null))
+                // Resolve the primary image of the purchased variant SKU.
+                // Prefer IsPrimary, fall back to the first non-deleted image.
+                .ForMember(dest => dest.VariantImageUrl, opt => opt.MapFrom(src =>
+                    src.OrderItem != null && src.OrderItem.SkuNavigation != null
+                        ? (src.OrderItem.SkuNavigation.ProductImages
+                                .Where(i => !i.IsDeleted && i.IsPrimary)
+                                .Select(i => i.ImageUrl)
+                                .FirstOrDefault()
+                            ?? src.OrderItem.SkuNavigation.ProductImages
+                                .Where(i => !i.IsDeleted)
+                                .Select(i => i.ImageUrl)
+                                .FirstOrDefault())
+                        : null))
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
+                    src.ReviewImages.OrderBy(ri => ri.DisplayOrder).ToList()));
+
+            CreateMap<ReviewImage, ReviewImageDto>();
 
             CreateMap<Inventory, InventoryDto>();
         }

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using ECommerce.Application.Common.Authorization;
 using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Common.Responses;
 using ECommerce.Application.DTOs.coupon;
 using ECommerce.Application.Interfaces;
@@ -15,6 +16,14 @@ namespace ECommerce.API.Controllers
     public class CouponsController(ICouponService couponService) : ControllerBase
     {
         private readonly ICouponService _couponService = couponService;
+
+        [HttpGet]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
+        {
+            var coupons = await _couponService.GetPagedAsync(paginationParams);
+            return Ok(ApiResponse<PagedResult<CouponDto>>.Ok(coupons));
+        }
 
         [HttpGet]
         [Authorize(Policy = Policies.AdminOnly)]
@@ -49,6 +58,14 @@ namespace ECommerce.API.Controllers
         {
             await _couponService.DeleteAsync(id);
             return Ok(ApiResponse<object>.Ok(new { id }, "Coupon deleted successfully"));
+        }
+
+        [HttpGet("code/{code}")]
+        [Authorize]
+        public async Task<IActionResult> GetByCode(string code, [FromQuery] decimal? subtotal)
+        {
+            var coupon = await _couponService.GetByCodeAsync(code, subtotal);
+            return Ok(ApiResponse<CouponDto>.Ok(coupon));
         }
 
         [HttpGet("code/{code}")]

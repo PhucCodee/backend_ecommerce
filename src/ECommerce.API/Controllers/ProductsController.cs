@@ -86,6 +86,7 @@ namespace ECommerce.API.Controllers
             var sellerId = GetCurrentUserId();
             productQueryParams.SellerId = sellerId;
             productQueryParams.CategoryId = null;
+            productQueryParams.IncludeSuspended = true;
             var products = await _productQueryService.GetFilteredAsync(productQueryParams);
             return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));
         }
@@ -121,6 +122,15 @@ namespace ECommerce.API.Controllers
             var sellerId = GetCurrentUserId();
             await _productService.DeleteAsync(id, sellerId);
             return Ok(ApiResponse<object>.Ok(new { id }, "Product deleted successfully"));
+        }
+
+        [HttpPut("seller/{id:int}/restore")]
+        [Authorize(Policy = Policies.SellerOnly)]
+        public async Task<IActionResult> RestoreAsSeller(int id)
+        {
+            var sellerId = GetCurrentUserId();
+            var product = await _productService.RestoreAsync(id, sellerId);
+            return Ok(ApiResponse<ProductDto>.Ok(product, "Product restored successfully"));
         }
 
         #endregion

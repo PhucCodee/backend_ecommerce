@@ -18,6 +18,11 @@ public class ProductSkuDto
     public decimal? WeightKg { get; set; }
     public string? DimensionsCm { get; set; }
     public int Stock { get; set; }
+    public int QuantityReserved { get; set; }
+    public int QuantitySold { get; set; }
+    public int ReorderPoint { get; set; }
+    public int ReorderQuantity { get; set; }
+    public DateTime? LastRestockedAt { get; set; }
     public List<ProductImageDto> Images { get; set; } = [];
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
