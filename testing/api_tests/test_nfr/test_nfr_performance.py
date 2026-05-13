@@ -43,7 +43,7 @@ def test_nfr_2_1_response_time_get_products(base_url):
     - Test: Measure response time for GET /products.
     - Expected: 95th percentile < 200ms.
     """
-    num_requests = 20
+    num_requests = 100
     response_times = []
     
     print(f"\nTesting GET /products ({num_requests} requests)...")
@@ -91,7 +91,7 @@ def test_nfr_2_1_response_time_get_user_profile(base_url, user_headers):
     NFR-2.1 Extended: GET /users/profile response time.
     - Test: Multiple requests to user profile.
     """
-    num_requests = 15
+    num_requests = 100
     response_times = []
     
     print(f"\nTesting GET /users/profile ({num_requests} requests)...")
@@ -135,7 +135,7 @@ def test_nfr_2_1_response_time_create_order(base_url, user_headers):
     
     print(f"\nTesting POST /orders (10 requests)...")
     
-    for i in range(10):
+    for i in range(100):
         payload = {
             "shippingAddressId": 1,
             "billingAddressId": 1,
@@ -191,6 +191,8 @@ def test_nfr_2_5_product_search_response_time(base_url):
         {"minPrice": 10, "maxPrice": 100},
         {"search": "shirt", "brand": "Adidas", "minPrice": 20}
     ]
+
+    search_queries = search_queries * 5  # Repeat to increase test count
     
     response_times = []
     passed_count = 0
@@ -252,7 +254,7 @@ def test_nfr_2_5_product_search_full_text(base_url):
     
     print(f"\nTesting full-text search (5 iterations)...")
     
-    for i in range(5):
+    for i in range(100):
         start = time.time()
         response = requests.get(f"{base_url}/products", params=complex_query)
         elapsed = (time.time() - start) * 1000
@@ -287,7 +289,7 @@ def test_nfr_2_x_concurrent_request_latency(base_url):
     - Test: Send multiple concurrent requests, measure latency.
     - Expected: Response times should not degrade significantly.
     """
-    num_concurrent = 10
+    num_concurrent = 100
     response_times = []
     
     print(f"\nTesting {num_concurrent} concurrent requests...")
@@ -335,7 +337,7 @@ def test_nfr_2_x_database_query_latency(base_url, seller_headers):
     
     print(f"\nTesting database query latency...")
     
-    for i in range(10):
+    for i in range(100):
         start = time.time()
         response = requests.get(f"{base_url}/products/seller", headers=seller_headers)
         elapsed = (time.time() - start) * 1000
