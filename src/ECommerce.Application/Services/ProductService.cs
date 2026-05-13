@@ -64,6 +64,7 @@ namespace ECommerce.Application.Services
                 createDto.DefaultSkuInventory,
                 createDto.DefaultSkuStock
             );
+
             product.ProductSkus.Add(defaultSku);
 
             await _productRepository.AddAsync(product);
@@ -127,7 +128,30 @@ namespace ECommerce.Application.Services
             return true;
         }
 
+        public async Task<ProductDto> RestoreAsync(int productId, int? sellerId = null)
+        {
+            var product =
+                await _productRepository.GetByIdIncludingRemovedAsync(productId)
+                ?? throw new NotFoundException("Product not found");
+
+            if (!product.IsDeleted())
+                throw new BadRequestException("Product is not suspended");
+
+            if (sellerId.HasValue && product.SellerId != sellerId.Value)
+                throw new ForbiddenException("You do not have permission to restore this product");
+
+            product.Restore();
+            await _unitOfWork.SaveChangesAsync();
+
+            var loaded =
+                await _productRepository.GetByIdWithDetailsAsync(productId)
+                ?? throw new NotFoundException("Product not found after restore");
+
+            return _mapper.Map<ProductDto>(loaded);
+        }
+
         #region Private Helpers
+
 
         private static Inventory BuildInventory(
             ProductSku sku,

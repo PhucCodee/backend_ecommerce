@@ -1,19 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class UserAddressRepository(ApplicationDbContext context) : Repository<UserAddress>(context), IUserAddressRepository
+    public class UserAddressRepository(ApplicationDbContext context)
+        : Repository<UserAddress>(context),
+            IUserAddressRepository
     {
         public async Task<IEnumerable<UserAddress>> GetByUserIdAsync(int userId)
         {
-            return await _context.UserAddresses
-                .Where(a => a.UserId == userId)
+            return await _context
+                .UserAddresses.Where(a => a.UserId == userId)
                 .OrderByDescending(a => a.IsDefaultShipping || a.IsDefaultBilling)
                 .ThenByDescending(a => a.CreatedAt)
                 .ToListAsync();
@@ -21,13 +23,16 @@ namespace ECommerce.Infrastructure.Repositories
 
         public async Task<UserAddress?> GetByIdAndUserIdAsync(int addressId, int userId)
         {
-            return await _context.UserAddresses
-                .FirstOrDefaultAsync(a => a.AddressId == addressId && a.UserId == userId);
+            return await _context.UserAddresses.FirstOrDefaultAsync(a =>
+                a.AddressId == addressId && a.UserId == userId
+            );
         }
 
         public async Task ClearDefaultShippingAsync(int userId, int? excludeAddressId = null)
         {
-            var query = _context.UserAddresses.Where(a => a.UserId == userId && a.IsDefaultShipping);
+            var query = _context.UserAddresses.Where(a =>
+                a.UserId == userId && a.IsDefaultShipping
+            );
             if (excludeAddressId.HasValue)
                 query = query.Where(a => a.AddressId != excludeAddressId.Value);
 
@@ -47,7 +52,10 @@ namespace ECommerce.Infrastructure.Repositories
                 address.IsDefaultBilling = false;
         }
 
-        public async Task<UserAddress?> GetFirstByUserIdAsync(int userId, int? excludeAddressId = null)
+        public async Task<UserAddress?> GetFirstByUserIdAsync(
+            int userId,
+            int? excludeAddressId = null
+        )
         {
             var query = _context.UserAddresses.Where(a => a.UserId == userId);
             if (excludeAddressId.HasValue)

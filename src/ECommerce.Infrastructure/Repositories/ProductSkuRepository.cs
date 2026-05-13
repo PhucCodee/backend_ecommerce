@@ -1,22 +1,24 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Repositories
 {
-    public class ProductSkuRepository(ApplicationDbContext context) : Repository<ProductSku>(context), IProductSkuRepository
+    public class ProductSkuRepository(ApplicationDbContext context)
+        : Repository<ProductSku>(context),
+            IProductSkuRepository
     {
         private IQueryable<ProductSku> GetActiveSkus() =>
             _context.ProductSkus.Where(ps => ps.IsActive && ps.Product.RemovedAt == null);
 
         public async Task<ProductSku?> GetByIdWithDetailsAsync(int skuId)
         {
-            return await _context.ProductSkus
-                .Include(ps => ps.Product)
+            return await _context
+                .ProductSkus.Include(ps => ps.Product)
                 .Include(ps => ps.Inventory)
                 .Include(ps => ps.ProductImages)
                 .FirstOrDefaultAsync(ps => ps.SkuId == skuId);
@@ -24,9 +26,7 @@ namespace ECommerce.Infrastructure.Repositories
 
         public async Task<IEnumerable<ProductSku>> GetByProductIdAsync(int productId)
         {
-            return await GetActiveSkus()
-                .Where(ps => ps.ProductId == productId)
-                .ToListAsync();
+            return await GetActiveSkus().Where(ps => ps.ProductId == productId).ToListAsync();
         }
 
         public async Task<IEnumerable<ProductSku>> GetByProductIdWithDetailsAsync(int productId)
@@ -50,7 +50,10 @@ namespace ECommerce.Infrastructure.Repositories
         }
 
         public async Task<(IEnumerable<ProductSku> Skus, int TotalCount)> GetByProductIdPagedAsync(
-            int productId, int pageNumber, int pageSize)
+            int productId,
+            int pageNumber,
+            int pageSize
+        )
         {
             var query = GetActiveSkus()
                 .Include(ps => ps.Product)
@@ -71,7 +74,10 @@ namespace ECommerce.Infrastructure.Repositories
         }
 
         public async Task<(IEnumerable<ProductSku> Skus, int TotalCount)> GetBySellerPagedAsync(
-            int sellerId, int pageNumber, int pageSize)
+            int sellerId,
+            int pageNumber,
+            int pageSize
+        )
         {
             var query = GetActiveSkus()
                 .Include(ps => ps.Product)
@@ -92,8 +98,8 @@ namespace ECommerce.Infrastructure.Repositories
 
         public override async Task<ProductSku?> GetByIdAsync(int skuId)
         {
-            return await _context.ProductSkus
-                .Include(ps => ps.Product)
+            return await _context
+                .ProductSkus.Include(ps => ps.Product)
                 .FirstOrDefaultAsync(ps => ps.SkuId == skuId);
         }
     }
