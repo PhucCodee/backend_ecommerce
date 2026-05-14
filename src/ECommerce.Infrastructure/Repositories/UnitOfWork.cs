@@ -31,8 +31,10 @@ namespace ECommerce.Infrastructure.Repositories
         public IRepository<Review> Reviews => _reviews ??= new Repository<Review>(_context);
         public IOrderPaymentRepository OrderPayments =>
             _orderPayments ??= new OrderPaymentRepository(_context);
-        public IInventoryRepository Inventories => _inventories ??= new InventoryRepository(_context);
-        public IProductSkuRepository ProductSkus => _productSkus ??= new ProductSkuRepository(_context);
+        public IInventoryRepository Inventories =>
+            _inventories ??= new InventoryRepository(_context);
+        public IProductSkuRepository ProductSkus =>
+            _productSkus ??= new ProductSkuRepository(_context);
 
         public async Task<int> SaveChangesAsync()
         {

@@ -1,5 +1,5 @@
-using ECommerce.Domain.Entities;
 using System.Threading.Tasks;
+using ECommerce.Domain.Entities;
 
 namespace ECommerce.Domain.Repositories
 {

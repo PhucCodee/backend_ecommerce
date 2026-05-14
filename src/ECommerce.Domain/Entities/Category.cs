@@ -41,7 +41,8 @@ public class Category
         string? imageUrl = null,
         int displayOrder = 0,
         bool isCore = true,
-        bool isActive = true)
+        bool isActive = true
+    )
     {
         return new Category
         {
@@ -54,7 +55,7 @@ public class Category
             IsCore = isCore,
             IsActive = isActive,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 

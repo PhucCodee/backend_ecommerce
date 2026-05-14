@@ -40,7 +40,6 @@ CREATE TABLE
         credential_id SERIAL PRIMARY KEY,
         user_id INTEGER UNIQUE NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
         password_hash VARCHAR(255) NOT NULL,
-        password_salt VARCHAR(255) NOT NULL,
         password_updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         failed_login_attempts INTEGER NOT NULL DEFAULT 0,
         last_failed_attempt_at TIMESTAMP,
@@ -254,7 +253,6 @@ COMMENT ON COLUMN products.moderation_status IS 'Admin moderation status: pendin
 
 CREATE INDEX trgm_idx_products_name ON products USING gin (product_name gin_trgm_ops);
 
--- (Optional) Add this if you want to fuzzy search descriptions too
 CREATE INDEX trgm_idx_products_desc ON products USING gin (description gin_trgm_ops);
 
 CREATE TABLE product_categories (

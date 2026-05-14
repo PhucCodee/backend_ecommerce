@@ -4,8 +4,7 @@
 -- ====================================
 -- 1. USERS (Buyers and Sellers)
 -- ====================================
-INSERT INTO
-    users (email, username, status)
+INSERT INTO users (email, username, status)
 VALUES (
         'itisatreeeee@gmail.com',
         'goat',
@@ -13,100 +12,62 @@ VALUES (
     ),
     ('messi@gmail.com', 'messi', 0),
     ('lebron@gmail.com', 'king', 0),
-    (
-        'stephen@gmail.com',
-        'curry',
-        0
-    ),
+    ('stephen@gmail.com', 'curry', 0),
     ('ye@gmail.com', 'west', 0),
-    (
-        'taylor@gmail.com',
-        'taylorswift',
-        0
-    ),
-    (
-        'elon@gmail.com',
-        'elonmusk',
-        0
-    ),
-    (
-        'bill@gmail.com',
-        'billgates',
-        0
-    ),
-    (
-        'beyonce@gmail.com',
-        'beyonce',
-        0
-    ),
+    ('taylor@gmail.com', 'taylorswift', 0),
+    ('elon@gmail.com', 'elonmusk', 0),
+    ('bill@gmail.com', 'billgates', 0),
+    ('beyonce@gmail.com', 'beyonce', 0),
     ('drake@gmail.com', 'drake', 0);
-
 -- ====================================
 -- 2. USER CREDENTIALS
 -- ====================================
-INSERT INTO
-    user_credentials (
-        user_id,
-        password_hash,
-        password_salt
-    )
+INSERT INTO user_credentials (user_id, password_hash)
 VALUES (
         1,
-        -- Default password: Phuc123
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        -- Default password: Phuc123@
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         2,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         3,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         4,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         5,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         6,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         7,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         8,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         9,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     ),
     (
         10,
-        'ERxRCpHri3I03wLKg/e4k0+kMPnS5URxegssf3JvSIw=',
-        'ugUJ3KRZmig0d7wJUQsq8ttaAGbtjqEcOE+ZgAekw2Y='
+        '$2a$11$wHn6BvKLmdA5D9/vuIoVUeaJD64/z8Ek0VkaKO2Oz.Gk418LYwvYK'
     );
-
 -- ====================================
 -- 3. USER PROFILES
 -- ====================================
-INSERT INTO
-    user_profiles (
+INSERT INTO user_profiles (
         user_id,
         first_name,
         last_name,
@@ -119,7 +80,8 @@ INSERT INTO
         timezone,
         currency
     )
-VALUES (
+VALUES
+    (
         1,
         'Cristiano',
         'Ronaldo',
@@ -223,18 +185,7 @@ VALUES (
         'America/Los_Angeles',
         0
     ),
-    (
-        9,
-        'Beyoncé',
-        'Knowles',
-        '+17185550123',
-        '1981-09-04',
-        1,
-        'https://example.com/avatars/beyonce.jpg',
-        'Queen Bey. Singer, actress, icon.',
-        0,
-        'America/Chicago',
-        0
+    ( 9, 'Beyoncé', 'Knowles', '+17185550123', '1981-09-04', 1, 'https://example.com/avatars/beyonce.jpg', 'Queen Bey. Singer, actress, icon.', 0, 'America/Chicago', 0
     ),
     (
         10,
@@ -249,13 +200,11 @@ VALUES (
         'America/Toronto',
         0
     );
-
 -- ====================================
 -- 3.1 USER ADDRESSES (multiple addresses per user)
 -- address_type_enum values: house, apartment, office, other
 -- ====================================
-INSERT INTO
-    user_addresses (
+INSERT INTO user_addresses (
         user_id,
         address_type,
         is_default_shipping,
@@ -272,8 +221,7 @@ INSERT INTO
         latitude,
         longitude
     )
-VALUES
-    -- User 1: 3 addresses
+VALUES -- User 1: 3 addresses
     (
         1,
         0,
@@ -448,36 +396,31 @@ VALUES
         41.878100,
         -87.629800
     );
-
 -- ====================================
 -- 4. USER ROLES
 -- ====================================
-INSERT INTO
-    user_roles (user_id, role)
+INSERT INTO user_roles (user_id, role)
 VALUES (1, 0),
     (2, 0),
     (3, 1),
-    (3, 0),
-    -- Seller can also buy
+    (3, 0), -- Seller can also buy
     (4, 1),
-    (4, 0),
-    -- Seller can also buy
+    (4, 0), -- Seller can also buy
     (5, 2),
     (6, 2),
     (7, 2),
     (8, 2),
     (9, 2),
     (10, 2);
-
 -- ====================================
 -- 5. CATEGORIES
 -- - is_core = true  => core browsing categories
 -- - is_core = false => limited collections
 -- - parent_category_id NULL => root
 -- ====================================
+
 -- Root categories
-INSERT INTO
-    categories (
+INSERT INTO categories (
         category_name,
         slug,
         parent_category_id,
@@ -504,10 +447,8 @@ VALUES (
         FALSE,
         TRUE
     );
-
 -- Core children under Clothing
-INSERT INTO
-    categories (
+INSERT INTO categories (
         category_name,
         slug,
         parent_category_id,
@@ -522,8 +463,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Menswear',
         10,
@@ -536,8 +476,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Womenswear',
         20,
@@ -550,8 +489,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Kidswear',
         30,
@@ -564,8 +502,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Caps, belts, beanies, etc.',
         40,
@@ -578,8 +515,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Shoes & sneakers',
         50,
@@ -592,8 +528,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Jackets & coats',
         60,
@@ -606,8 +541,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Training & sportswear',
         70,
@@ -620,18 +554,15 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing'
+            WHERE slug = 'clothing'
         ),
         'Everyday essentials',
         80,
         TRUE,
         TRUE
     );
-
 -- Limited collection children
-INSERT INTO
-    categories (
+INSERT INTO categories (
         category_name,
         slug,
         parent_category_id,
@@ -646,8 +577,7 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'limited-collection'
+            WHERE slug = 'limited-collection'
         ),
         'Seasonal limited drop',
         10,
@@ -660,20 +590,17 @@ VALUES (
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'limited-collection'
+            WHERE slug = 'limited-collection'
         ),
         'Special collaboration pieces',
         20,
         FALSE,
         TRUE
     );
-
 -- ====================================
 -- 6. PRODUCTS
 -- ====================================
-INSERT INTO
-    products (
+INSERT INTO products (
         seller_id,
         product_name,
         slug,
@@ -862,32 +789,27 @@ VALUES (
         1,
         1
     );
-
 -- ====================================
 -- Product ↔ Category links
 -- Each product has 1 primary category (is_primary=TRUE)
 -- Some products also tagged into limited collections (is_primary=FALSE)
 -- ====================================
-INSERT INTO
-    product_categories (
+INSERT INTO product_categories (
         product_id,
         category_id,
         is_primary
     )
-VALUES
-    -- Basics
+VALUES -- Basics
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'classic-crew-tshirt'
+            WHERE slug = 'classic-crew-tshirt'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-basics'
+            WHERE slug = 'clothing-basics'
         ),
         TRUE
     ),
@@ -896,14 +818,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'slim-fit-jeans'
+            WHERE slug = 'slim-fit-jeans'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-men'
+            WHERE slug = 'clothing-men'
         ),
         TRUE
     ),
@@ -911,14 +831,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'linen-shortsleeve-shirt'
+            WHERE slug = 'linen-shortsleeve-shirt'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-men'
+            WHERE slug = 'clothing-men'
         ),
         TRUE
     ),
@@ -926,14 +844,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'bomber-jacket'
+            WHERE slug = 'bomber-jacket'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-men'
+            WHERE slug = 'clothing-men'
         ),
         TRUE
     ),
@@ -942,14 +858,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'high-rise-straight-jeans'
+            WHERE slug = 'high-rise-straight-jeans'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-women'
+            WHERE slug = 'clothing-women'
         ),
         TRUE
     ),
@@ -957,14 +871,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'pleated-midi-skirt'
+            WHERE slug = 'pleated-midi-skirt'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-women'
+            WHERE slug = 'clothing-women'
         ),
         TRUE
     ),
@@ -972,14 +884,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'trench-coat'
+            WHERE slug = 'trench-coat'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-women'
+            WHERE slug = 'clothing-women'
         ),
         TRUE
     ),
@@ -987,14 +897,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'yoga-leggings'
+            WHERE slug = 'yoga-leggings'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-women'
+            WHERE slug = 'clothing-women'
         ),
         TRUE
     ),
@@ -1002,14 +910,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'sports-bra'
+            WHERE slug = 'sports-bra'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-women'
+            WHERE slug = 'clothing-women'
         ),
         TRUE
     ),
@@ -1018,14 +924,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'kids-hoodie'
+            WHERE slug = 'kids-hoodie'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-kids'
+            WHERE slug = 'clothing-kids'
         ),
         TRUE
     ),
@@ -1033,14 +937,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'kids-sneakers'
+            WHERE slug = 'kids-sneakers'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-kids'
+            WHERE slug = 'clothing-kids'
         ),
         TRUE
     ),
@@ -1049,14 +951,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'leather-belt'
+            WHERE slug = 'leather-belt'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-accessories'
+            WHERE slug = 'clothing-accessories'
         ),
         TRUE
     ),
@@ -1064,14 +964,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'baseball-cap'
+            WHERE slug = 'baseball-cap'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-accessories'
+            WHERE slug = 'clothing-accessories'
         ),
         TRUE
     ),
@@ -1079,14 +977,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'knit-beanie'
+            WHERE slug = 'knit-beanie'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-accessories'
+            WHERE slug = 'clothing-accessories'
         ),
         TRUE
     ),
@@ -1095,14 +991,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'performance-running-sneakers'
+            WHERE slug = 'performance-running-sneakers'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-footwear'
+            WHERE slug = 'clothing-footwear'
         ),
         TRUE
     ),
@@ -1110,14 +1004,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'canvas-lowtop-sneakers'
+            WHERE slug = 'canvas-lowtop-sneakers'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-footwear'
+            WHERE slug = 'clothing-footwear'
         ),
         TRUE
     ),
@@ -1126,14 +1018,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'fleece-pullover-hoodie'
+            WHERE slug = 'fleece-pullover-hoodie'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-outerwear'
+            WHERE slug = 'clothing-outerwear'
         ),
         TRUE
     ),
@@ -1141,14 +1031,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'lightweight-windbreaker'
+            WHERE slug = 'lightweight-windbreaker'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-outerwear'
+            WHERE slug = 'clothing-outerwear'
         ),
         TRUE
     ),
@@ -1156,14 +1044,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'puffer-vest'
+            WHERE slug = 'puffer-vest'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-outerwear'
+            WHERE slug = 'clothing-outerwear'
         ),
         TRUE
     ),
@@ -1172,14 +1058,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'performance-running-sneakers'
+            WHERE slug = 'performance-running-sneakers'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-activewear'
+            WHERE slug = 'clothing-activewear'
         ),
         FALSE
     ),
@@ -1187,14 +1071,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'yoga-leggings'
+            WHERE slug = 'yoga-leggings'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-activewear'
+            WHERE slug = 'clothing-activewear'
         ),
         FALSE
     ),
@@ -1202,14 +1084,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'sports-bra'
+            WHERE slug = 'sports-bra'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-activewear'
+            WHERE slug = 'clothing-activewear'
         ),
         FALSE
     ),
@@ -1217,14 +1097,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'lightweight-windbreaker'
+            WHERE slug = 'lightweight-windbreaker'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-activewear'
+            WHERE slug = 'clothing-activewear'
         ),
         FALSE
     ),
@@ -1233,14 +1111,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'oversized-graphic-tee'
+            WHERE slug = 'oversized-graphic-tee'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'clothing-men'
+            WHERE slug = 'clothing-men'
         ),
         TRUE
     ),
@@ -1248,14 +1124,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'oversized-graphic-tee'
+            WHERE slug = 'oversized-graphic-tee'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'limited-summer-drop-2026'
+            WHERE slug = 'limited-summer-drop-2026'
         ),
         FALSE
     ),
@@ -1263,14 +1137,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'linen-shortsleeve-shirt'
+            WHERE slug = 'linen-shortsleeve-shirt'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'limited-summer-drop-2026'
+            WHERE slug = 'limited-summer-drop-2026'
         ),
         FALSE
     ),
@@ -1278,14 +1150,12 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'knit-beanie'
+            WHERE slug = 'knit-beanie'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'limited-curry-collab'
+            WHERE slug = 'limited-curry-collab'
         ),
         FALSE
     ),
@@ -1293,23 +1163,19 @@ VALUES
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'lightweight-windbreaker'
+            WHERE slug = 'lightweight-windbreaker'
         ),
         (
             SELECT category_id
             FROM categories
-            WHERE
-                slug = 'limited-curry-collab'
+            WHERE slug = 'limited-curry-collab'
         ),
         FALSE
     ) ON CONFLICT DO NOTHING;
-
 -- ====================================
 -- 7. PRODUCT SKUs
 -- ====================================
-INSERT INTO
-    product_skus (
+INSERT INTO product_skus (
         product_id,
         sku,
         price,
@@ -1319,65 +1185,19 @@ VALUES (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'classic-crew-tshirt'
+            WHERE slug = 'classic-crew-tshirt'
         ),
         'CLOTH-101-DEFAULT',
-        190000,
+        450000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'oversized-graphic-tee'
+            WHERE slug = 'oversized-graphic-tee'
         ),
         'CLOTH-102-DEFAULT',
-        290000,
-        TRUE
-    ),
-    (
-        (
-            SELECT product_id
-            FROM products
-            WHERE
-                slug = 'slim-fit-jeans'
-        ),
-        'CLOTH-103-DEFAULT',
-        590000,
-        TRUE
-    ),
-    (
-        (
-            SELECT product_id
-            FROM products
-            WHERE
-                slug = 'high-rise-straight-jeans'
-        ),
-        'CLOTH-104-DEFAULT',
-        640000,
-        TRUE
-    ),
-    (
-        (
-            SELECT product_id
-            FROM products
-            WHERE
-                slug = 'pleated-midi-skirt'
-        ),
-        'CLOTH-105-DEFAULT',
-        440000,
-        TRUE
-    ),
-    (
-        (
-            SELECT product_id
-            FROM products
-            WHERE
-                slug = 'fleece-pullover-hoodie'
-        ),
-        'CLOTH-106-DEFAULT',
         490000,
         TRUE
     ),
@@ -1385,140 +1205,167 @@ VALUES (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'bomber-jacket'
+            WHERE slug = 'slim-fit-jeans'
+        ),
+        'CLOTH-103-DEFAULT',
+        690000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE slug = 'high-rise-straight-jeans'
+        ),
+        'CLOTH-104-DEFAULT',
+        600000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE slug = 'pleated-midi-skirt'
+        ),
+        'CLOTH-105-DEFAULT',
+        490000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE slug = 'fleece-pullover-hoodie'
+        ),
+        'CLOTH-106-DEFAULT',
+        1390000,
+        TRUE
+    ),
+    (
+        (
+            SELECT product_id
+            FROM products
+            WHERE slug = 'bomber-jacket'
         ),
         'CLOTH-107-DEFAULT',
-        790000,
+        1900000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'trench-coat'
+            WHERE slug = 'trench-coat'
         ),
         'CLOTH-108-DEFAULT',
-        990000,
+        1800000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'performance-running-sneakers'
+            WHERE slug = 'performance-running-sneakers'
         ),
         'CLOTH-109-DEFAULT',
-        890000,
+        6900000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'canvas-lowtop-sneakers'
+            WHERE slug = 'canvas-lowtop-sneakers'
         ),
         'CLOTH-110-DEFAULT',
-        540000,
+        2500000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'leather-belt'
+            WHERE slug = 'leather-belt'
         ),
         'CLOTH-111-DEFAULT',
-        240000,
+        500000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'baseball-cap'
+            WHERE slug = 'baseball-cap'
         ),
         'CLOTH-112-DEFAULT',
-        180000,
+        800000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'knit-beanie'
+            WHERE slug = 'knit-beanie'
         ),
         'CLOTH-113-DEFAULT',
-        160000,
+        800000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'yoga-leggings'
+            WHERE slug = 'yoga-leggings'
         ),
         'CLOTH-114-DEFAULT',
-        390000,
+        780000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'sports-bra'
+            WHERE slug = 'sports-bra'
         ),
         'CLOTH-115-DEFAULT',
-        290000,
+        500000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'kids-hoodie'
+            WHERE slug = 'kids-hoodie'
         ),
         'CLOTH-116-DEFAULT',
-        340000,
+        600000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'kids-sneakers'
+            WHERE slug = 'kids-sneakers'
         ),
         'CLOTH-117-DEFAULT',
-        390000,
+        450000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'lightweight-windbreaker'
+            WHERE slug = 'lightweight-windbreaker'
         ),
         'CLOTH-118-DEFAULT',
-        590000,
+        1200000,
         TRUE
     ),
     (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'puffer-vest'
+            WHERE slug = 'puffer-vest'
         ),
         'CLOTH-119-DEFAULT',
         690000,
@@ -1528,25 +1375,21 @@ VALUES (
         (
             SELECT product_id
             FROM products
-            WHERE
-                slug = 'linen-shortsleeve-shirt'
+            WHERE slug = 'linen-shortsleeve-shirt'
         ),
         'CLOTH-120-DEFAULT',
         420000,
         TRUE
     );
-
 -- ====================================
 -- 8. INVENTORY
 -- ====================================
-INSERT INTO
-    inventory (sku_id, quantity_available)
+INSERT INTO inventory (sku_id, quantity_available)
 VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-101-DEFAULT'
+            WHERE sku = 'CLOTH-101-DEFAULT'
         ),
         200
     ),
@@ -1554,8 +1397,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-102-DEFAULT'
+            WHERE sku = 'CLOTH-102-DEFAULT'
         ),
         120
     ),
@@ -1563,8 +1405,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-103-DEFAULT'
+            WHERE sku = 'CLOTH-103-DEFAULT'
         ),
         80
     ),
@@ -1572,8 +1413,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-104-DEFAULT'
+            WHERE sku = 'CLOTH-104-DEFAULT'
         ),
         75
     ),
@@ -1581,8 +1421,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-105-DEFAULT'
+            WHERE sku = 'CLOTH-105-DEFAULT'
         ),
         90
     ),
@@ -1590,8 +1429,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-106-DEFAULT'
+            WHERE sku = 'CLOTH-106-DEFAULT'
         ),
         110
     ),
@@ -1599,8 +1437,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-107-DEFAULT'
+            WHERE sku = 'CLOTH-107-DEFAULT'
         ),
         60
     ),
@@ -1608,8 +1445,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-108-DEFAULT'
+            WHERE sku = 'CLOTH-108-DEFAULT'
         ),
         50
     ),
@@ -1617,8 +1453,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-109-DEFAULT'
+            WHERE sku = 'CLOTH-109-DEFAULT'
         ),
         70
     ),
@@ -1626,8 +1461,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-110-DEFAULT'
+            WHERE sku = 'CLOTH-110-DEFAULT'
         ),
         95
     ),
@@ -1635,8 +1469,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-111-DEFAULT'
+            WHERE sku = 'CLOTH-111-DEFAULT'
         ),
         140
     ),
@@ -1644,8 +1477,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-112-DEFAULT'
+            WHERE sku = 'CLOTH-112-DEFAULT'
         ),
         160
     ),
@@ -1653,8 +1485,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-113-DEFAULT'
+            WHERE sku = 'CLOTH-113-DEFAULT'
         ),
         130
     ),
@@ -1662,8 +1493,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-114-DEFAULT'
+            WHERE sku = 'CLOTH-114-DEFAULT'
         ),
         100
     ),
@@ -1671,8 +1501,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-115-DEFAULT'
+            WHERE sku = 'CLOTH-115-DEFAULT'
         ),
         100
     ),
@@ -1680,8 +1509,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-116-DEFAULT'
+            WHERE sku = 'CLOTH-116-DEFAULT'
         ),
         85
     ),
@@ -1689,8 +1517,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-117-DEFAULT'
+            WHERE sku = 'CLOTH-117-DEFAULT'
         ),
         80
     ),
@@ -1698,8 +1525,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-118-DEFAULT'
+            WHERE sku = 'CLOTH-118-DEFAULT'
         ),
         65
     ),
@@ -1707,8 +1533,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-119-DEFAULT'
+            WHERE sku = 'CLOTH-119-DEFAULT'
         ),
         55
     ),
@@ -1716,8 +1541,7 @@ VALUES (
         (
             SELECT sku_id
             FROM product_skus
-            WHERE
-                sku = 'CLOTH-120-DEFAULT'
+            WHERE sku = 'CLOTH-120-DEFAULT'
         ),
         90
     );

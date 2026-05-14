@@ -15,5 +15,9 @@ public interface IPaymentService
         ZaloPayCallbackDto request,
         CancellationToken ct
     );
-    Task SimulateZaloPayCallbackAsync(string appTransId, decimal amount, CancellationToken ct);
+    Task<ZaloPayCallbackResultDto> SimulateZaloPayCallbackAsync(
+        string appTransId,
+        decimal amount,
+        CancellationToken ct
+    );
 }

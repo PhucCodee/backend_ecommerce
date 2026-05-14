@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
-using ECommerce.Application.Common.Responses;
-using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Common.Authorization;
+using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.Common.Responses;
 using ECommerce.Application.DTOs.category;
 using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -24,7 +24,9 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet("core")]
-        public async Task<IActionResult> GetCoreCategories([FromQuery] PaginationParams paginationParams)
+        public async Task<IActionResult> GetCoreCategories(
+            [FromQuery] PaginationParams paginationParams
+        )
         {
             var categories = await _categoryService.GetCoreCategoriesPagedAsync(paginationParams);
             return Ok(ApiResponse<PagedResult<CategoryDto>>.Ok(categories));
@@ -58,7 +60,8 @@ namespace ECommerce.API.Controllers
             var category = await _categoryService.CreateAsync(createDto);
             return StatusCode(
                 StatusCodes.Status201Created,
-                ApiResponse<CategoryDto>.Ok(category, "Category created successfully"));
+                ApiResponse<CategoryDto>.Ok(category, "Category created successfully")
+            );
         }
 
         [HttpPut("{id:int}")]

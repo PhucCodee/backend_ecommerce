@@ -15,7 +15,8 @@ namespace ECommerce.Application.Services
         IProductSkuRepository productSkuRepository,
         IInventoryRepository inventoryRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : IInventoryService
+        IMapper mapper
+    ) : IInventoryService
     {
         private readonly IProductSkuRepository _productSkuRepository = productSkuRepository;
         private readonly IInventoryRepository _inventoryRepository = inventoryRepository;
@@ -25,7 +26,8 @@ namespace ECommerce.Application.Services
         public async Task ReleaseReservationAsync(
             int orderId,
             string orderNumber,
-            IEnumerable<(int SkuId, int Quantity)> reservations)
+            IEnumerable<(int SkuId, int Quantity)> reservations
+        )
         {
             var grouped = reservations
                 .GroupBy(r => r.SkuId)
@@ -35,14 +37,17 @@ namespace ECommerce.Application.Services
             var now = DateTime.UtcNow;
             foreach (var item in grouped)
             {
-                if (item.Quantity <= 0) continue;
+                if (item.Quantity <= 0)
+                    continue;
 
                 var inventories = await _inventoryRepository.FindAsync(i => i.SkuId == item.SkuId);
                 var inventory = inventories.FirstOrDefault();
-                if (inventory == null) continue;
+                if (inventory == null)
+                    continue;
 
                 var release = Math.Min(item.Quantity, inventory.QuantityReserved);
-                if (release <= 0) continue;
+                if (release <= 0)
+                    continue;
 
                 inventory.QuantityReserved -= release;
                 inventory.QuantityAvailable += release;
@@ -51,16 +56,23 @@ namespace ECommerce.Application.Services
             // Caller is responsible for SaveChangesAsync — typically inside a transaction.
         }
 
-        public async Task<InventoryDto> UpdateAsync(int skuId, InventoryUpdateDto updateDto, int sellerId)
+        public async Task<InventoryDto> UpdateAsync(
+            int skuId,
+            InventoryUpdateDto updateDto,
+            int sellerId
+        )
         {
-            var sku = await _productSkuRepository.GetByIdWithDetailsAsync(skuId)
+            var sku =
+                await _productSkuRepository.GetByIdWithDetailsAsync(skuId)
                 ?? throw new NotFoundException("Product SKU not found");
 
             if (!sku.IsActive || sku.Product.IsDeleted())
                 throw new NotFoundException("Product SKU not found");
 
             if (sku.Product.SellerId != sellerId)
-                throw new ForbiddenException("You do not have permission to update inventory for this SKU");
+                throw new ForbiddenException(
+                    "You do not have permission to update inventory for this SKU"
+                );
 
             var now = DateTime.UtcNow;
 
@@ -75,14 +87,22 @@ namespace ECommerce.Application.Services
             var reorderPoint = updateDto.ReorderPoint ?? inventory.ReorderPoint;
             var reorderQuantity = updateDto.ReorderQuantity ?? inventory.ReorderQuantity;
 
-            if (quantityAvailable < 0 || quantityReserved < 0 || quantitySold < 0 ||
-                reorderPoint < 0 || reorderQuantity < 0)
+            if (
+                quantityAvailable < 0
+                || quantityReserved < 0
+                || quantitySold < 0
+                || reorderPoint < 0
+                || reorderQuantity < 0
+            )
                 throw new BadRequestException("Inventory values must be non-negative");
 
             if (quantityReserved > quantityAvailable)
                 throw new BadRequestException("Reserved quantity cannot exceed available quantity");
 
-            if (updateDto.QuantityAvailable.HasValue && quantityAvailable > inventory.QuantityAvailable)
+            if (
+                updateDto.QuantityAvailable.HasValue
+                && quantityAvailable > inventory.QuantityAvailable
+            )
                 inventory.LastRestockedAt = now;
 
             inventory.QuantityAvailable = quantityAvailable;

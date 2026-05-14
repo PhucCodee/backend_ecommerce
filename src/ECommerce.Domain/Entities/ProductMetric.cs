@@ -27,5 +27,5 @@ public partial class ProductMetric
 
     public DateTime CreatedAt { get; set; }
 
-    public required virtual Product Product { get; set; }
+    public virtual required Product Product { get; set; }
 }
