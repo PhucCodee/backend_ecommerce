@@ -35,17 +35,19 @@ public class OrderService(
 
     private async Task ReleaseInventoryForOrderAsync(Order order)
     {
-        var reservations = order.OrderItems
-            .Where(oi => oi.SkuId > 0 && oi.Quantity > 0)
+        var reservations = order
+            .OrderItems.Where(oi => oi.SkuId > 0 && oi.Quantity > 0)
             .Select(oi => (oi.SkuId, oi.Quantity))
             .ToList();
 
-        if (reservations.Count == 0) return;
+        if (reservations.Count == 0)
+            return;
 
         await _inventoryService.ReleaseReservationAsync(
             order.OrderId,
             order.OrderNumber,
-            reservations);
+            reservations
+        );
     }
 
     public async Task<OrderDto> CreateAsync(int userId, CreateOrderRequest request)
@@ -299,7 +301,8 @@ public class OrderService(
         // Buyer can only cancel before the seller has confirmed/processed the order.
         if (order.Status != OrderStatus.created)
             throw new BadRequestException(
-                "Order can no longer be cancelled by buyer — please contact the seller");
+                "Order can no longer be cancelled by buyer — please contact the seller"
+            );
 
         order.Status = OrderStatus.cancelled;
         order.CancelledAt = DateTime.UtcNow;
@@ -333,13 +336,14 @@ public class OrderService(
         if (!Enum.TryParse<OrderStatus>(request.Status, true, out var newStatus))
             throw new BadRequestException("Invalid order status");
 
-        if (newStatus is not (
-            OrderStatus.confirmed
-            or OrderStatus.delivered
-            or OrderStatus.cancelled))
+        if (
+            newStatus
+            is not (OrderStatus.confirmed or OrderStatus.delivered or OrderStatus.cancelled)
+        )
         {
             throw new BadRequestException(
-                "Seller can only set status to confirmed, delivered, or cancelled");
+                "Seller can only set status to confirmed, delivered, or cancelled"
+            );
         }
 
         var oldStatus = order.Status;

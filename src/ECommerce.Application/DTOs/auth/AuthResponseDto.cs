@@ -7,7 +7,7 @@ namespace ECommerce.Application.DTOs.auth
     {
         public required string AccessToken { get; set; }
         public required string RefreshToken { get; set; }
-        public required UserProfileDto User { get; set; }
+        public required UserDto User { get; set; }
         public DateTime ExpiresAt { get; set; }
     }
 }

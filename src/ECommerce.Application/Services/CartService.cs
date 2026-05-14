@@ -15,7 +15,8 @@ namespace ECommerce.Application.Services
         ICartRepository cartRepository,
         IProductSkuRepository productSkuRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : ICartService
+        IMapper mapper
+    ) : ICartService
     {
         private readonly ICartRepository _cartRepository = cartRepository;
         private readonly IProductSkuRepository _productSkuRepository = productSkuRepository;
@@ -28,9 +29,15 @@ namespace ECommerce.Application.Services
             return _mapper.Map<CartDto>(cart);
         }
 
-        public async Task<CartDto> AddToCartAsync(int? userId, string? sessionId, AddToCartDto addDto, string? ipAddress = null)
+        public async Task<CartDto> AddToCartAsync(
+            int? userId,
+            string? sessionId,
+            AddToCartDto addDto,
+            string? ipAddress = null
+        )
         {
-            var sku = await _productSkuRepository.GetByIdWithDetailsAsync(addDto.SkuId)
+            var sku =
+                await _productSkuRepository.GetByIdWithDetailsAsync(addDto.SkuId)
                 ?? throw new NotFoundException("Product SKU not found");
 
             if (!sku.IsActive || sku.Product.IsDeleted())
@@ -49,7 +56,9 @@ namespace ECommerce.Application.Services
             {
                 var newQuantity = existingItem.Quantity + addDto.Quantity;
                 if (newQuantity > availableStock)
-                    throw new BadRequestException($"Cannot add more items. Available: {availableStock}, In cart: {existingItem.Quantity}");
+                    throw new BadRequestException(
+                        $"Cannot add more items. Available: {availableStock}, In cart: {existingItem.Quantity}"
+                    );
 
                 existingItem.Quantity = newQuantity;
                 existingItem.PriceSnapshot = sku.Price;
@@ -68,12 +77,19 @@ namespace ECommerce.Application.Services
             return _mapper.Map<CartDto>(updatedCart);
         }
 
-        public async Task<CartDto> UpdateCartItemAsync(int? userId, string? sessionId, int cartItemId, UpdateCartItemDto updateDto)
+        public async Task<CartDto> UpdateCartItemAsync(
+            int? userId,
+            string? sessionId,
+            int cartItemId,
+            UpdateCartItemDto updateDto
+        )
         {
-            var cart = await GetCartWithDetailsAsync(userId, sessionId)
+            var cart =
+                await GetCartWithDetailsAsync(userId, sessionId)
                 ?? throw new NotFoundException("Cart not found");
 
-            var cartItem = cart.CartItems.FirstOrDefault(ci => ci.CartItemId == cartItemId)
+            var cartItem =
+                cart.CartItems.FirstOrDefault(ci => ci.CartItemId == cartItemId)
                 ?? throw new NotFoundException("Cart item not found");
 
             var availableStock = cartItem.Sku.Inventory?.QuantityAvailable ?? 0;
@@ -90,12 +106,18 @@ namespace ECommerce.Application.Services
             return _mapper.Map<CartDto>(cart);
         }
 
-        public async Task<CartDto> RemoveCartItemAsync(int? userId, string? sessionId, int cartItemId)
+        public async Task<CartDto> RemoveCartItemAsync(
+            int? userId,
+            string? sessionId,
+            int cartItemId
+        )
         {
-            var cart = await GetCartWithDetailsAsync(userId, sessionId)
+            var cart =
+                await GetCartWithDetailsAsync(userId, sessionId)
                 ?? throw new NotFoundException("Cart not found");
 
-            var cartItem = cart.CartItems.FirstOrDefault(ci => ci.CartItemId == cartItemId)
+            var cartItem =
+                cart.CartItems.FirstOrDefault(ci => ci.CartItemId == cartItemId)
                 ?? throw new NotFoundException("Cart item not found");
 
             cart.CartItems.Remove(cartItem);
@@ -156,13 +178,18 @@ namespace ECommerce.Application.Services
             // Merge guest cart items into user cart
             foreach (var guestItem in guestCart.CartItems)
             {
-                var existingItem = userCart.CartItems.FirstOrDefault(ci => ci.SkuId == guestItem.SkuId);
+                var existingItem = userCart.CartItems.FirstOrDefault(ci =>
+                    ci.SkuId == guestItem.SkuId
+                );
 
                 if (existingItem != null)
                 {
                     var sku = await _productSkuRepository.GetByIdWithDetailsAsync(guestItem.SkuId);
                     var availableStock = sku?.Inventory?.QuantityAvailable ?? 0;
-                    var newQuantity = Math.Min(existingItem.Quantity + guestItem.Quantity, availableStock);
+                    var newQuantity = Math.Min(
+                        existingItem.Quantity + guestItem.Quantity,
+                        availableStock
+                    );
                     existingItem.Quantity = newQuantity;
                     existingItem.UpdatedAt = DateTime.UtcNow;
                 }
@@ -177,7 +204,7 @@ namespace ECommerce.Application.Services
                         Quantity = guestItem.Quantity,
                         PriceSnapshot = guestItem.PriceSnapshot,
                         AddedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        UpdatedAt = DateTime.UtcNow,
                     };
                     await _cartRepository.AddCartItemAsync(newItem);
                 }
@@ -195,7 +222,11 @@ namespace ECommerce.Application.Services
             return _mapper.Map<CartDto>(mergedCart!);
         }
 
-        private async Task<Cart> GetOrCreateCartAsync(int? userId, string? sessionId, string? ipAddress = null)
+        private async Task<Cart> GetOrCreateCartAsync(
+            int? userId,
+            string? sessionId,
+            string? ipAddress = null
+        )
         {
             Cart? cart = null;
 
@@ -213,6 +244,16 @@ namespace ECommerce.Application.Services
                 cart = Cart.CreateDefault(userId, sessionId, ipAddress);
                 await _cartRepository.AddAsync(cart);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Reload cart with all details to ensure CartItems is properly loaded
+                if (userId.HasValue)
+                {
+                    cart = await _cartRepository.GetByUserIdWithDetailsAsync(userId.Value);
+                }
+                else if (!string.IsNullOrEmpty(sessionId))
+                {
+                    cart = await _cartRepository.GetBySessionIdWithDetailsAsync(sessionId);
+                }
             }
 
             return cart;
