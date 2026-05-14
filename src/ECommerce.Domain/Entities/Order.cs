@@ -52,7 +52,7 @@ public partial class Order
 
     public virtual OrderShipping? OrderShipping { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 
     public virtual Coupon? Coupon { get; set; }
 
@@ -66,7 +66,8 @@ public partial class Order
         Currency preferredCurrency = Currency.vnd,
         string? couponCode = null,
         decimal couponDiscount = 0,
-        string? customerNotes = null)
+        string? customerNotes = null
+    )
     {
         return new Order
         {
@@ -83,7 +84,7 @@ public partial class Order
             CustomerNotes = customerNotes,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            User = null!
+            User = null!,
         };
     }
 }

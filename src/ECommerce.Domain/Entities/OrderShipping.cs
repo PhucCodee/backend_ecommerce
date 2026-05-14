@@ -30,7 +30,7 @@ public partial class OrderShipping
 
     public DateTime CreatedAt { get; set; }
 
-    public required virtual Order Order { get; set; }
+    public virtual required Order Order { get; set; }
 
     public static OrderShipping CreateDefault(
         Order order,
@@ -42,7 +42,8 @@ public partial class OrderShipping
         string postalCode,
         string country,
         ShippingMethod method = ShippingMethod.standard,
-        string? addressLine2 = null)
+        string? addressLine2 = null
+    )
     {
         return new OrderShipping
         {
@@ -57,7 +58,7 @@ public partial class OrderShipping
             Country = country,
             Method = method,
             CreatedAt = DateTime.UtcNow,
-            Order = order
+            Order = order,
         };
     }
 }

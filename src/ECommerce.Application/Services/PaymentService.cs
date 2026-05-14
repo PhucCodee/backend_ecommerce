@@ -104,7 +104,7 @@ public class PaymentService(
                 OrderId: order.OrderId,
                 OrderNumber: appTransId,
                 Amount: order.TotalAmount,
-                Description: request.Description ?? "Payment for order " + order.OrderNumber
+                Description: request.Description ?? "Payment for order " + order.OrderId
             ),
             ct
         );
@@ -301,9 +301,9 @@ public class PaymentService(
             payment.Status = PaymentStatus.completed;
             payment.PaidAt = DateTime.UtcNow;
 
-            if (order.Status == OrderStatus.created || order.Status == OrderStatus.confirmed)
+            if (order.Status == OrderStatus.created)
             {
-                order.Status = OrderStatus.processing;
+                order.Status = OrderStatus.confirmed;
                 order.UpdatedAt = DateTime.UtcNow;
             }
 

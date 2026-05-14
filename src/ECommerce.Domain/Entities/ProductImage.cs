@@ -22,13 +22,14 @@ public partial class ProductImage
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual ProductSku Sku { get; set; }
+    public virtual required ProductSku Sku { get; set; }
 
     public static ProductImage CreateDefault(
         ProductSku sku,
         string imageUrl,
         string altText,
-        bool isPrimary = true)
+        bool isPrimary = true
+    )
     {
         return new ProductImage
         {
@@ -39,7 +40,7 @@ public partial class ProductImage
             DisplayOrder = 1,
             IsPrimary = isPrimary,
             IsDeleted = false,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 

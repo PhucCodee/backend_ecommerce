@@ -160,6 +160,10 @@ namespace ECommerce.Application.Services
             if (await _categoryRepository.HasProductsAsync(categoryId))
                 throw new BadRequestException("Cannot delete category with products");
 
+            // Check if category has any products
+            if (await _categoryRepository.HasProductsAsync(categoryId))
+                throw new BadRequestException("Cannot delete category with products");
+
             // Soft delete
             category.SoftDelete();
             await _unitOfWork.SaveChangesAsync();

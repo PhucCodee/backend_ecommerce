@@ -28,5 +28,5 @@ public partial class UserLoginHistory
 
     public DateTime CreatedAt { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 }

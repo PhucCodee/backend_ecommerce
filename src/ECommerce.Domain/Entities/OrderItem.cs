@@ -27,11 +27,11 @@ public partial class OrderItem
 
     public DateTime CreatedAt { get; set; }
 
-    public required virtual Order Order { get; set; }
+    public virtual required Order Order { get; set; }
 
-    public required virtual User Seller { get; set; }
+    public virtual required User Seller { get; set; }
 
-    public required virtual ProductSku SkuNavigation { get; set; }
+    public virtual required ProductSku SkuNavigation { get; set; }
 
     public virtual ICollection<Review> Reviews { get; set; } = [];
 
@@ -43,7 +43,8 @@ public partial class OrderItem
         int sellerId,
         int quantity,
         decimal unitPrice,
-        string? variantDescription = null)
+        string? variantDescription = null
+    )
     {
         return new OrderItem
         {
@@ -59,7 +60,7 @@ public partial class OrderItem
             CreatedAt = DateTime.UtcNow,
             Order = order,
             Seller = null!,
-            SkuNavigation = null!
+            SkuNavigation = null!,
         };
     }
 }

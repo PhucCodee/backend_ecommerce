@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using ECommerce.API.Logging;
 using ECommerce.API.Middleware;
 using ECommerce.Application.Common.Authorization;
 using ECommerce.Application.Helpers;
@@ -24,8 +25,20 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── In-memory log buffer (must be registered before Serilog config) ───────────
+var logBuffer = new InMemoryLogBuffer();
+builder.Services.AddSingleton(logBuffer);
+
+// ── Serilog: Console + in-memory sink ─────────────────────────────────────────
+builder.Host.UseSerilog((ctx, cfg) =>
+{
+    cfg.ReadFrom.Configuration(ctx.Configuration)
+       .WriteTo.Sink(new InMemoryLogSink(logBuffer));
+});
 
 builder.Services.AddCors(options =>
 {
@@ -35,9 +48,17 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Accept and return enum values as strings (e.g. "percentage" not 0)
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()
+        );
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -72,6 +93,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductSkuRepository, ProductSkuRepository>();
@@ -82,6 +104,7 @@ builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 builder.Services.AddScoped<ICouponRepository, CouponRepository>();
 builder.Services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+    builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<UserValidationHelper>();
@@ -132,6 +155,7 @@ builder.Services.AddMassTransit(x =>
     );
 });
 
+// Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
@@ -145,6 +169,9 @@ builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+    builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddHttpClient();
 
@@ -160,10 +187,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseCors();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
 
+// Serve uploaded files publicly — must be before auth middleware
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
 if (!Directory.Exists(uploadsPath))
 {
@@ -177,5 +202,9 @@ app.UseStaticFiles(
         RequestPath = "/uploads",
     }
 );
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 app.Run();

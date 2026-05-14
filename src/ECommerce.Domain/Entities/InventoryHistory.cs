@@ -29,7 +29,7 @@ public partial class InventoryHistory
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual User ChangedByNavigation { get; set; }
+    public virtual required User ChangedByNavigation { get; set; }
 
-    public required virtual Inventory Inventory { get; set; }
+    public virtual required Inventory Inventory { get; set; }
 }

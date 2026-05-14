@@ -135,7 +135,7 @@ namespace ECommerce.UnitTests.Services
             {
                 Product = product,
                 SkuId = id,
-                Sku = $"SKU-{id}-DEFAULT",
+                Sku = $"SKU-{id}",
                 VariantAttributes = "default",
                 Price = price,
                 IsDefault = true,

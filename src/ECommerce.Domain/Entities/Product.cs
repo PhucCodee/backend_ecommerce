@@ -97,5 +97,12 @@ public partial class Product
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void Restore()
+    {
+        RemovedAt = null;
+        Status = ProductStatus.active;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public bool IsDeleted() => RemovedAt.HasValue;
 }

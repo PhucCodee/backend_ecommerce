@@ -58,5 +58,11 @@ namespace ECommerce.Application.DTOs.product
         /// Filter by in-stock products only
         /// </summary>
         public bool? InStock { get; set; }
+
+        /// <summary>
+        /// When true, includes soft-deleted (suspended) products in results.
+        /// Should only be set for authenticated seller/admin queries.
+        /// </summary>
+        public bool IncludeSuspended { get; set; } = false;
     }
 }
