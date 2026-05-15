@@ -256,6 +256,9 @@ namespace ECommerce.Application.Services
                 }
             }
 
+            if (cart == null)
+                throw new BadRequestException("Cart not found");
+
             return cart;
         }
 

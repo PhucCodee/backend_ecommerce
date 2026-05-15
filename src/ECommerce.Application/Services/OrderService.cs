@@ -133,7 +133,12 @@ public class OrderService(
                     sellerId: cartItem.Sku?.Product?.SellerId ?? 0,
                     quantity: cartItem.Quantity,
                     unitPrice: cartItem.PriceSnapshot,
-                    variantDescription: cartItem.Sku?.VariantAttributes
+                    variantDescription: string.Join(
+                        ", ",
+                        new[] { cartItem.Sku?.Color, cartItem.Sku?.Size }.Where(v =>
+                            !string.IsNullOrWhiteSpace(v)
+                        )
+                    )
                 );
                 order.OrderItems.Add(orderItem);
             }

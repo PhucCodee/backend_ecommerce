@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using ECommerce.Application.Common.Authorization;
@@ -8,6 +6,8 @@ using ECommerce.Application.Common.Responses;
 using ECommerce.Application.DTOs.review;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -18,7 +18,10 @@ namespace ECommerce.API.Controllers
         private readonly IReviewService _reviewService = reviewService;
 
         [HttpGet("product/{productId:int}")]
-        public async Task<IActionResult> GetByProductId(int productId, [FromQuery] ReviewQueryParams query)
+        public async Task<IActionResult> GetByProductId(
+            int productId,
+            [FromQuery] ReviewQueryParams query
+        )
         {
             var reviews = await _reviewService.GetByProductIdAsync(productId, query);
             return Ok(ApiResponse<PagedResult<ReviewDto>>.Ok(reviews));
@@ -37,7 +40,9 @@ namespace ECommerce.API.Controllers
         {
             var userId = GetCurrentUserId();
             var items = await _reviewService.GetReviewableItemsAsync(productId, userId);
-            return Ok(ApiResponse<System.Collections.Generic.List<ReviewableOrderItemDto>>.Ok(items));
+            return Ok(
+                ApiResponse<System.Collections.Generic.List<ReviewableOrderItemDto>>.Ok(items)
+            );
         }
 
         [HttpPost]
@@ -46,7 +51,10 @@ namespace ECommerce.API.Controllers
         {
             var userId = GetCurrentUserId();
             var review = await _reviewService.CreateAsync(dto, userId);
-            return StatusCode(201, ApiResponse<ReviewDto>.Ok(review, "Review created successfully"));
+            return StatusCode(
+                201,
+                ApiResponse<ReviewDto>.Ok(review, "Review created successfully")
+            );
         }
 
         [HttpPut("{reviewId:int}")]

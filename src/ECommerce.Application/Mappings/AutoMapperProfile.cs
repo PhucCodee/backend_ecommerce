@@ -174,7 +174,7 @@ namespace ECommerce.Application.Mappings
                 )
                 .ForMember(
                     dest => dest.VariantCount,
-                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => !ps.IsDefault))
+                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => ps.IsActive))
                 )
                 .ForMember(
                     dest => dest.Price,
@@ -287,7 +287,7 @@ namespace ECommerce.Application.Mappings
                 )
                 .ForMember(
                     dest => dest.VariantCount,
-                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => !ps.IsDefault))
+                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => ps.IsActive))
                 )
                 .ForMember(
                     dest => dest.Price,
@@ -350,7 +350,7 @@ namespace ECommerce.Application.Mappings
                 )
                 .ForMember(
                     dest => dest.VariantCount,
-                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => !ps.IsDefault))
+                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => ps.IsActive))
                 )
                 .ForMember(
                     dest => dest.AverageRating,
@@ -449,8 +449,12 @@ namespace ECommerce.Application.Mappings
                         )
                 )
                 .ForMember(
-                    dest => dest.VariantAttributes,
-                    opt => opt.MapFrom(src => src.Sku != null ? src.Sku.VariantAttributes : null)
+                    dest => dest.Color,
+                    opt => opt.MapFrom(src => src.Sku != null ? src.Sku.Color : null)
+                )
+                .ForMember(
+                    dest => dest.Size,
+                    opt => opt.MapFrom(src => src.Sku != null ? src.Sku.Size : null)
                 )
                 .ForMember(
                     dest => dest.ImageUrl,

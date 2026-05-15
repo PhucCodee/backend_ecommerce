@@ -4,5 +4,5 @@ public enum CartStatus
 {
     active,
     abandoned,
-    converted
+    converted,
 }

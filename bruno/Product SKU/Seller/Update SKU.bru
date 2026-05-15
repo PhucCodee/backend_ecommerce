@@ -5,55 +5,56 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/api/skus/seller/21
+  url: http://localhost:8080/api/skus/seller/26
   body: json
   auth: bearer
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6IjUyZDExNTNhLWUyMDItNDM0ZC04NmRmLTJiZWI1MmJiOTQyMCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3NzQxNzQ0NzEsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.kEIv3ykXFKjPQCyCcSEGzGZeu5GoSzwhqYaFC0iTJ6Q
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6IjM3MGQ1OGUwLTUxOWItNDNlMC1iZGY2LWYxYTUxMjQ4NDcyZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3Nzg4MzI3MzUsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.OxLCTCMqjeQQCZkdjsr1_LvxO8DIcerEMo79QgHABDQ
 }
 
 body:json {
   {
-      "variantAttributes": "{\"size\":\"L\",\"color\":\"black\"}",
-      "price": 22.99,
-      "costPrice": 11.00,
-      "compareAtPrice": 29.99,
-      "stock": 45,
-      "isActive": true,
-      "isDefault": true,
-      "weightKg": 0.26,
-      "dimensionsCm": "30x25x2",
-      "images": [
-        {
-          "id": 1, // update current image
-          "imageUrl": "https://updated-tshirt-front.com",
-          "thumbnailUrl": "https://updated-tshirt-front.com",
-          "altText": "Front view (updated)",
-          "isPrimary": true,
-          "displayOrder": 1,
-          "isDeleted": false
-        },
-        {
-          "id": 2, // remove current image
-          "imageUrl": null,
-          "thumbnailUrl": null,
-          "altText": null,
-          "isPrimary": false,
-          "displayOrder": 2,
-          "isDeleted": true
-        },
-        {
-          "id": null, // add new image
-          "imageUrl": "https://tshirt-side.com",
-          "thumbnailUrl": null,
-          "altText": "Side view",
-          "isPrimary": false,
-          "displayOrder": 3,
-          "isDeleted": false
-        }
-      ]
+    "color": "Black",
+    "size": "43",
+    "price": 300000,
+    "costPrice": 210000,
+    "compareAtPrice": 250000,
+    "stock": 45,
+    "isActive": true,
+    "isDefault": true,
+    "weightKg": 0.26,
+    "dimensionsCm": "30x25x2",
+    "images": [
+      {
+        "id": 1, // update current image
+        "imageUrl": "https://updated-tshirt-front.com",
+        "thumbnailUrl": "https://updated-tshirt-front.com",
+        "altText": "Front view (updated)",
+        "isPrimary": true,
+        "displayOrder": 1,
+        "isDeleted": false
+      },
+      {
+        "id": 2, // remove current image
+        "imageUrl": null,
+        "thumbnailUrl": null,
+        "altText": null,
+        "isPrimary": false,
+        "displayOrder": 2,
+        "isDeleted": true
+      },
+      {
+        "id": null, // add new image
+        "imageUrl": "https://tshirt-side.com",
+        "thumbnailUrl": null,
+        "altText": "Side view",
+        "isPrimary": false,
+        "displayOrder": 3,
+        "isDeleted": false
+      }
+    ]
   }
 }
 

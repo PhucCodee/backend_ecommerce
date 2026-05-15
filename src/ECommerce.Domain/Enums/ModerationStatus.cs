@@ -4,5 +4,5 @@ public enum ModerationStatus
 {
     pending,
     approved,
-    rejected
+    rejected,
 }

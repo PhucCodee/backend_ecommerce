@@ -19,11 +19,8 @@ namespace ECommerce.Infrastructure.Data.Configurations
 
             builder.Property(ps => ps.Sku).IsRequired().HasMaxLength(100).HasColumnName("sku");
 
-            builder
-                .Property(ps => ps.VariantAttributes)
-                .IsRequired()
-                .HasColumnType("jsonb")
-                .HasColumnName("variant_attributes");
+            builder.Property(ps => ps.Color).HasMaxLength(50).HasColumnName("color");
+            builder.Property(ps => ps.Size).HasMaxLength(10).HasColumnName("size");
 
             builder.Property(ps => ps.Price).HasColumnType("decimal(18,2)").HasColumnName("price");
 

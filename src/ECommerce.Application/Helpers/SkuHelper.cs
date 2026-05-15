@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ECommerce.Application.Helpers
 {
-    public static class SkuGenerator
+    public static class SkuHelper
     {
         private const string BaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         private const int BaseSkuLength = 8;

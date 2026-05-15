@@ -5,5 +5,5 @@ public enum NotificationStatus
     pending,
     sent,
     failed,
-    read
+    read,
 }
