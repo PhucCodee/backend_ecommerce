@@ -45,6 +45,8 @@ namespace ECommerce.Application.Services
                 registerDto.LastName,
                 registerDto.Phone
             );
+            var buyerRole = UserRole.CreateDefault(user, UserRoleType.buyer);
+            user.UserRoleUsers.Add(buyerRole);
 
             await userRepository.AddAsync(user);
             await unitOfWork.SaveChangesAsync();
