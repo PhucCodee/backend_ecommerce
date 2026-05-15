@@ -5,5 +5,5 @@ public enum PaymentMethod
     credit_card,
     bank_transfer,
     e_wallet,
-    cod
+    cod,
 }

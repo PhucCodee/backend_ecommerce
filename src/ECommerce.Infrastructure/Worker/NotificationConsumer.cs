@@ -18,7 +18,8 @@ public sealed class NotificationConsumer(
     : IConsumer<PaymentSucceededEvent>,
         IConsumer<PaymentFailedEvent>,
         IConsumer<OrderConfirmedEvent>,
-        IConsumer<OrderShippedEvent>
+        IConsumer<OrderShippedEvent>,
+        IConsumer<UserRegisteredEvent>
 {
     private readonly ILogger<NotificationConsumer> _logger = logger;
     private readonly IEmailService _emailService = emailService;
@@ -257,5 +258,68 @@ public sealed class NotificationConsumer(
 """;
 
         await _emailService.SendEmailAsync(user.Email, subject, body);
+    }
+
+    public async Task Consume(ConsumeContext<UserRegisteredEvent> context)
+    {
+        var message = context.Message;
+        _logger.LogInformation(
+            "NotificationConsumer received user.registered {EventId} for user {UserId}",
+            message.EventId,
+            message.UserId
+        );
+
+        var subject = "Welcome to Sanquo Shop!";
+        var body = $"""
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5; font-family:Arial, sans-serif;">
+  <tr>
+    <td align="center">
+
+      <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;">
+
+        <!-- Banner -->
+        <tr>
+          <td>
+            <img 
+              src="https://pub-ce2153b8154b4936949a13f6f9ef8cb9.r2.dev/banner.JPG"
+              width="600"
+              height="60"
+              alt="Banner"
+              style="display:block; width:100%; height:60px; object-fit:cover; border:0;"
+            />
+          </td>
+        </tr>
+
+        <!-- Content -->
+        <tr>
+          <td style="padding:24px;">
+            <h2 style="margin:0 0 16px 0; font-size:20px;">Welcome to Sanquo Shop!</h2>
+
+            <p style="margin:0 0 12px 0;">
+              Dear {message.FirstName} {message.LastName},
+            </p>
+
+            <p style="margin:0 0 16px 0;">
+              Thank you for registering an account with us. We are thrilled to have you on board!
+            </p>
+
+            <p style="margin:0 0 16px 0;">
+              Start exploring our products and enjoy seamless shopping right away.
+            </p>
+
+            <p style="margin:16px 0 0 0;">
+              Best regards,<br/>
+              <strong>Sanquo Shop</strong>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+""";
+
+        await _emailService.SendEmailAsync(message.Email, subject, body);
     }
 }

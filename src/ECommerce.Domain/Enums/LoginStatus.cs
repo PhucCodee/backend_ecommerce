@@ -5,5 +5,5 @@ public enum LoginStatus
     success,
     failed,
     locked,
-    mfa_required
+    mfa_required,
 }

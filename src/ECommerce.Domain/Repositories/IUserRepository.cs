@@ -1,6 +1,6 @@
-using ECommerce.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ECommerce.Domain.Entities;
 
 namespace ECommerce.Domain.Repositories
 {
@@ -9,14 +9,10 @@ namespace ECommerce.Domain.Repositories
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByUsernameAsync(string username);
         Task<User?> GetByEmailOrUsernameAsync(string emailOrUsername);
-        Task<User?> GetUserWithCredentialsAsync(string email);
         Task<User?> GetUserWithProfileAsync(int userId);
-        Task<User?> GetUserWithRolesAsync(int userId);
         Task<User?> GetUserWithAllDetailsAsync(int userId);
         Task<bool> EmailExistsAsync(string email);
         Task<bool> UsernameExistsAsync(string username);
-        Task<IEnumerable<User>> GetAllWithProfileAsync();
-        Task<User?> GetWithProfileAsync(int userId);
         Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
     }
 }

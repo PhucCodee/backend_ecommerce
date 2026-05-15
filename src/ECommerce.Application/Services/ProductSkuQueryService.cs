@@ -16,64 +16,73 @@ namespace ECommerce.Application.Services
 
         public async Task<ProductSkuDto> GetByIdAsync(int skuId)
         {
-            var dto = await ActiveSkus()
-                .Where(s => s.SkuId == skuId)
-                .Select(s => new ProductSkuDto
-                {
-                    SkuId = s.SkuId,
-                    ProductId = s.ProductId,
-                    ProductName = s.Product.ProductName,
-                    Sku = s.Sku,
-                    VariantAttributes = s.VariantAttributes,
-                    Price = s.Price,
-                    CostPrice = s.CostPrice,
-                    CompareAtPrice = s.CompareAtPrice,
-                    IsActive = s.IsActive,
-                    IsDefault = s.IsDefault,
-                    WeightKg = s.WeightKg,
-                    DimensionsCm = s.DimensionsCm,
-                    Stock            = s.Inventory != null ? s.Inventory.QuantityAvailable  : 0,
-                    QuantityReserved = s.Inventory != null ? s.Inventory.QuantityReserved   : 0,
-                    QuantitySold     = s.Inventory != null ? s.Inventory.QuantitySold       : 0,
-                    ReorderPoint     = s.Inventory != null ? s.Inventory.ReorderPoint       : 0,
-                    ReorderQuantity  = s.Inventory != null ? s.Inventory.ReorderQuantity    : 0,
-                    LastRestockedAt  = s.Inventory != null ? s.Inventory.LastRestockedAt    : null,
-                    Images = s.ProductImages
-                        .Where(i => !i.IsDeleted)
-                        .OrderBy(i => i.DisplayOrder)
-                        .Select(i => new ProductImageDto
-                        {
-                            Id = i.ImageId,
-                            ProductSkuId = i.SkuId,
-                            ImageUrl = i.ImageUrl,
-                            ThumbnailUrl = i.ThumbnailUrl,
-                            AltText = i.AltText,
-                            IsPrimary = i.IsPrimary,
-                            DisplayOrder = i.DisplayOrder,
-                            UpdatedAt = i.UpdatedAt
-                        })
-                        .ToList(),
-                    CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt
-                })
-                .FirstOrDefaultAsync()
+            var dto =
+                await ActiveSkus()
+                    .Where(s => s.SkuId == skuId)
+                    .Select(s => new ProductSkuDto
+                    {
+                        SkuId = s.SkuId,
+                        ProductId = s.ProductId,
+                        ProductName = s.Product.ProductName,
+                        Sku = s.Sku,
+                        Color = s.Color,
+                        Size = s.Size,
+                        Price = s.Price,
+                        CostPrice = s.CostPrice,
+                        CompareAtPrice = s.CompareAtPrice,
+                        IsActive = s.IsActive,
+                        IsDefault = s.IsDefault,
+                        WeightKg = s.WeightKg,
+                        DimensionsCm = s.DimensionsCm,
+                        Stock = s.Inventory != null ? s.Inventory.QuantityAvailable : 0,
+                        QuantityReserved = s.Inventory != null ? s.Inventory.QuantityReserved : 0,
+                        QuantitySold = s.Inventory != null ? s.Inventory.QuantitySold : 0,
+                        ReorderPoint = s.Inventory != null ? s.Inventory.ReorderPoint : 0,
+                        ReorderQuantity = s.Inventory != null ? s.Inventory.ReorderQuantity : 0,
+                        LastRestockedAt = s.Inventory != null ? s.Inventory.LastRestockedAt : null,
+                        Images = s
+                            .ProductImages.Where(i => !i.IsDeleted)
+                            .OrderBy(i => i.DisplayOrder)
+                            .Select(i => new ProductImageDto
+                            {
+                                Id = i.ImageId,
+                                ProductSkuId = i.SkuId,
+                                ImageUrl = i.ImageUrl,
+                                ThumbnailUrl = i.ThumbnailUrl,
+                                AltText = i.AltText,
+                                IsPrimary = i.IsPrimary,
+                                DisplayOrder = i.DisplayOrder,
+                                UpdatedAt = i.UpdatedAt,
+                            })
+                            .ToList(),
+                        CreatedAt = s.CreatedAt,
+                        UpdatedAt = s.UpdatedAt,
+                    })
+                    .FirstOrDefaultAsync()
                 ?? throw new NotFoundException("Product SKU not found");
 
             return dto;
         }
 
         public async Task<PagedResult<ProductSkuDto>> GetByProductIdPagedAsync(
-            int productId, PaginationParams paginationParams)
+            int productId,
+            PaginationParams paginationParams
+        )
         {
-            var exists = await _context.Products.AnyAsync(p => p.ProductId == productId && p.RemovedAt == null);
-            if (!exists) throw new NotFoundException("Product not found");
+            var exists = await _context.Products.AnyAsync(p =>
+                p.ProductId == productId && p.RemovedAt == null
+            );
+            if (!exists)
+                throw new NotFoundException("Product not found");
 
             var query = ActiveSkus().Where(s => s.ProductId == productId);
             return await ProjectPagedAsync(query, paginationParams);
         }
 
         public async Task<PagedResult<ProductSkuDto>> GetBySellerPagedAsync(
-            int sellerId, PaginationParams paginationParams)
+            int sellerId,
+            PaginationParams paginationParams
+        )
         {
             var query = ActiveSkus().Where(s => s.Product.SellerId == sellerId);
             return await ProjectPagedAsync(query, paginationParams);
@@ -82,12 +91,14 @@ namespace ECommerce.Application.Services
         #region Private Helpers
 
         private IQueryable<Domain.Entities.ProductSku> ActiveSkus() =>
-            _context.ProductSkus
-                .AsNoTracking()
+            _context
+                .ProductSkus.AsNoTracking()
                 .Where(s => s.IsActive && s.Product.RemovedAt == null);
 
         private static async Task<PagedResult<ProductSkuDto>> ProjectPagedAsync(
-            IQueryable<Domain.Entities.ProductSku> query, PaginationParams p)
+            IQueryable<Domain.Entities.ProductSku> query,
+            PaginationParams p
+        )
         {
             var totalCount = await query.CountAsync();
 
@@ -102,7 +113,8 @@ namespace ECommerce.Application.Services
                     ProductId = s.ProductId,
                     ProductName = s.Product.ProductName,
                     Sku = s.Sku,
-                    VariantAttributes = s.VariantAttributes,
+                    Color = s.Color,
+                    Size = s.Size,
                     Price = s.Price,
                     CostPrice = s.CostPrice,
                     CompareAtPrice = s.CompareAtPrice,
@@ -110,14 +122,14 @@ namespace ECommerce.Application.Services
                     IsDefault = s.IsDefault,
                     WeightKg = s.WeightKg,
                     DimensionsCm = s.DimensionsCm,
-                    Stock            = s.Inventory != null ? s.Inventory.QuantityAvailable  : 0,
-                    QuantityReserved = s.Inventory != null ? s.Inventory.QuantityReserved   : 0,
-                    QuantitySold     = s.Inventory != null ? s.Inventory.QuantitySold       : 0,
-                    ReorderPoint     = s.Inventory != null ? s.Inventory.ReorderPoint       : 0,
-                    ReorderQuantity  = s.Inventory != null ? s.Inventory.ReorderQuantity    : 0,
-                    LastRestockedAt  = s.Inventory != null ? s.Inventory.LastRestockedAt    : null,
-                    Images = s.ProductImages
-                        .Where(i => !i.IsDeleted)
+                    Stock = s.Inventory != null ? s.Inventory.QuantityAvailable : 0,
+                    QuantityReserved = s.Inventory != null ? s.Inventory.QuantityReserved : 0,
+                    QuantitySold = s.Inventory != null ? s.Inventory.QuantitySold : 0,
+                    ReorderPoint = s.Inventory != null ? s.Inventory.ReorderPoint : 0,
+                    ReorderQuantity = s.Inventory != null ? s.Inventory.ReorderQuantity : 0,
+                    LastRestockedAt = s.Inventory != null ? s.Inventory.LastRestockedAt : null,
+                    Images = s
+                        .ProductImages.Where(i => !i.IsDeleted)
                         .OrderBy(i => i.DisplayOrder)
                         .Select(i => new ProductImageDto
                         {
@@ -128,11 +140,11 @@ namespace ECommerce.Application.Services
                             AltText = i.AltText,
                             IsPrimary = i.IsPrimary,
                             DisplayOrder = i.DisplayOrder,
-                            UpdatedAt = i.UpdatedAt
+                            UpdatedAt = i.UpdatedAt,
                         })
                         .ToList(),
                     CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt
+                    UpdatedAt = s.UpdatedAt,
                 })
                 .ToListAsync();
 

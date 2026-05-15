@@ -4,5 +4,5 @@ public enum ShippingMethod
 {
     standard,
     express,
-    same_day
+    same_day,
 }

@@ -1,20 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Threading.Tasks;
 using ECommerce.Application.Common.Authorization;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace ECommerce.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class HealthController(ApplicationDbContext dbContext, IConfiguration configuration, IHttpClientFactory httpClientFactory) : ControllerBase
+    public class HealthController(
+        ApplicationDbContext dbContext,
+        IConfiguration configuration,
+        IHttpClientFactory httpClientFactory
+    ) : ControllerBase
     {
         private readonly ApplicationDbContext _db = dbContext;
         private readonly IConfiguration _config = configuration;
@@ -43,14 +47,16 @@ namespace ECommerce.API.Controllers
                 overall = "unhealthy";
             }
             dbSw.Stop();
-            checks.Add(new
-            {
-                name = "database",
-                status = dbStatus,
-                durationMs = dbSw.Elapsed.TotalMilliseconds,
-                description = "PostgreSQL database connection",
-                error = dbError
-            });
+            checks.Add(
+                new
+                {
+                    name = "database",
+                    status = dbStatus,
+                    durationMs = dbSw.Elapsed.TotalMilliseconds,
+                    description = "PostgreSQL database connection",
+                    error = dbError,
+                }
+            );
 
             // 2. RabbitMQ management API check
             var mqSw = Stopwatch.StartNew();
@@ -66,8 +72,10 @@ namespace ECommerce.API.Controllers
                 client.Timeout = TimeSpan.FromSeconds(5);
                 var byteArray = System.Text.Encoding.ASCII.GetBytes($"{mqUser}:{mqPass}");
                 client.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
-                        Convert.ToBase64String(byteArray));
+                    new System.Net.Http.Headers.AuthenticationHeaderValue(
+                        "Basic",
+                        Convert.ToBase64String(byteArray)
+                    );
                 var response = await client.GetAsync($"http://{mqHost}:15672/api/overview");
                 if (response.IsSuccessStatusCode)
                 {
@@ -81,7 +89,8 @@ namespace ECommerce.API.Controllers
                 {
                     mqStatus = "degraded";
                     mqError = $"HTTP {(int)response.StatusCode}";
-                    if (overall == "healthy") overall = "degraded";
+                    if (overall == "healthy")
+                        overall = "degraded";
                 }
             }
             catch (Exception ex)
@@ -91,24 +100,28 @@ namespace ECommerce.API.Controllers
                 overall = "unhealthy";
             }
             mqSw.Stop();
-            checks.Add(new
-            {
-                name = "rabbitmq",
-                status = mqStatus,
-                durationMs = mqSw.Elapsed.TotalMilliseconds,
-                description = $"RabbitMQ message broker (v{mqVersion})",
-                error = mqError
-            });
+            checks.Add(
+                new
+                {
+                    name = "rabbitmq",
+                    status = mqStatus,
+                    durationMs = mqSw.Elapsed.TotalMilliseconds,
+                    description = $"RabbitMQ message broker (v{mqVersion})",
+                    error = mqError,
+                }
+            );
 
             // 3. API itself
-            checks.Add(new
-            {
-                name = "api",
-                status = "healthy",
-                durationMs = 0.0,
-                description = "ECommerce REST API",
-                error = (string?)null
-            });
+            checks.Add(
+                new
+                {
+                    name = "api",
+                    status = "healthy",
+                    durationMs = 0.0,
+                    description = "ECommerce REST API",
+                    error = (string?)null,
+                }
+            );
 
             sw.Stop();
 
@@ -118,10 +131,13 @@ namespace ECommerce.API.Controllers
                 totalDurationMs = sw.Elapsed.TotalMilliseconds,
                 timestamp = DateTime.UtcNow,
                 version = "1.0.0",
-                checks
+                checks,
             };
 
-            var statusCode = overall == "healthy" ? 200 : overall == "degraded" ? 200 : 503;
+            var statusCode =
+                overall == "healthy" ? 200
+                : overall == "degraded" ? 200
+                : 503;
             return StatusCode(statusCode, result);
         }
 
@@ -143,18 +159,30 @@ namespace ECommerce.API.Controllers
                 client.Timeout = TimeSpan.FromSeconds(5);
                 var byteArray = System.Text.Encoding.ASCII.GetBytes($"{mqUser}:{mqPass}");
                 client.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
-                        Convert.ToBase64String(byteArray));
+                    new System.Net.Http.Headers.AuthenticationHeaderValue(
+                        "Basic",
+                        Convert.ToBase64String(byteArray)
+                    );
                 var response = await client.GetAsync($"http://{mqHost}:15672/api/queues");
                 if (!response.IsSuccessStatusCode)
-                    return StatusCode((int)response.StatusCode, new { reachable = false, queues = Array.Empty<object>() });
+                    return StatusCode(
+                        (int)response.StatusCode,
+                        new { reachable = false, queues = Array.Empty<object>() }
+                    );
 
                 var json = await response.Content.ReadAsStringAsync();
                 return Content(json, "application/json");
             }
             catch (Exception ex)
             {
-                return Ok(new { reachable = false, error = ex.Message, queues = Array.Empty<object>() });
+                return Ok(
+                    new
+                    {
+                        reachable = false,
+                        error = ex.Message,
+                        queues = Array.Empty<object>(),
+                    }
+                );
             }
         }
     }
