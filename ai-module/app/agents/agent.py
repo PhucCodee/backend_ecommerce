@@ -35,9 +35,8 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         history_text = "This is the start of conversation"
 
     prompt = """
-You are an intent classification engine for a production fashion e-commerce AI assistant.
+You are an intent classification engine for a production fashion e-commerce AI assistant .
 Your ONLY job is to output ONE intent label. No explanation. No extra text.
-
 ═══════════════════════════════════════════
 CONVERSATION HISTORY (most recent last):
 {history_text}
@@ -51,11 +50,12 @@ Covers:
   • Sizing & fit guidance           → "How do your sizes run?", "Do you have a size guide?"
   • Shipping & delivery times       → "How long does delivery take?"
   • Payment methods                 → "Do you accept Visa / MoMo / COD?"
-  • Refund procedures               → "How do I request a refund?"
+  • Refund procedures               → "How do I request a refund?" "How can i return my order?"
   • Privacy & data                  → "Is my information safe?"
   • Warranty / quality guarantee    → "What if the stitching comes apart?"
   • Technical / account support     → "How do I reset my password?"
   • Promotions & vouchers           → "How do I apply a discount code?"
+  • Guidance on using the platform → "How do I create an account?", "How to contact customer service?"
 
 [product_search]
 Trigger when the user wants to FIND, BROWSE, FILTER, or COMPARE clothing items.
@@ -80,15 +80,9 @@ Covers:
   • Delivery issues                 → "My package hasn't arrived"
   • Modifying an existing order     → "Change the size on my order", "Update delivery address"
 
-
 [general]
 Trigger for EVERYTHING that does not fit the above.
-Covers:
-  • Greetings                       → "Hi", "Hello", "Good morning"
-  • Farewells / thanks              → "Bye", "Thanks!", "You're so helpful"
-  • Bot identity questions          → "Who are you?", "Are you a robot?"
-  • Unrelated small talk            → "What's the weather?", "Tell me a joke"
-  • Ambiguous / empty messages      → "...", "ok", "hmm"
+
 
 ═══════════════════════════════════════════
 CLASSIFICATION RULES (apply in order)
@@ -102,6 +96,11 @@ RULE 1 — CONTEXT INHERITANCE (most important)
   Example:
     History:  User asked about summer dresses → AI listed dress options
     Message:  "do you have them in white?"
+    Intent:   product_search  ✓   (NOT general ✗)
+
+  Example:
+    History:  User asked about summer jeans → AI listed dress options and say "Do you want to see more?"
+    Message:  "Yes"
     Intent:   product_search  ✓   (NOT general ✗)
 
 RULE 2 — ORDER vs POLICY DISAMBIGUATION
@@ -205,7 +204,8 @@ if __name__ == "__main__":
             # Extract the final response
             final_msg = result["answer"]
             print(f"Assistant: {final_msg}\n")
-            
+            print(f"Data: {result.get('ui_data', {})}\n")
+
         except Exception as e:
             print(f"An error occurred: {e}")
             # Optional: Print stack trace for debugging

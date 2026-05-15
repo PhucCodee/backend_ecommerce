@@ -314,8 +314,9 @@ def synthesize_product_answer(state: MasterState):
     You receive data from the database containing products matching the user's request.
     
     YOUR TASK:
-    1. Write a short, friendly message in the `text` field (e.g., "I found some great options that match your expectations!"). Do not use exactly the eg sentence, you should paraphrase in a polite manner.
-    2. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
+    1. Consider the database results and user query. Only consider the top 5 results that match the user's intent. If there are more than 5 results of none of them match, return an empty list.
+    2. Give answer base on the data, but keep it concise and natural. Don't just read out the product names — synthesize a helpful response. For example, if the user asked for "red shirts under $50" and you found 3 matching products, you might say: "I found 3 red shirts under $50. The 'Crimson Tee' is $30, the 'Scarlet Blouse' is $45, and the 'Ruby Polo' is $25. Would you like to see more details on any of these?"
+    3. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
     """
     
     response_model = ui_llm.invoke([

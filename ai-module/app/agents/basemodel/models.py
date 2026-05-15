@@ -189,3 +189,4 @@ class MasterState(TypedDict):
     customer_id: str
     # UI data for structured information (MCP, UI)
     ui_data: Dict[str, Any]
+    faq_hit: bool
