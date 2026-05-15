@@ -6,7 +6,7 @@
 -- ====================================
 INSERT INTO users (email, username, status)
 VALUES (
-        'itisatreeeee@gmail.com',
+        'justintran2901@gmail.com',
         'goat',
         0
     ),
@@ -408,10 +408,10 @@ VALUES (1, 0),
     (4, 0), -- Seller can also buy
     (5, 2),
     (6, 2),
-    (7, 2),
-    (8, 2),
-    (9, 2),
-    (10, 2);
+    (7, 1),
+    (8, 1),
+    (9, 0),
+    (10, 0);
 -- ====================================
 -- 5. CATEGORIES
 -- - is_core = true  => core browsing categories
