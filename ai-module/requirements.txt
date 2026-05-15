@@ -33,3 +33,5 @@ pypdf
 
 #--------Testing
 pytest
+deepeval
+litellm
