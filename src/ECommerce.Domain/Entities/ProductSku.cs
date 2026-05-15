@@ -11,7 +11,9 @@ public partial class ProductSku
 
     public required string Sku { get; set; } = string.Empty;
 
-    public string? VariantAttributes { get; set; }
+    public string? Color { get; set; }
+
+    public string? Size { get; set; }
 
     public decimal Price { get; set; }
 
@@ -47,7 +49,8 @@ public partial class ProductSku
         {
             Product = product,
             Sku = sku,
-            VariantAttributes = "{}",
+            Color = null,
+            Size = null,
             Price = price,
             IsActive = true,
             IsDefault = true,

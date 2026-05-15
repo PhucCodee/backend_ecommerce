@@ -83,7 +83,7 @@ namespace ECommerce.Application.Services
                         .Where(i => !i.IsDeleted && i.IsPrimary)
                         .Select(i => i.ThumbnailUrl)
                         .FirstOrDefault(),
-                    VariantCount = p.ProductSkus.Count(s => !s.IsDefault),
+                    VariantCount = p.ProductSkus.Count(s => s.IsActive),
                     AverageRating = p
                         .ProductMetrics.OrderByDescending(m => m.Date)
                         .Select(m => m.AverageRating ?? 0)

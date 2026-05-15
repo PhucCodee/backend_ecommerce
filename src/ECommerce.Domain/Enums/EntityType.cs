@@ -6,5 +6,5 @@ public enum EntityType
     product,
     review,
     user,
-    payment
+    payment,
 }

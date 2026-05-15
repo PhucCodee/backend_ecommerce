@@ -5,5 +5,5 @@ public enum NotificationChannel
     email,
     sms,
     in_app,
-    push
+    push,
 }

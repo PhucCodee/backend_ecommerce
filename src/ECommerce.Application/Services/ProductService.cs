@@ -35,7 +35,7 @@ namespace ECommerce.Application.Services
             var product = Product.CreateDefault(
                 name: createDto.Name,
                 slug: slug,
-                baseSku: SkuGenerator.GenerateBaseSku(),
+                baseSku: SkuHelper.GenerateBaseSku(),
                 sellerId: sellerId,
                 description: createDto.Description,
                 brand: createDto.Brand,
@@ -122,7 +122,11 @@ namespace ECommerce.Application.Services
             if (sellerId.HasValue && product.SellerId != sellerId.Value)
                 throw new ForbiddenException("You do not have permission to delete this product");
 
+            if (product.IsDeleted())
+                throw new BadRequestException("Product is already deleted");
+
             product.SoftDelete();
+
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
@@ -134,19 +138,16 @@ namespace ECommerce.Application.Services
                 ?? throw new NotFoundException("Product not found");
 
             if (!product.IsDeleted())
-                throw new BadRequestException("Product is not suspended");
+                throw new BadRequestException("Product is not deleted");
 
             if (sellerId.HasValue && product.SellerId != sellerId.Value)
                 throw new ForbiddenException("You do not have permission to restore this product");
 
             product.Restore();
+
             await _unitOfWork.SaveChangesAsync();
 
-            var loaded =
-                await _productRepository.GetByIdWithDetailsAsync(productId)
-                ?? throw new NotFoundException("Product not found after restore");
-
-            return _mapper.Map<ProductDto>(loaded);
+            return _mapper.Map<ProductDto>(product);
         }
 
         #region Private Helpers

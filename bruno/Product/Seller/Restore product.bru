@@ -1,0 +1,20 @@
+meta {
+  name: Restore product
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:8080/api/products/seller/21/restore
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJzdGVwaGVuQGdtYWlsLmNvbSIsImp0aSI6IjczZThjNDJmLWQ3ZTgtNDU2NS05ZDBiLTAxYjFjOWEzNzU1ZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJzZWxsZXIiLCJidXllciJdLCJleHAiOjE3Nzg4MzQ1NjMsImlzcyI6IkVDb21tZXJjZS5BUEkiLCJhdWQiOiJFQ29tbWVyY2UuQ2xpZW50In0.PWsxt6jm6nDgKMFTesf_6WK1gEqPbC2I_jpTHtZ1sZs
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Moq;
-using Xunit;
+using ECommerce.Application.DTOs;
 using ECommerce.Application.Interfaces;
 using ECommerce.Application.Services;
 using ECommerce.Domain.Entities;
-using ECommerce.Application.DTOs;
+using Moq;
+using Xunit;
 
 namespace ECommerce.UnitTests.Services
 {
@@ -21,19 +21,20 @@ namespace ECommerce.UnitTests.Services
             _mockProductRepository = new Mock<IProductRepository>();
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
-            _productService = new ProductService(_mockProductRepository.Object, _mockUnitOfWork.Object);
+            _productService = new ProductService(
+                _mockProductRepository.Object,
+                _mockUnitOfWork.Object
+            );
         }
 
         [Fact]
         public async Task GetAllProducts_ShouldReturnAllProducts()
         {
             // Arrange
-            var products = new List<Product>
-            {
-                CreateProduct(1, 10m, 5),
-                CreateProduct(2, 20m, 3)
-            };
-            _mockProductRepository.Setup(repo => repo.GetAllWithDetailsAsync()).ReturnsAsync(products);
+            var products = new List<Product> { CreateProduct(1, 10m, 5), CreateProduct(2, 20m, 3) };
+            _mockProductRepository
+                .Setup(repo => repo.GetAllWithDetailsAsync())
+                .ReturnsAsync(products);
 
             // Act
             var result = await _productService.GetAllProductsAsync();
@@ -47,7 +48,9 @@ namespace ECommerce.UnitTests.Services
         {
             // Arrange
             var product = CreateProduct(1, 10m, 5);
-            _mockProductRepository.Setup(repo => repo.GetByIdWithDetailsAsync(1)).ReturnsAsync(product);
+            _mockProductRepository
+                .Setup(repo => repo.GetByIdWithDetailsAsync(1))
+                .ReturnsAsync(product);
 
             // Act
             var result = await _productService.GetProductByIdAsync(1);
@@ -61,7 +64,9 @@ namespace ECommerce.UnitTests.Services
         public async Task GetProductById_ShouldReturnNull_WhenProductDoesNotExist()
         {
             // Arrange
-            _mockProductRepository.Setup(repo => repo.GetByIdWithDetailsAsync(1)).ReturnsAsync((Product)null);
+            _mockProductRepository
+                .Setup(repo => repo.GetByIdWithDetailsAsync(1))
+                .ReturnsAsync((Product)null);
 
             // Act
             var result = await _productService.GetProductByIdAsync(1);
@@ -74,9 +79,17 @@ namespace ECommerce.UnitTests.Services
         public async Task CreateProduct_ShouldAddProduct()
         {
             // Arrange
-            _mockProductRepository.Setup(repo => repo.AddAsync(It.IsAny<Product>()))
+            _mockProductRepository
+                .Setup(repo => repo.AddAsync(It.IsAny<Product>()))
                 .ReturnsAsync((Product p) => p);
-            var dto = new ProductDto { Name = "Product 1", Price = 10m, Stock = 5, CategoryId = 1, SellerId = 1 };
+            var dto = new ProductDto
+            {
+                Name = "Product 1",
+                Price = 10m,
+                Stock = 5,
+                CategoryId = 1,
+                SellerId = 1,
+            };
 
             // Act
             var result = await _productService.CreateProductAsync(dto);
@@ -91,8 +104,17 @@ namespace ECommerce.UnitTests.Services
         {
             // Arrange
             var product = CreateProduct(1, 10m, 5);
-            _mockProductRepository.Setup(repo => repo.GetByIdWithDetailsAsync(1)).ReturnsAsync(product);
-            var dto = new ProductDto { Name = "Updated Product 1", Price = 15m, Stock = 3, CategoryId = 1, SellerId = 1 };
+            _mockProductRepository
+                .Setup(repo => repo.GetByIdWithDetailsAsync(1))
+                .ReturnsAsync(product);
+            var dto = new ProductDto
+            {
+                Name = "Updated Product 1",
+                Price = 15m,
+                Stock = 3,
+                CategoryId = 1,
+                SellerId = 1,
+            };
 
             // Act
             var result = await _productService.UpdateProductAsync(1, dto);
@@ -136,7 +158,8 @@ namespace ECommerce.UnitTests.Services
                 Product = product,
                 SkuId = id,
                 Sku = $"SKU-{id}",
-                VariantAttributes = "default",
+                Color = "Black",
+                Size = "M",
                 Price = price,
                 IsDefault = true,
                 IsActive = true,
@@ -153,7 +176,7 @@ namespace ECommerce.UnitTests.Services
                 ReorderPoint = 0,
                 ReorderQuantity = 0,
                 CreatedAt = now,
-                UpdatedAt = now
+                UpdatedAt = now,
             };
 
             product.ProductSkus.Add(sku);
