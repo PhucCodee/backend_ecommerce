@@ -81,7 +81,7 @@ services:
 
     chatbot_api:
         build:
-            context: ./ai-module/
+            context: ./ai-module
             dockerfile: Dockerfile
         ports:
         - "8000:8000"
@@ -91,14 +91,13 @@ services:
         - DB_USER=postgres.krcpbzniiauqtdogamze
         - DB_PASSWORD=${POSTGRES_PASSWORD} # Use variable
         - DB_PORT=5432
-        - FAQ_PATH= app/faq.json
         - CHROMA_DB_PATH=/app/chroma_db
         - GOOGLE_API_KEY=${GOOGLE_API_KEY} # Use variable
 
         volumes:
         - ./ai-module/app:/app/app
         - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
-        - ./ai-module/agents/faq.json:/app/faq.json
+
 
 volumes:
     postgres_data:
