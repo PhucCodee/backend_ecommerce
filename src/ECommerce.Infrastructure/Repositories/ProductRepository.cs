@@ -31,11 +31,7 @@ namespace ECommerce.Infrastructure.Repositories
                 .Include(p => p.ProductMetrics);
         }
 
-        public async Task<Product?> GetByIdIncludingRemovedAsync(int id)
-        {
-            return await ProductDetailsQuery(includeRemoved: true)
-                .FirstOrDefaultAsync(p => p.ProductId == id);
-        }
+        
 
         public async Task<Product?> GetByIdWithDetailsAsync(int id)
         {
