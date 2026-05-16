@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using AutoMapper;
-using ECommerce.Application.DTOs;
 using ECommerce.Application.DTOs.address;
 using ECommerce.Application.DTOs.cart;
 using ECommerce.Application.DTOs.category;
@@ -19,6 +18,39 @@ namespace ECommerce.Application.Mappings
     {
         public AutoMapperProfile()
         {
+            CreateMap<User, UserDto>()
+                .ForMember(
+                    dest => dest.FirstName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.UserProfile != null ? src.UserProfile.FirstName : string.Empty
+                        )
+                )
+                .ForMember(
+                    dest => dest.LastName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.UserProfile != null ? src.UserProfile.LastName : string.Empty
+                        )
+                )
+                .ForMember(
+                    dest => dest.AvatarUrl,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.UserProfile != null ? src.UserProfile.AvatarUrl : null
+                        )
+                )
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(
+                    dest => dest.Roles,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.UserRoleUsers.Where(r => r.RevokedAt == null)
+                                .Select(r => r.Role.ToString())
+                                .ToArray()
+                        )
+                );
+
             // User - UserProfileDto
             CreateMap<User, UserProfileDto>()
                 .ForMember(
@@ -142,7 +174,7 @@ namespace ECommerce.Application.Mappings
                 )
                 .ForMember(
                     dest => dest.VariantCount,
-                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => !ps.IsDefault))
+                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => ps.IsActive))
                 )
                 .ForMember(
                     dest => dest.Price,
@@ -255,7 +287,7 @@ namespace ECommerce.Application.Mappings
                 )
                 .ForMember(
                     dest => dest.VariantCount,
-                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => !ps.IsDefault))
+                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => ps.IsActive))
                 )
                 .ForMember(
                     dest => dest.Price,
@@ -299,6 +331,15 @@ namespace ECommerce.Application.Mappings
                         )
                 );
 
+            CreateMap<ProductSku, ProductDetailSkuDto>()
+                .ForMember(
+                    dest => dest.Stock,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Inventory != null ? src.Inventory.QuantityAvailable : 0
+                        )
+                );
+
             // Product — ProductDetailDto
             CreateMap<Product, ProductDetailDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProductId))
@@ -318,7 +359,7 @@ namespace ECommerce.Application.Mappings
                 )
                 .ForMember(
                     dest => dest.VariantCount,
-                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => !ps.IsDefault))
+                    opt => opt.MapFrom(src => src.ProductSkus.Count(ps => ps.IsActive))
                 )
                 .ForMember(
                     dest => dest.AverageRating,
@@ -372,10 +413,10 @@ namespace ECommerce.Application.Mappings
                     dest => dest.Images,
                     opt =>
                         opt.MapFrom(src =>
-                            src.ProductSkus.Where(s => s.IsDefault)
-                                .SelectMany(s => s.ProductImages)
+                            src.ProductSkus.SelectMany(s => s.ProductImages)
                                 .Where(i => !i.IsDeleted)
-                                .OrderBy(i => i.DisplayOrder)
+                                .OrderByDescending(i => i.IsPrimary)
+                                .ThenBy(i => i.DisplayOrder)
                         )
                 )
                 .ForMember(
@@ -417,8 +458,12 @@ namespace ECommerce.Application.Mappings
                         )
                 )
                 .ForMember(
-                    dest => dest.VariantAttributes,
-                    opt => opt.MapFrom(src => src.Sku != null ? src.Sku.VariantAttributes : null)
+                    dest => dest.Color,
+                    opt => opt.MapFrom(src => src.Sku != null ? src.Sku.Color : null)
+                )
+                .ForMember(
+                    dest => dest.Size,
+                    opt => opt.MapFrom(src => src.Sku != null ? src.Sku.Size : null)
                 )
                 .ForMember(
                     dest => dest.ImageUrl,
@@ -499,6 +544,8 @@ namespace ECommerce.Application.Mappings
                 );
 
             CreateMap<UserAddress, AddressDto>();
+
+            CreateMap<Inventory, InventoryDto>();
 
             CreateMap<Coupon, CouponDto>();
 

@@ -14,6 +14,10 @@ namespace ECommerce.Application.Interfaces
         /// Called from within an existing transaction — does NOT call SaveChanges itself.
         /// </summary>
         /// <param name="reservations">Map of skuId → quantity to release.</param>
-        Task ReleaseReservationAsync(int orderId, string orderNumber, IEnumerable<(int SkuId, int Quantity)> reservations);
+        Task ReleaseReservationAsync(
+            int orderId,
+            string orderNumber,
+            IEnumerable<(int SkuId, int Quantity)> reservations
+        );
     }
 }

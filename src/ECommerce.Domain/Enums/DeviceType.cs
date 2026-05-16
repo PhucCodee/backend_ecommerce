@@ -4,5 +4,5 @@ public enum DeviceType
 {
     mobile,
     desktop,
-    tablet
+    tablet,
 }

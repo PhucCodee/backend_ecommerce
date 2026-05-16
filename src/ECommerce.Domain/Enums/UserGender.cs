@@ -5,5 +5,5 @@ public enum UserGender
     male,
     female,
     other,
-    prefer_not_to_say
+    prefer_not_to_say,
 }

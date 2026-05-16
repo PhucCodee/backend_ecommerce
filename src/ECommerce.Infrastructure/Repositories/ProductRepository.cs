@@ -12,10 +12,15 @@ namespace ECommerce.Infrastructure.Repositories
         : Repository<Product>(context),
             IProductRepository
     {
-        public async Task<Product?> GetByIdWithDetailsAsync(int id)
+        private IQueryable<Product> ProductDetailsQuery(bool includeRemoved = false)
         {
-            return await _context
-                .Products.Where(p => p.RemovedAt == null)
+            var query = _context.Products.AsQueryable();
+
+            if (!includeRemoved)
+                query = query.Where(p => p.RemovedAt == null);
+
+            return query
+                .AsSplitQuery()
                 .Include(p => p.ProductCategories)
                     .ThenInclude(pc => pc.Category)
                 .Include(p => p.Seller)
@@ -23,7 +28,18 @@ namespace ECommerce.Infrastructure.Repositories
                     .ThenInclude(sku => sku.Inventory)
                 .Include(p => p.ProductSkus)
                     .ThenInclude(sku => sku.ProductImages.Where(img => !img.IsDeleted))
-                .Include(p => p.ProductMetrics)
+                .Include(p => p.ProductMetrics);
+        }
+
+        public async Task<Product?> GetByIdIncludingRemovedAsync(int id)
+        {
+            return await ProductDetailsQuery(includeRemoved: true)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+        }
+
+        public async Task<Product?> GetByIdWithDetailsAsync(int id)
+        {
+            return await ProductDetailsQuery(includeRemoved: false)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
         }
 

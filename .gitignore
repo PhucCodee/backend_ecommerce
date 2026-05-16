@@ -76,6 +76,7 @@ dist/
 build/
 coverage/
 
+
 # Bỏ qua thư mục môi trường ảo Python
 venv/
 env/
@@ -88,7 +89,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.env
+
 # Bỏ qua thư mục cache của pytest
 .pytest_cache/
-*.png
+.env

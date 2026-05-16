@@ -7,9 +7,14 @@ env/
 
 # Python artifacts
 __pycache__/
+.pytest_cache
 *.pyc
 .deepeval/
 # ChromaDB / Vector Store data
 chroma_db_data/
 # Ignore the UUID folders (wildcard match)
 [0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*-[0-9a-fA-F]*/
+
+# Testing
+.pytest_cache
+.deepeval/

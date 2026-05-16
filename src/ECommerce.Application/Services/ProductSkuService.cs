@@ -9,6 +9,7 @@ using ECommerce.Application.Exceptions;
 using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
 
 namespace ECommerce.Application.Services
@@ -25,6 +26,13 @@ namespace ECommerce.Application.Services
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
 
+        private static readonly HashSet<string> AllowedColors = Enum.GetNames(typeof(ProductColor))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly HashSet<string> AllowedSizes = Enum.GetNames(typeof(ProductSize))
+            .Select(n => n.StartsWith("EU") ? n[2..] : n)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         public async Task<ProductSkuDto> CreateAsync(
             ProductSkuCreateDto createDto,
             int? sellerId = null
@@ -37,12 +45,14 @@ namespace ECommerce.Application.Services
                     "You do not have permission to add SKU to this product"
                 );
 
+            ValidateColorAndSize(createDto.Color, createDto.Size);
+
             var sku = CreateSkuFromDto(product, createDto);
 
             await _productSkuRepository.AddAsync(sku);
             await _unitOfWork.SaveChangesAsync();
 
-            sku.Sku = SkuGenerator.GenerateVariantSku(product.BaseSku, sku.SkuId);
+            sku.Sku = SkuHelper.GenerateVariantSku(product.BaseSku, sku.SkuId);
             ImageHelper.AddImages(sku, createDto.Images, $"{product.ProductName} - {sku.Sku}");
             await _unitOfWork.SaveChangesAsync();
 
@@ -59,6 +69,8 @@ namespace ECommerce.Application.Services
 
             if (sellerId.HasValue && sku.Product.SellerId != sellerId.Value)
                 throw new ForbiddenException("You do not have permission to update this SKU");
+
+            ValidateColorAndSize(updateDto.Color, updateDto.Size);
 
             ApplyUpdates(sku, updateDto);
 
@@ -123,7 +135,8 @@ namespace ECommerce.Application.Services
                 Product = product,
                 ProductId = product.ProductId,
                 Sku = "",
-                VariantAttributes = dto.VariantAttributes,
+                Color = NormalizeColor(dto.Color),
+                Size = NormalizeSize(dto.Size),
                 Price = dto.Price,
                 CostPrice = dto.CostPrice,
                 CompareAtPrice = dto.CompareAtPrice,
@@ -136,7 +149,6 @@ namespace ECommerce.Application.Services
             };
 
             sku.Inventory = BuildInventory(sku, dto.Inventory, dto.Stock);
-            ImageHelper.AddImages(sku, dto.Images, $"{product.ProductName} - {product.BaseSku}");
 
             return sku;
         }
@@ -172,8 +184,10 @@ namespace ECommerce.Application.Services
         {
             var now = DateTime.UtcNow;
 
-            if (!string.IsNullOrWhiteSpace(dto.VariantAttributes))
-                sku.VariantAttributes = dto.VariantAttributes;
+            if (!string.IsNullOrWhiteSpace(dto.Color))
+                sku.Color = NormalizeColor(dto.Color);
+            if (!string.IsNullOrWhiteSpace(dto.Size))
+                sku.Size = NormalizeSize(dto.Size);
             if (dto.Price.HasValue)
                 sku.Price = dto.Price.Value;
             if (dto.CostPrice.HasValue)
@@ -211,6 +225,40 @@ namespace ECommerce.Application.Services
                     now,
                     $"{sku.Product.ProductName} - {sku.Sku}"
                 );
+        }
+
+        private static void ValidateColorAndSize(string? color, string? size)
+        {
+            if (!string.IsNullOrWhiteSpace(color) && !AllowedColors.Contains(color))
+                throw new BadRequestException("Invalid color");
+
+            if (!string.IsNullOrWhiteSpace(size) && !AllowedSizes.Contains(size))
+                throw new BadRequestException("Invalid size");
+        }
+
+        private static string? NormalizeColor(string? color)
+        {
+            if (string.IsNullOrWhiteSpace(color))
+                return null;
+
+            if (!Enum.TryParse<ProductColor>(color, true, out var parsed))
+                throw new BadRequestException("Invalid color");
+
+            return parsed.ToString();
+        }
+
+        private static string? NormalizeSize(string? size)
+        {
+            if (string.IsNullOrWhiteSpace(size))
+                return null;
+
+            if (Enum.TryParse<ProductSize>(size, true, out var parsed))
+            {
+                var name = parsed.ToString();
+                return name.StartsWith("EU", StringComparison.Ordinal) ? name[2..] : name;
+            }
+
+            throw new BadRequestException("Invalid size");
         }
 
         #endregion

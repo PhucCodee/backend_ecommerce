@@ -15,13 +15,19 @@ namespace ECommerce.Application.DTOs.auth
         [Required(ErrorMessage = "Username is required")]
         [MinLength(3, ErrorMessage = "Username must be at least 3 characters")]
         [MaxLength(50, ErrorMessage = "Username cannot exceed 50 characters")]
-        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Username can only contain letters, numbers, and underscores")]
+        [RegularExpression(
+            @"^[a-zA-Z0-9_]+$",
+            ErrorMessage = "Username can only contain letters, numbers, and underscores"
+        )]
         public required string Username { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
         [MaxLength(128, ErrorMessage = "Password cannot exceed 128 characters")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
+        [RegularExpression(
+            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+            ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        )]
         public required string Password { get; set; }
 
         [Required(ErrorMessage = "Password confirmation is required")]
@@ -31,22 +37,35 @@ namespace ECommerce.Application.DTOs.auth
         [Required(ErrorMessage = "First name is required")]
         [MinLength(1, ErrorMessage = "First name is required")]
         [MaxLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
-        [RegularExpression(@"^[\p{L}\s\-']+$", ErrorMessage = "Name can only contain letters, spaces, hyphens, and apostrophes")]
-
+        [RegularExpression(
+            @"^[\p{L}\s\-']+$",
+            ErrorMessage = "Name can only contain letters, spaces, hyphens, and apostrophes"
+        )]
         public required string FirstName { get; set; }
 
         [Required(ErrorMessage = "Last name is required")]
         [MinLength(1, ErrorMessage = "Last name is required")]
         [MaxLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
-        [RegularExpression(@"^[\p{L}\s\-']+$", ErrorMessage = "Name can only contain letters, spaces, hyphens, and apostrophes")]
+        [RegularExpression(
+            @"^[\p{L}\s\-']+$",
+            ErrorMessage = "Name can only contain letters, spaces, hyphens, and apostrophes"
+        )]
         public required string LastName { get; set; }
 
         [Phone(ErrorMessage = "Invalid phone number format")]
-        [RegularExpression(@"^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$", ErrorMessage = "Phone number must be a valid Vietnamese mobile number")]
+        [RegularExpression(
+            @"^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$",
+            ErrorMessage = "Phone number must be a valid Vietnamese mobile number"
+        )]
         public string Phone { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "You must accept the terms and conditions")]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms and conditions")]
+        [Range(
+            typeof(bool),
+            "true",
+            "true",
+            ErrorMessage = "You must accept the terms and conditions"
+        )]
         public bool AcceptTerms { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -81,7 +100,11 @@ namespace ECommerce.Application.DTOs.auth
 
             // Validate username doesn't contain offensive words
             var offensiveWords = new[] { "admin", "root", "system", "support" };
-            if (offensiveWords.Any(word => Username.Contains(word, StringComparison.OrdinalIgnoreCase)))
+            if (
+                offensiveWords.Any(word =>
+                    Username.Contains(word, StringComparison.OrdinalIgnoreCase)
+                )
+            )
             {
                 yield return new ValidationResult(
                     "Username contains restricted words.",

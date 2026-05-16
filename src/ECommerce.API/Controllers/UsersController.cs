@@ -43,7 +43,7 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
         {
             var users = await userService.GetAllPagedAsync(paginationParams);
-            return Ok(ApiResponse<PagedResult<UserProfileDto>>.Ok(users));
+            return Ok(ApiResponse<PagedResult<UserDto>>.Ok(users));
         }
 
         // Get user by id
@@ -52,7 +52,7 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var user = await userService.GetByIdAsync(id);
-            return Ok(ApiResponse<UserProfileDto>.Ok(user));
+            return Ok(ApiResponse<UserDto>.Ok(user));
         }
 
         // Create a new user
@@ -63,7 +63,7 @@ namespace ECommerce.API.Controllers
             var user = await userService.CreateAsync(createDto);
             return StatusCode(
                 StatusCodes.Status201Created,
-                ApiResponse<UserProfileDto>.Ok(user, "User created successfully")
+                ApiResponse<UserDto>.Ok(user, "User created successfully")
             );
         }
 
@@ -73,7 +73,7 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto updateDto)
         {
             var user = await userService.UpdateAsync(id, updateDto);
-            return Ok(ApiResponse<UserProfileDto>.Ok(user, "User updated successfully"));
+            return Ok(ApiResponse<UserDto>.Ok(user, "User updated successfully"));
         }
 
         // Delete user

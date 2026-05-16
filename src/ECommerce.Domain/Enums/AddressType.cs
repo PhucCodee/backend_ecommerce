@@ -5,5 +5,5 @@ public enum AddressType
     house,
     apartment,
     office,
-    other
+    other,
 }

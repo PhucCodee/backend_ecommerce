@@ -35,24 +35,10 @@ namespace ECommerce.Infrastructure.Repositories
                 );
         }
 
-        public async Task<User?> GetUserWithCredentialsAsync(string email)
-        {
-            return await GetActiveUsers()
-                .Include(u => u.UserCredential)
-                .FirstOrDefaultAsync(u => u.Email == email);
-        }
-
         public async Task<User?> GetUserWithProfileAsync(int userId)
         {
             return await GetActiveUsers()
                 .Include(u => u.UserProfile)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
-        }
-
-        public async Task<User?> GetUserWithRolesAsync(int userId)
-        {
-            return await GetActiveUsers()
-                .Include(u => u.UserRoleUsers.Where(r => r.RevokedAt == null))
                 .FirstOrDefaultAsync(u => u.UserId == userId);
         }
 
@@ -75,19 +61,6 @@ namespace ECommerce.Infrastructure.Repositories
             return await GetActiveUsers().AnyAsync(u => u.Username == username);
         }
 
-        public async Task<IEnumerable<User>> GetAllWithProfileAsync()
-        {
-            return await GetActiveUsers().Include(u => u.UserProfile).ToListAsync();
-        }
-
-        public async Task<User?> GetWithProfileAsync(int userId)
-        {
-            return await GetActiveUsers()
-                .Include(u => u.UserProfile)
-                .Include(u => u.UserCredential)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
-        }
-
         public override async Task<IEnumerable<User>> GetAllAsync()
         {
             return await GetActiveUsers().ToListAsync();
@@ -99,6 +72,8 @@ namespace ECommerce.Infrastructure.Repositories
         )
         {
             var query = GetActiveUsers()
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(u => u.UserProfile)
                 .Include(u => u.UserRoleUsers.Where(r => r.RevokedAt == null));
 

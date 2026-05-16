@@ -9,7 +9,11 @@ using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
+using ECommerce.Domain.Events;
+using ECommerce.Domain.Interfaces;
 using ECommerce.Domain.Repositories;
+using ECommerce.Infrastructure.Services;
+using MassTransit;
 
 namespace ECommerce.Application.Services
 {
@@ -19,7 +23,8 @@ namespace ECommerce.Application.Services
         IJwtService jwtService,
         IPasswordService passwordService,
         IMapper mapper,
-        UserValidationHelper validationHelper
+        UserValidationHelper validationHelper,
+        IEventPublisher eventPublisher
     ) : IAuthService
     {
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
@@ -40,18 +45,27 @@ namespace ECommerce.Application.Services
                 registerDto.LastName,
                 registerDto.Phone
             );
+            var buyerRole = UserRole.CreateDefault(user, UserRoleType.buyer);
+            user.UserRoleUsers.Add(buyerRole);
 
-            // Assign default role (buyer)
-            var defaultRole = UserRole.CreateDefault(user, UserRoleType.buyer);
-            user.UserRoleUsers.Add(defaultRole);
+            await userRepository.AddAsync(user);
+            await unitOfWork.SaveChangesAsync();
+
+            await eventPublisher.PublishAsync(
+                new UserRegisteredEvent
+                {
+                    UserId = user.UserId,
+                    Email = user.Email,
+                    FirstName = registerDto.FirstName,
+                    LastName = registerDto.LastName,
+                }
+            );
 
             var roles = GetActiveRoleNames(user);
             var (accessToken, refreshToken, session) = GenerateTokensAndSession(user, roles);
             user.UserSessions.Add(session);
 
-            await userRepository.AddAsync(user);
             await unitOfWork.SaveChangesAsync();
-
             return CreateAuthResponse(accessToken, refreshToken, user);
         }
 
@@ -173,7 +187,7 @@ namespace ECommerce.Application.Services
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddHours(1),
-                User = mapper.Map<UserProfileDto>(user),
+                User = mapper.Map<UserDto>(user),
             };
 
         private (
