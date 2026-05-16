@@ -60,8 +60,12 @@ services:
         volumes:
             - postgres_data:/var/lib/postgresql/data
             - ./database/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-            - ./database/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
-            - ./database/03_image.sql:/docker-entrypoint-initdb.d/03_image.sql:ro
+            - ./database/02_users.sql:/docker-entrypoint-initdb.d/02_users.sql:ro
+            - ./database/03_categories.sql:/docker-entrypoint-initdb.d/03_categories.sql:ro
+            - ./database/04_products.sql:/docker-entrypoint-initdb.d/04_products.sql:ro
+            - ./database/05_product_categories.sql:/docker-entrypoint-initdb.d/05_product_categories.sql:ro
+            - ./database/06_product_skus.sql:/docker-entrypoint-initdb.d/06_product_skus.sql:ro
+            - ./database/07_product_images.sql:/docker-entrypoint-initdb.d/07_product_images.sql:ro
 
     message_broker:
         image: rabbitmq:3-management
