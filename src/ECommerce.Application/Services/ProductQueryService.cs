@@ -28,6 +28,62 @@ namespace ECommerce.Application.Services
             return _mapper.Map<ProductDetailDto>(product);
         }
 
+        public async Task<PagedResult<PublicProductSummaryDto>> GetPublicFilteredAsync(
+            ProductQueryParams productQueryParams
+        )
+        {
+            var dbQuery = productQueryParams.IncludeSuspended
+                ? _context.Products.AsNoTracking()
+                : _context.Products.AsNoTracking().Where(p => p.RemovedAt == null);
+
+            dbQuery = ApplyFilters(dbQuery, productQueryParams);
+
+            var totalCount = await dbQuery.CountAsync();
+
+            dbQuery = ApplySorting(dbQuery, productQueryParams.SortBy, productQueryParams.Desc);
+
+            var products = await dbQuery
+                .AsSplitQuery()
+                .Skip((productQueryParams.PageNumber - 1) * productQueryParams.PageSize)
+                .Take(productQueryParams.PageSize)
+                .Select(p => new PublicProductSummaryDto
+                {
+                    Id = p.ProductId,
+                    Name = p.ProductName,
+                    Slug = p.Slug,
+                    Brand = p.Brand,
+                    PrimaryCategoryName = p
+                        .ProductCategories.Where(pc => pc.IsPrimary)
+                        .Select(pc => pc.Category.CategoryName)
+                        .FirstOrDefault(),
+                    Price = p
+                        .ProductSkus.Where(s => s.IsDefault)
+                        .Select(s => s.Price)
+                        .FirstOrDefault(),
+                    CompareAtPrice = p
+                        .ProductSkus.Where(s => s.IsDefault)
+                        .Select(s => s.CompareAtPrice)
+                        .FirstOrDefault(),
+                    InStock = p.ProductSkus.Any(s =>
+                        s.IsDefault && s.Inventory != null && s.Inventory.QuantityAvailable > 0
+                    ),
+                    ThumbnailUrl = p
+                        .ProductSkus.Where(s => s.IsDefault)
+                        .SelectMany(s => s.ProductImages)
+                        .Where(i => !i.IsDeleted && i.IsPrimary)
+                        .Select(i => i.ThumbnailUrl)
+                        .FirstOrDefault(),
+                })
+                .ToListAsync();
+
+            return PagedResult<PublicProductSummaryDto>.Create(
+                products,
+                productQueryParams.PageNumber,
+                productQueryParams.PageSize,
+                totalCount
+            );
+        }
+
         public async Task<PagedResult<ProductSummaryDto>> GetFilteredAsync(
             ProductQueryParams productQueryParams
         )
@@ -136,10 +192,13 @@ namespace ECommerce.Application.Services
                     x.ProductSkus.Any(s => s.IsDefault && s.Price <= p.MaxPrice.Value)
                 );
 
-            if (p.CategoryId.HasValue)
+            var categoryIds = p.CategoryIds?.Where(id => id > 0).Distinct().ToList() ?? [];
+            if (categoryIds.Count > 0)
+            {
                 query = query.Where(x =>
-                    x.ProductCategories.Any(pc => pc.CategoryId == p.CategoryId.Value)
+                    categoryIds.All(id => x.ProductCategories.Any(pc => pc.CategoryId == id))
                 );
+            }
 
             if (!string.IsNullOrWhiteSpace(p.Brand))
                 query = query.Where(x =>

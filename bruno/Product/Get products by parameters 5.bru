@@ -5,13 +5,14 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/api/products?categoryId=5
+  url: http://localhost:8080/api/products?categoryIds=3&categoryIds=4
   body: none
   auth: inherit
 }
 
 params:query {
-  categoryId: 5
+  categoryIds: 3
+  categoryIds: 4
 }
 
 settings {
