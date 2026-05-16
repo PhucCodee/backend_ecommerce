@@ -190,7 +190,7 @@ def route_after_faq_lookup(state: MasterState):
 
 # ── Các node giữ nguyên ───────────────────────────────────────────────────────
 def call_llm(state: MasterState):
-    prompt = """You are a helpful AI assistant for "My Shop", an e-commerce platform.
+    prompt = """You are a helpful AI assistant for "Sanquo", an e-commerce platform.
     Your primary role is to answer customer questions about the store's policies and features.
 
     **Core Rules:**
