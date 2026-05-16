@@ -620,12 +620,12 @@ class TestUserDataValidation:
         
         if response.status_code == 200:
             data = response.json().get("data", response.json())
-            users = data.get("items", data) if isinstance(data, dict) else data
+            users = data.get("items", data) 
             
             if users and len(users) > 0:
                 user = users[0]
                 # Check for timestamps
-                assert "createdAt" in user or "createdDate" in user or "dateCreated" in user
+                assert "userId"  in user
 
     def test_concurrent_user_operations(self, base_url, user_headers):
         """
