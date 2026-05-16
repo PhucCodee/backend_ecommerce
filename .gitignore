@@ -91,3 +91,4 @@ __pycache__/
 .env
 # Bỏ qua thư mục cache của pytest
 .pytest_cache/
+*.png
