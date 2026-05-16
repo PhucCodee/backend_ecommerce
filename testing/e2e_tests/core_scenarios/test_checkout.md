@@ -24,7 +24,7 @@
 
 4. **Login**
    - Click "Login" button
-   - Fill credentials (goat/Phuc123)
+   - Fill credentials (goat/Phuc123@)
    - Screenshot: `guest_flow_login_success.png` - Login successful
 
 5. **Adjust Quantity**
@@ -65,7 +65,7 @@
 
 1. **Login**
    - Navigate to login page
-   - Fill credentials (goat/Phuc123)
+   - Fill credentials (goat/Phuc123@)
    - Screenshot: `zalopay_flow_login_success.png` - Login successful
 
 2. **Navigate to Shop**

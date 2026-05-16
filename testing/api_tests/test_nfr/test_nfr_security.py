@@ -82,7 +82,7 @@ def test_nfr_1_4_jwt_token_expiry(base_url):
     - Test: Login to get token, check token expiry time in JWT payload.
     - Expected: Token exp claim should be 24 hours from issued time.
     """
-    payload = {"identifier": "west", "password": "Phuc123"}
+    payload = {"identifier": "west", "password": "Phuc123@"}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     
     assert response.status_code == 200
@@ -180,7 +180,7 @@ def test_nfr_1_5_refresh_token_expiry(base_url):
     - Test: Login to get refresh token, check expiry in payload.
     - Expected: Refresh token exp claim should be 7 days from issued time.
     """
-    payload = {"identifier": "west", "password": "Phuc123"}
+    payload = {"identifier": "west", "password": "Phuc123@"}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     
     assert response.status_code == 200

@@ -100,7 +100,7 @@ def buyer_creds():
     """Buyer credentials"""
     return {
         "identifier": "goat",
-        "password": "Phuc123",
+        "password": "Phuc123@",
         "email": "goat@example.com"
     }
 
@@ -110,7 +110,7 @@ def seller_creds():
     """Seller credentials"""
     return {
         "identifier": "stephen@gmail.com",
-        "password": "Phuc123",
+        "password": "Phuc123@",
         "email": "stephen@gmail.com"
     }
 
@@ -120,7 +120,7 @@ def admin_creds():
     """Admin credentials"""
     return {
         "identifier": "west",
-        "password": "Phuc123",
+        "password": "Phuc123@",
         "email": "west@example.com"
     }
 

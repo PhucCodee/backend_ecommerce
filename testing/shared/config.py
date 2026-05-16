@@ -11,17 +11,17 @@ class Config:
     
     # Tài khoản Buyer
     BUYER_EMAIL = os.getenv("TEST_BUYER_EMAIL", "goat")
-    BUYER_PASS = os.getenv("TEST_BUYER_PASS", "Phuc123")
+    BUYER_PASS = os.getenv("TEST_BUYER_PASS", "Phuc123@")
     BUYER_USERNAME = os.getenv("TEST_BUYER_USERNAME", "goat")
     
     # Tài khoản Seller
     SELLER_EMAIL = os.getenv("TEST_SELLER_EMAIL", "stephen@gmail.com")
-    SELLER_PASS = os.getenv("TEST_SELLER_PASS", "Phuc123")
+    SELLER_PASS = os.getenv("TEST_SELLER_PASS", "Phuc123@")
     SELLER_USERNAME = os.getenv("TEST_SELLER_USERNAME", "stephen@gmail.com")
     
     # Tài khoản Admin
     ADMIN_EMAIL = os.getenv("TEST_ADMIN_EMAIL", "west")
-    ADMIN_PASS = os.getenv("TEST_ADMIN_PASS", "Phuc123")
+    ADMIN_PASS = os.getenv("TEST_ADMIN_PASS", "Phuc123@")
     ADMIN_USERNAME = os.getenv("TEST_ADMIN_USERNAME", "west")
     
     # Playwright config

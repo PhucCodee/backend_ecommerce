@@ -10,7 +10,7 @@
 
 1. **Admin Login**
    - Navigate to admin login (http://localhost:3001/login)
-   - Fill credentials (west/Phuc123)
+   - Fill credentials (west/Phuc123@)
    - Screenshot: `admin_flow_login_success.png` - Admin login successful
 
 2. **Navigate Users Section**
@@ -63,7 +63,7 @@
 
 1. **Seller Login**
    - Navigate to seller login (http://localhost:3002/login)
-   - Fill credentials (stephen@gmail.com/Phuc123)
+   - Fill credentials (stephen@gmail.com/Phuc123@)
    - Screenshot: `seller_flow_login_success.png` - Seller login successful
 
 2. **View Dashboard Metrics**

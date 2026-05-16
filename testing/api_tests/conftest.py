@@ -12,7 +12,7 @@ def base_url():
 
 @pytest.fixture
 def admin_headers(base_url):
-    payload = {"identifier": "west", "password": "Phuc123"}
+    payload = {"identifier": "west", "password": "Phuc123@"}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     token = response.json()['data']['accessToken'] if response.status_code == 200 else ""
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
@@ -59,14 +59,14 @@ def pytest_html_results_table_html(report, data):
         data.append(str(report.longreprtext))
 @pytest.fixture
 def seller_headers(base_url):
-    payload = {"identifier": "stephen@gmail.com", "password": "Phuc123"}
+    payload = {"identifier": "stephen@gmail.com", "password": "Phuc123@"}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     token = response.json()['data']['accessToken']  if response.status_code == 200 else ""
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
 @pytest.fixture
 def user_headers(base_url):
-    payload = {"identifier": "goat", "password": "Phuc123"}
+    payload = {"identifier": "goat", "password": "Phuc123@"}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     token = response.json()['data']['accessToken']  if response.status_code == 200 else ""
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}

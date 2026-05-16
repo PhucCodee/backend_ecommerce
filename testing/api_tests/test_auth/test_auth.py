@@ -22,7 +22,7 @@ def test_user_registration_success(base_url):
 
 
 def test_login_success(base_url):
-    payload = {"identifier": "west", "password": "Phuc123"}
+    payload = {"identifier": "west", "password": "Phuc123@"}
     response = requests.post(f"{base_url}/auth/login", json=payload)
     assert response.status_code == 200
     assert "eyJ" in response.text  # Kiểm tra token JWT hợp lệ

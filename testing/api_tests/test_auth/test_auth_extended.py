@@ -49,7 +49,7 @@ class TestUserRegistration:
         random_str = str(uuid.uuid4())[:8]
         payload = {
             "email": f"valid_user_{random_str}@gmail.com",
-            "username": f"validuser_{random_str}",
+            "username": f"validuser",
             "password": "Test123@Password!",
             "confirmPassword": "Test123@Password!",
             "firstName": "Valid",
@@ -405,7 +405,7 @@ class TestUserLogin:
         - accessToken present and valid (starts with "eyJ")
         - Token can be used in Authorization header
         """
-        payload = {"identifier": "west", "password": "Phuc123"}
+        payload = {"identifier": "west", "password": "Phuc123@"}
         response = requests.post(f"{base_url}/auth/login", json=payload)
         assert response.status_code == 200
         token = response.json()['data']['accessToken']
@@ -555,7 +555,7 @@ class TestUserLogin:
         - Status: 200 OK
         - accessToken present
         """
-        payload = {"identifier": "stephen@gmail.com", "password": "Phuc123"}
+        payload = {"identifier": "stephen@gmail.com", "password": "Phuc123@"}
         response = requests.post(f"{base_url}/auth/login", json=payload)
         assert response.status_code == 200
         assert "accessToken" in response.json()['data']
@@ -580,7 +580,7 @@ class TestUserLogin:
         - Status: 200 OK
         - accessToken present
         """
-        payload = {"identifier": "west", "password": "Phuc123"}
+        payload = {"identifier": "west", "password": "Phuc123@"}
         response = requests.post(f"{base_url}/auth/login", json=payload)
         assert response.status_code == 200
         assert "accessToken" in response.json()['data']
@@ -604,7 +604,7 @@ class TestUserLogin:
         - Response contains: userId, email, username, firstName, lastName, role
         - User data matches registered information
         """
-        payload = {"identifier": "west", "password": "Phuc123"}
+        payload = {"identifier": "west", "password": "Phuc123@"}
         response = requests.post(f"{base_url}/auth/login", json=payload)
         assert response.status_code == 200
         
@@ -714,7 +714,7 @@ class TestTokenManagement:
         - Only Bearer format works
         """
         # Get valid token
-        payload = {"identifier": "west", "password": "Phuc123"}
+        payload = {"identifier": "west", "password": "Phuc123@"}
         login_response = requests.post(f"{base_url}/auth/login", json=payload)
         token = login_response.json()['data']['accessToken']
         
@@ -785,7 +785,7 @@ class TestSecurityRequirements:
         - No password hash visible
         """
         # Check login response
-        payload = {"identifier": "west", "password": "Phuc123"}
+        payload = {"identifier": "west", "password": "Phuc123@"}
         login_response = requests.post(f"{base_url}/auth/login", json=payload)
         assert "password" not in login_response.text.lower() or "hashed" not in login_response.text.lower()
         

@@ -22,7 +22,7 @@ def test_get_own_profile(base_url, user_headers):
     data = response.json()["data"]
     assert "email" in data
     # Tuỳ thuộc vào email bạn setup trong conftest.py, ở đây ví dụ là phuc1@gmail.com
-    assert data["email"] == "justintran2901@gmail.com"
+    assert data["email"] == "itisatreeeee@gmail.com"
 
 def test_update_own_profile(base_url, user_headers):
     """
