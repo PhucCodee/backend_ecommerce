@@ -19,36 +19,36 @@ FROM (
             'RO114B6H-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/01409618-01-3_ghost.webp',
             'shirt-front',
-            1,
-            TRUE
+            2,
+            FALSE
         ),
         (
             'RO114B6H-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/01409618-01-1_front.webp',
             'shirt-model',
-            2,
-            FALSE
+            1,
+            TRUE
         ),
         (
             'H3747ZE5-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/01408581-01-6_flat.webp',
             'tee-front',
-            1,
-            TRUE
+            2,
+            FALSE
         ),
         (
             'H3747ZE5-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/01408581-01-1_styled.webp',
             'tee-model',
-            2,
-            FALSE
+            1,
+            TRUE
         ),
         (
             'J3PS7IXM-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/KIC_323-6446-01011-178_prod2.avif',
             'jersey-front',
-            1,
-            TRUE
+            3,
+            FALSE
         ),
         (
             'J3PS7IXM-1',
@@ -61,14 +61,14 @@ FROM (
             'J3PS7IXM-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/KIC_323-6446-01011-178_model1.avif',
             'jersey-model',
-            3,
-            FALSE
+            1,
+            TRUE
         ),
         (
             'J3PS7IXM-4',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/KIC_323-6447-01008-220_prod2.avif',
             'jersey-front',
-            4,
+            6,
             FALSE
         ),
         (
@@ -82,15 +82,15 @@ FROM (
             'J3PS7IXM-4',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/KIC_323-6447-01008-220_model1.avif',
             'jersey-model',
-            6,
+            4,
             FALSE
         ),
         (
             'FN3LIUQO-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/KIC_323-6187-01129-178_prod2.avif',
             'tank-front',
-            1,
-            TRUE
+            3,
+            FALSE
         ),
         (
             'FN3LIUQO-1',
@@ -103,8 +103,8 @@ FROM (
             'FN3LIUQO-1',
             'https://pub-f9508367b7ef4c588ef0d9f706a65e4a.r2.dev/images/KIC_323-6187-01129-178_model1.avif',
             'tank-model',
-            3,
-            FALSE
+            1,
+            TRUE
         ),
         (
             'X9QN9M9X-1',

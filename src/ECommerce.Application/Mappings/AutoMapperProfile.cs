@@ -331,6 +331,15 @@ namespace ECommerce.Application.Mappings
                         )
                 );
 
+            CreateMap<ProductSku, ProductDetailSkuDto>()
+                .ForMember(
+                    dest => dest.Stock,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Inventory != null ? src.Inventory.QuantityAvailable : 0
+                        )
+                );
+
             // Product — ProductDetailDto
             CreateMap<Product, ProductDetailDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProductId))
@@ -404,10 +413,10 @@ namespace ECommerce.Application.Mappings
                     dest => dest.Images,
                     opt =>
                         opt.MapFrom(src =>
-                            src.ProductSkus.Where(s => s.IsDefault)
-                                .SelectMany(s => s.ProductImages)
+                            src.ProductSkus.SelectMany(s => s.ProductImages)
                                 .Where(i => !i.IsDeleted)
-                                .OrderBy(i => i.DisplayOrder)
+                                .OrderByDescending(i => i.IsPrimary)
+                                .ThenBy(i => i.DisplayOrder)
                         )
                 )
                 .ForMember(
