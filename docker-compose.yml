@@ -93,7 +93,8 @@ services:
         - DB_PORT=5432
         - CHROMA_DB_PATH=/app/chroma_db
         - GOOGLE_API_KEY=${GOOGLE_API_KEY} # Use variable
-
+        env_file:
+        - .env
         volumes:
         - ./ai-module/app:/app/app
         - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db

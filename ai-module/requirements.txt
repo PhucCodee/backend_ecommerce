@@ -35,3 +35,5 @@ pypdf
 pytest
 deepeval
 litellm
+
+requests

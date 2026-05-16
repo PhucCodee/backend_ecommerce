@@ -85,9 +85,6 @@ def product_search(state: MasterState) -> MasterState:
         "something casual for summer under $40"
         → name: "clothing",         des: "casual, summer",        price: ("less", 40)
 
-        "Do you have gaming keyboards?"
-        → name: "keyboard",         des: "gaming",                price: ("unknown", 0)
-
         [History: User asked for hoodies → AI listed hoodies]
         "how about in white, size L?"
         → name: "hoodie",           des: "white, size L",         price: ("unknown", 0)
@@ -116,7 +113,7 @@ def generate_product_query(state: MasterState) -> MasterState:
     action = state["log_action"][-1]
     product_model = action.get_product() if isinstance(action, ProductSearchAction) else None
 
-    system_prompt = f"""
+    system_prompt = """
 You are a PostgreSQL query generation engine for an e-commerce platform.
 Your ONLY output is a single, executable SQL query — no markdown, no explanation, no backticks.
 
@@ -133,20 +130,18 @@ TABLE: product_skus (ps)
   - sku_id        : UUID, PRIMARY KEY
   - product_id    : UUID, FK → products
   - price         : NUMERIC
-
-TABLE: inventory (i)
-  - sku_id        : UUID, FK → product_skus
+  - color         : TEXT
+  - size          : TEXT
 
 JOINS (always use these):
   products p
   JOIN product_skus ps ON p.product_id = ps.product_id
-  JOIN inventory i     ON ps.sku_id    = i.sku_id
 
 ═══════════════════════════════════════════
 MANDATORY RULES (never violate)
 ═══════════════════════════════════════════
-[R1] ALWAYS SELECT p.product_id — required by frontend.
-[R2] ALWAYS filter p.status = 1 — active products only.
+[R1] ALWAYS enforce operator precedence correctly. Group all search criteria inside a single parenthesis block combined with AND p.status = 1 to avoid leaking hidden/inactive products.
+[R2] ALWAYS SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size.
 [R3] ALWAYS end with ORDER BY SIMILARITY(...) DESC LIMIT 5.
 [R4] Output PLAIN SQL TEXT only — no markdown, no code fences, no comments.
 
@@ -155,33 +150,31 @@ QUERY CONSTRUCTION GUIDE
 ═══════════════════════════════════════════
 
 SELECT clause (always include):
-  p.product_id, p.product_name, ps.price, p.description, p.status
+  p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
 
 WHERE clause — build with these blocks:
 
-  ┌─ NAME BLOCK (always include) ───────────────────────────────────────┐
-  │ (p.product_name ILIKE '%<name>%' OR p.product_name ILIKE '%<des>%') │
+  ┌─ STATUS BLOCK (always include, placed first for performance) ───────┐
+  │ p.status = 1                                                        │
   └─────────────────────────────────────────────────────────────────────┘
 
-  ┌─ PRICE BLOCK (conditional) ──────────────────────────────────────────┐
-  │ operator = "less"    → AND ps.price < <amount>                       │
-  │ operator = "equal"   → AND ps.price = <amount>                       │
-  │ operator = "greater" → AND ps.price > <amount>                       │
-  │ operator = "ask"     → OMIT price condition (user wants to see it)   │
-  │ operator = "unknown" → OMIT price condition                          │
-  └──────────────────────────────────────────────────────────────────────┘
+  ┌─ SEARCH CRITERIA BLOCK (always encapsulated with an AND) ───────────┐
+  │ AND (                                                               │
+  │   (p.product_name ILIKE '%<name>%' OR p.product_name ILIKE '%<des>%')│
+  │   OR (                                                              │
+  │     p.description ILIKE '%<keyword_1>%'                             │
+  │     OR p.description ILIKE '%<keyword_2>%'                           │
+  │     OR p.description ILIKE '%<semantic_synonym>%'                   │
+  │   )                                                                 │
+  │ )                                                                   │
+  └─────────────────────────────────────────────────────────────────────┘
 
-  ┌─ DESCRIPTION BLOCK (always include, always OR) ──────────────────────┐
-  │ OR (                                                                  │
-  │   p.description ILIKE '%<keyword_1>%'                                 │
-  │   OR p.description ILIKE '%<keyword_2>%'                              │
-  │   OR p.description ILIKE '%<semantic_synonym>%'                       │
-  │   ...expand with semantically related terms...                        │
-  │ )                                                                     │
-  └──────────────────────────────────────────────────────────────────────┘
-
-  ┌─ STATUS BLOCK (always include) ──────────────────────────────────────┐
-  │ AND p.status = 1                                                      │
+  ┌─ PRICE BLOCK (conditional, appended inside the search block if needed) ┐
+  │ operator = "less"    → AND ps.price < <amount>                      │
+  │ operator = "equal"   → AND ps.price = <amount>                      │
+  │ operator = "greater" → AND ps.price > <amount>                      │
+  │ operator = "ask"     → OMIT price condition                         │
+  │ operator = "unknown" → OMIT price condition                         │
   └──────────────────────────────────────────────────────────────────────┘
 
 ORDER BY clause (always include):
@@ -193,37 +186,39 @@ EXAMPLES
 
 INPUT:  product=jacket, des=waterproof, price=("equal", 100)
 OUTPUT:
-SELECT p.product_id, p.product_name, ps.price, p.description, p.status
+SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
 FROM products p
 JOIN product_skus ps ON p.product_id = ps.product_id
-JOIN inventory i     ON ps.sku_id    = i.sku_id
-WHERE (p.product_name ILIKE '%jacket%' OR p.product_name ILIKE '%waterproof%')
-  AND ps.price = 100
-  AND p.status = 1
-  OR (
-    p.description ILIKE '%waterproof%'
-    OR p.description ILIKE '%jacket%'
-    OR p.description ILIKE '%rain%'
-    OR p.description ILIKE '%windbreaker%'
-    OR p.description ILIKE '%weather resistant%'
+WHERE p.status = 1
+  AND (
+    (p.product_name ILIKE '%jacket%' OR p.product_name ILIKE '%waterproof%')
+    OR (
+      p.description ILIKE '%waterproof%'
+      OR p.description ILIKE '%jacket%'
+      OR p.description ILIKE '%rain%'
+      OR p.description ILIKE '%windbreaker%'
+      OR p.description ILIKE '%weather resistant%'
+    )
   )
+  AND ps.price = 100
 ORDER BY SIMILARITY(p.product_name, 'waterproof jacket') DESC LIMIT 5
 
 ---
 
 INPUT:  product=shirt, des=red, price=("unknown", 0)
 OUTPUT:
-SELECT p.product_id, p.product_name, ps.price, p.description, p.status
+SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
 FROM products p
 JOIN product_skus ps ON p.product_id = ps.product_id
-JOIN inventory i     ON ps.sku_id    = i.sku_id
-WHERE (p.product_name ILIKE '%shirt%' OR p.product_name ILIKE '%red%')
-  AND p.status = 1
-  OR (
-    p.description ILIKE '%shirt%'
-    OR p.description ILIKE '%red%'
-    OR p.description ILIKE '%crimson%'
-    OR p.description ILIKE '%scarlet%'
+WHERE p.status = 1
+  AND (
+    (p.product_name ILIKE '%shirt%' OR p.product_name ILIKE '%red%')
+    OR (
+      p.description ILIKE '%shirt%'
+      OR p.description ILIKE '%red%'
+      OR p.description ILIKE '%crimson%'
+      OR p.description ILIKE '%scarlet%'
+    )
   )
 ORDER BY SIMILARITY(p.product_name, 'red shirt') DESC LIMIT 5
 
@@ -231,17 +226,18 @@ ORDER BY SIMILARITY(p.product_name, 'red shirt') DESC LIMIT 5
 
 INPUT:  product=Minimal Logo Tee, des=Minimal Logo, price=("ask", 0)
 OUTPUT:
-SELECT p.product_id, p.product_name, ps.price, p.description, p.status
+SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
 FROM products p
 JOIN product_skus ps ON p.product_id = ps.product_id
-JOIN inventory i     ON ps.sku_id    = i.sku_id
-WHERE (p.product_name ILIKE '%Minimal Logo Tee%' OR p.product_name ILIKE '%Minimal Logo%')
-  AND p.status = 1
-  OR (
-    p.description ILIKE '%minimal%'
-    OR p.description ILIKE '%logo%'
-    OR p.description ILIKE '%tee%'
-    OR p.description ILIKE '%graphic tee%'
+WHERE p.status = 1
+  AND (
+    (p.product_name ILIKE '%Minimal Logo Tee%' OR p.product_name ILIKE '%Minimal Logo%')
+    OR (
+      p.description ILIKE '%minimal%'
+      OR p.description ILIKE '%logo%'
+      OR p.description ILIKE '%tee%'
+      OR p.description ILIKE '%graphic tee%'
+    )
   )
 ORDER BY SIMILARITY(p.product_name, 'Minimal Logo Tee') DESC LIMIT 5
 """

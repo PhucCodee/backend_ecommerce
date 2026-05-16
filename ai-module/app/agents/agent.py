@@ -55,7 +55,8 @@ Covers:
   • Warranty / quality guarantee    → "What if the stitching comes apart?"
   • Technical / account support     → "How do I reset my password?"
   • Promotions & vouchers           → "How do I apply a discount code?"
-  • Guidance on using the platform → "How do I create an account?", "How to contact customer service?"
+  • Guidance on using the platform  → "How do I create an account?", "How to contact customer service?"
+  • Technical issue queries         → "How can i get help with technical issue"
 
 [product_search]
 Trigger when the user wants to FIND, BROWSE, FILTER, or COMPARE clothing items.
@@ -68,6 +69,7 @@ Covers:
   • Recommendations                 → "What's trending?", "Best outfit for the office?"
   • Follow-ups refining a search    → "What about in black?", "Under 300k?"
   • Outfit / styling queries        → "What matches with these pants?"
+  
 
 [order_tracking]
 Trigger when the user references a SPECIFIC ORDER they have placed.
@@ -82,6 +84,11 @@ Covers:
 
 [general]
 Trigger for EVERYTHING that does not fit the above.
+Covers:
+  • Greetings & small talk         → "Hi", "Good morning!", "Thanks", "You're helpful"
+  • Personal questions             → "What's your name?", "Are you a bot?"
+  • Requests to talk to humans      → "I want to speak to a human"
+  • Negative feedback               → "You're useless", "I want to complain"
 
 
 ═══════════════════════════════════════════
