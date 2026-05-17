@@ -400,7 +400,7 @@ FROM (
             (
                 'superstar-ii',
                 '3PIO2A7J-1',
-                'Navy',
+                'Gray',
                 '38',
                 2500000,
                 TRUE
