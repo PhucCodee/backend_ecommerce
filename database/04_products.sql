@@ -217,4 +217,44 @@ VALUES (
         'Casual, cool and comfortable — this adidas Adicolor baseball cap has it all. The cotton twill build gives it a soft, durable feel that only gets better the more you wear it. The classic Trefoil on the front adds a sporty finish.',
         1,
         1
+    ),
+    (
+        4,
+        'Noveau Signature Patch Varsity Jacket',
+        'noveau-signature-patch-varsity-jacket',
+        'Louis Vuitton',
+        'NSKWIUUS',
+        'Revisiting a timeless varsity look, this jacket is elevated in a plush double-face wool-silk blend with contrasting sleeves in lambskin leather for a refined finish. The chest and back are embellished with seasonal Louis Vuitton patches that nod to the House’s Art Nouveau heritage, while gold-toned snap buttons and a graphic ribbed waistband underscore the sporty style.',
+        1,
+        1
+    ),
+    (
+        4,
+        'Pokémon UT Graphic T-Shirt',
+        'pokemon-ut-graphic-t-shirt',
+        'Uniqlo',
+        'MS2H5MFU',
+        'Celebrate another year of Pokemon. The latest Pokémon UT collection arrives in 2026, featuring shirts that have the original video game art.',
+        1,
+        1
+    ),
+    (
+        4,
+        'Pokémon UT Graphic T-Shirt',
+        'pokemon-ut-graphic-t-shirt-1',
+        'Uniqlo',
+        'MS2H5MAK',
+        'Celebrate another year of Pokemon. The latest Pokémon UT collection arrives in 2026, featuring shirts that have the original video game art.',
+        1,
+        1
+    ),
+    (
+        4,
+        'Pokémon UT Graphic T-Shirt',
+        'pokemon-ut-graphic-t-shirt-2',
+        'Uniqlo',
+        'MS2H5MRM',
+        'Celebrate another year of Pokemon. The latest Pokémon UT collection arrives in 2026, featuring shirts that have the original video game art.',
+        1,
+        1
     );

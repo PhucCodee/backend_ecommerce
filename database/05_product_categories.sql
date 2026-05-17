@@ -7,50 +7,50 @@ SELECT p.product_id,
     c.category_id,
     mapping.is_primary
 FROM (
-        VALUES ('striped-knit-polo-shirt', 'fashion', TRUE),
-            ('studded-cotton-crew-tee', 'fashion', TRUE),
+        VALUES ('striped-knit-polo-shirt', 'fashion', FALSE),
+            ('studded-cotton-crew-tee', 'fashion', FALSE),
             (
                 'baggy-tokyo-racing-graphic-jersey',
                 'fashion',
-                TRUE
+                FALSE
             ),
             (
                 'boxy-heavyweight-graphic-cutoff-tank',
                 'fashion',
-                TRUE
+                FALSE
             ),
             (
                 'evolution-straight-leg-sweatpants',
                 'fashion',
-                TRUE
+                FALSE
             ),
-            ('slim-taper-chino-pants', 'fashion', TRUE),
-            ('baggy-utility-pants', 'fashion', TRUE),
-            ('baggy-jeans-bag-secured', 'fashion', TRUE),
-            ('cotton-workwear-jacket', 'fashion', TRUE),
+            ('slim-taper-chino-pants', 'fashion', FALSE),
+            ('baggy-utility-pants', 'fashion', FALSE),
+            ('baggy-jeans-bag-secured', 'fashion', FALSE),
+            ('cotton-workwear-jacket', 'fashion', FALSE),
             (
                 'loose-fit-scuba-baseball-jacket',
                 'fashion',
-                TRUE
+                FALSE
             ),
-            ('vaporfly-4', 'fashion', TRUE),
-            ('giannis-freak-7-ep', 'fashion', TRUE),
-            ('dri-fit-club-cap', 'fashion', TRUE),
-            ('jersey-knit-puff-sleeve-top', 'fashion', TRUE),
-            ('embroidered-bow-cropped-tee', 'fashion', TRUE),
-            ('open-knit-crochet-sweater', 'fashion', TRUE),
-            ('tube-mesh-midi-dress', 'fashion', TRUE),
+            ('vaporfly-4', 'fashion', FALSE),
+            ('giannis-freak-7-ep', 'fashion', FALSE),
+            ('dri-fit-club-cap', 'fashion', FALSE),
+            ('jersey-knit-puff-sleeve-top', 'fashion', FALSE),
+            ('embroidered-bow-cropped-tee', 'fashion', FALSE),
+            ('open-knit-crochet-sweater', 'fashion', FALSE),
+            ('tube-mesh-midi-dress', 'fashion', FALSE),
             (
                 'eyelet-bustier-flounce-mini-dress',
                 'fashion',
-                TRUE
+                FALSE
             ),
-            ('adizero-adios-pro-4', 'fashion', TRUE),
-            ('superstar-ii', 'fashion', TRUE),
+            ('adizero-adios-pro-4', 'fashion', FALSE),
+            ('superstar-ii', 'fashion', FALSE),
             (
                 'adicolor-classic-trefoil-baseball-cap',
                 'fashion',
-                TRUE
+                FALSE
             ),
             ('striped-knit-polo-shirt', 'men', FALSE),
             ('studded-cotton-crew-tee', 'men', FALSE),
@@ -93,49 +93,91 @@ FROM (
                 'women',
                 FALSE
             ),
-            ('striped-knit-polo-shirt', 'tops', FALSE),
-            ('studded-cotton-crew-tee', 'tops', FALSE),
+            ('striped-knit-polo-shirt', 'tops', TRUE),
+            ('studded-cotton-crew-tee', 'tops', TRUE),
             (
                 'baggy-tokyo-racing-graphic-jersey',
                 'tops',
-                FALSE
+                TRUE
             ),
             (
                 'boxy-heavyweight-graphic-cutoff-tank',
                 'tops',
-                FALSE
+                TRUE
             ),
-            ('jersey-knit-puff-sleeve-top', 'tops', FALSE),
-            ('embroidered-bow-cropped-tee', 'tops', FALSE),
-            ('open-knit-crochet-sweater', 'tops', FALSE),
-            ('tube-mesh-midi-dress', 'tops', FALSE),
+            ('jersey-knit-puff-sleeve-top', 'tops', TRUE),
+            ('embroidered-bow-cropped-tee', 'tops', TRUE),
+            ('open-knit-crochet-sweater', 'tops', TRUE),
+            ('tube-mesh-midi-dress', 'tops', TRUE),
             (
                 'eyelet-bustier-flounce-mini-dress',
                 'tops',
-                FALSE
+                TRUE
             ),
             (
                 'evolution-straight-leg-sweatpants',
                 'bottoms',
-                FALSE
+                TRUE
             ),
-            ('slim-taper-chino-pants', 'bottoms', FALSE),
-            ('baggy-utility-pants', 'bottoms', FALSE),
-            ('baggy-jeans-bag-secured', 'bottoms', FALSE),
-            ('cotton-workwear-jacket', 'outerwear', FALSE),
+            ('slim-taper-chino-pants', 'bottoms', TRUE),
+            ('baggy-utility-pants', 'bottoms', TRUE),
+            ('baggy-jeans-bag-secured', 'bottoms', TRUE),
+            ('cotton-workwear-jacket', 'outerwear', TRUE),
             (
                 'loose-fit-scuba-baseball-jacket',
                 'outerwear',
-                FALSE
+                TRUE
             ),
-            ('vaporfly-4', 'footwear', FALSE),
-            ('giannis-freak-7-ep', 'footwear', FALSE),
-            ('adizero-adios-pro-4', 'footwear', FALSE),
-            ('superstar-ii', 'footwear', FALSE),
-            ('dri-fit-club-cap', 'accessories', FALSE),
+            ('vaporfly-4', 'footwear', TRUE),
+            ('giannis-freak-7-ep', 'footwear', TRUE),
+            ('adizero-adios-pro-4', 'footwear', TRUE),
+            ('superstar-ii', 'footwear', TRUE),
+            ('dri-fit-club-cap', 'accessories', TRUE),
             (
                 'adicolor-classic-trefoil-baseball-cap',
                 'accessories',
+                TRUE
+            ),
+            (
+                'noveau-signature-patch-varsity-jacket',
+                'fashion',
+                FALSE
+            ),
+            (
+                'noveau-signature-patch-varsity-jacket',
+                'women',
+                FALSE
+            ),
+            (
+                'noveau-signature-patch-varsity-jacket',
+                'outerwear',
+                TRUE
+            ),
+            ('pokemon-ut-graphic-t-shirt', 'fashion', FALSE),
+            ('pokemon-ut-graphic-t-shirt', 'men', FALSE),
+            ('pokemon-ut-graphic-t-shirt', 'women', FALSE),
+            ('pokemon-ut-graphic-t-shirt', 'tops', TRUE),
+            (
+                'pokemon-ut-graphic-t-shirt',
+                'pokemon-collab',
+                FALSE
+            ),
+            ('pokemon-ut-graphic-t-shirt-1', 'fashion', FALSE),
+            ('pokemon-ut-graphic-t-shirt-1', 'men', FALSE),
+            ('pokemon-ut-graphic-t-shirt-1', 'women', FALSE),
+            ('pokemon-ut-graphic-t-shirt-1', 'tops', TRUE),
+            (
+                'pokemon-ut-graphic-t-shirt-1',
+                'pokemon-collab',
+                FALSE
+            ),
+            ('pokemon-ut-graphic-t-shirt-2', 'fashion', FALSE),
+            ('pokemon-ut-graphic-t-shirt-2', 'men', FALSE),
+            ('pokemon-ut-graphic-t-shirt-2', 'women', FALSE),
+            ('pokemon-ut-graphic-t-shirt-2', 'tops', TRUE),
+            (
+                'pokemon-ut-graphic-t-shirt-2',
+                'pokemon-collab',
                 FALSE
             )
     ) AS mapping(product_slug, category_slug, is_primary)
