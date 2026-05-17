@@ -14,11 +14,10 @@ from groq import Groq
 load_dotenv()
 API_URL = "http://localhost:8000/api/ai/chat"  # Endpoint local của bạn
 RESULT_FILE = "test_results.txt"  # File lưu kết quả
-DELAY_BETWEEN_TESTS = 120  # Thời gian chờ (120 giây = 2 phút)
+DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (120 giây = 2 phút)
 
 # --- 1. Danh sách Test Cases ---
 FULL_TEST_SUITE = [
-    ("What is your return policy?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
     ("What is your return policy?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
     ("How long does shipping take?", ["relevancy", "faithfulness", "contextual_relevancy"], "shipping"),
     ("Do you accept visa card?", ["relevancy", "faithfulness", "contextual_relevancy"], "payment"),
@@ -29,8 +28,13 @@ FULL_TEST_SUITE = [
     ("How many days do I have to exchange a shirt if it doesn't fit?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
     ("Do you ship internationally to Ho Chi Minh City, Vietnam?", ["relevancy", "faithfulness", "contextual_relevancy"], "shipping"),
     ("Can I use Apple Pay or Momo for checkout?", ["relevancy", "faithfulness", "contextual_relevancy"], "payment"),
-    ("What is your warrant y policy for leather bags?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
+    ("What is your warranty policy for leather bags?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
     ("Are custom-made items refundable?", ["relevancy", "faithfulness", "contextual_relevancy"], "refund"),
+    ("How do I contact customer support for help with my order?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
+    ("How do I apply a discount code to my purchase?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
+    ("How do I reset my password?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
+    ("How do I create an account?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
+    ("Is my information secure?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
 ]
 
 # --- 2. Cấu hình Model Đánh giá (DeepEval) ---
@@ -43,7 +47,7 @@ class GroqEvalModel(DeepEvalBaseLLM):
 
     def generate(self, prompt: str) -> str:
         response = self.client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
         )
@@ -53,7 +57,7 @@ class GroqEvalModel(DeepEvalBaseLLM):
         return self.generate(prompt)
 
     def get_model_name(self) -> str:
-        return "meta-llama/llama-4-scout-17b-16e-instruct"
+        return "openai/gpt-oss-20b"
 
 # Khởi tạo model đánh giá bên ngoài vòng lặp để tránh khởi tạo lại nhiều lần
 eval_model = GroqEvalModel()
@@ -77,7 +81,7 @@ def run_evaluation():
         }
 
         try:
-            response = requests.post(API_URL, json=payload, timeout=30)
+            response = requests.post(API_URL, json=payload, timeout=30000)
             response.raise_for_status()  
             result = response.json()
         except requests.exceptions.RequestException as e:
@@ -129,10 +133,8 @@ def run_evaluation():
         for metric in active_metrics:
             metric_name = metric.__class__.__name__
             try:
-                if isinstance(metric, ContextualRelevancyMetric) or isinstance(metric, FaithfulnessMetric):
-                    metric.measure(test_case_context)
-                else:
-                    metric.measure(test_case)
+
+                metric.measure(test_case_context)
                 
                 passed = metric.is_successful() if callable(metric.is_successful) else metric.is_successful
                 score = metric.score

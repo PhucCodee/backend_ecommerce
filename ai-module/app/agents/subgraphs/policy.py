@@ -39,36 +39,6 @@ FAQ_TOP_K = 3
 
 
 
-import json
-from pathlib import Path
-import os
-
-# ... (Đoạn code load file của bạn) ...
-import json
-from pathlib import Path
-import os
-
-# ... (Đoạn code load file của bạn) ...
-file_path = Path(__file__).resolve().parents[2] / "agents" / "faq.json"
-file_path = os.getenv("FAQ_PATH", str(file_path))
-
-try:
-    with open(file_path, 'r', encoding='utf-8') as f:
-        full_data = json.load(f)
-    
-    # Biến đổi thành dictionary: { "faq_id": "answer" }
-    answer_map = {
-        faq["id"]: faq["answer"]
-        for section in full_data.get("sections", [])
-        for faq in section.get("faqs", [])
-    }
-
-    # Cách sử dụng:
-    test_id = "1.1"
-    print(f"Câu trả lời cho {test_id}: {answer_map.get(test_id)}")
-
-except Exception as e:
-    print(f"Lỗi: {e}")
 
 
 
