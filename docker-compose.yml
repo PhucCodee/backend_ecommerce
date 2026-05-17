@@ -66,6 +66,7 @@ services:
             - ./database/05_product_categories.sql:/docker-entrypoint-initdb.d/05_product_categories.sql:ro
             - ./database/06_product_skus.sql:/docker-entrypoint-initdb.d/06_product_skus.sql:ro
             - ./database/07_product_images.sql:/docker-entrypoint-initdb.d/07_product_images.sql:ro
+            - ./database/08_inventory.sql:/docker-entrypoint-initdb.d/08_inventory.sql:ro
 
     message_broker:
         image: rabbitmq:3-management
