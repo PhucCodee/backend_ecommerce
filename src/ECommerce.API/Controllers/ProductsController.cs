@@ -42,8 +42,8 @@ namespace ECommerce.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] ProductQueryParams query)
         {
-            var products = await _productQueryService.GetFilteredAsync(query);
-            return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));
+            var products = await _productQueryService.GetPublicFilteredAsync(query);
+            return Ok(ApiResponse<PagedResult<PublicProductSummaryDto>>.Ok(products));
         }
 
         [HttpGet("{id:int}")]
@@ -85,7 +85,7 @@ namespace ECommerce.API.Controllers
         {
             var sellerId = GetCurrentUserId();
             productQueryParams.SellerId = sellerId;
-            productQueryParams.CategoryId = null;
+            productQueryParams.CategoryIds.Clear();
             productQueryParams.IncludeSuspended = true;
             var products = await _productQueryService.GetFilteredAsync(productQueryParams);
             return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));

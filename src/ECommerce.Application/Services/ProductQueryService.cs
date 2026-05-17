@@ -28,6 +28,62 @@ namespace ECommerce.Application.Services
             return _mapper.Map<ProductDetailDto>(product);
         }
 
+        public async Task<PagedResult<PublicProductSummaryDto>> GetPublicFilteredAsync(
+            ProductQueryParams productQueryParams
+        )
+        {
+            var dbQuery = productQueryParams.IncludeSuspended
+                ? _context.Products.AsNoTracking()
+                : _context.Products.AsNoTracking().Where(p => p.RemovedAt == null);
+
+            dbQuery = ApplyFilters(dbQuery, productQueryParams);
+
+            var totalCount = await dbQuery.CountAsync();
+
+            dbQuery = ApplySorting(dbQuery, productQueryParams.SortBy, productQueryParams.Desc);
+
+            var products = await dbQuery
+                .AsSplitQuery()
+                .Skip((productQueryParams.PageNumber - 1) * productQueryParams.PageSize)
+                .Take(productQueryParams.PageSize)
+                .Select(p => new PublicProductSummaryDto
+                {
+                    Id = p.ProductId,
+                    Name = p.ProductName,
+                    Slug = p.Slug,
+                    Brand = p.Brand,
+                    PrimaryCategoryName = p
+                        .ProductCategories.Where(pc => pc.IsPrimary)
+                        .Select(pc => pc.Category.CategoryName)
+                        .FirstOrDefault(),
+                    Price = p
+                        .ProductSkus.Where(s => s.IsDefault)
+                        .Select(s => s.Price)
+                        .FirstOrDefault(),
+                    CompareAtPrice = p
+                        .ProductSkus.Where(s => s.IsDefault)
+                        .Select(s => s.CompareAtPrice)
+                        .FirstOrDefault(),
+                    InStock = p.ProductSkus.Any(s =>
+                        s.IsDefault && s.Inventory != null && s.Inventory.QuantityAvailable > 0
+                    ),
+                    ThumbnailUrl = p
+                        .ProductSkus.Where(s => s.IsDefault)
+                        .SelectMany(s => s.ProductImages)
+                        .Where(i => !i.IsDeleted && i.IsPrimary)
+                        .Select(i => i.ThumbnailUrl)
+                        .FirstOrDefault(),
+                })
+                .ToListAsync();
+
+            return PagedResult<PublicProductSummaryDto>.Create(
+                products,
+                productQueryParams.PageNumber,
+                productQueryParams.PageSize,
+                totalCount
+            );
+        }
+
         public async Task<PagedResult<ProductSummaryDto>> GetFilteredAsync(
             ProductQueryParams productQueryParams
         )
@@ -36,14 +92,20 @@ namespace ECommerce.Application.Services
                 ? _context.Products.AsNoTracking()
                 : _context.Products.AsNoTracking().Where(p => p.RemovedAt == null);
 
-            // Expand the requested category into its descendant set when the
-            // caller asks for it. This lets the buyer page show every product
-            // under "Shoes" when "Shoes" is selected, not just the ones tagged
-            // directly with that category.
+            // Expand the requested categories into their descendant set when
+            // the caller asks for it. This lets the buyer page show every
+            // product under "Shoes" when "Shoes" is selected, not just the
+            // ones tagged directly with that category.
             List<int>? categoryIdSet = null;
-            if (productQueryParams.CategoryId.HasValue && productQueryParams.IncludeSubcategories)
+            if (productQueryParams.IncludeSubcategories && productQueryParams.CategoryIds.Count > 0)
             {
-                categoryIdSet = await GetCategorySubtreeIdsAsync(productQueryParams.CategoryId.Value);
+                var set = new HashSet<int>();
+                foreach (var categoryId in productQueryParams.CategoryIds)
+                {
+                    foreach (var descendantId in await GetCategorySubtreeIdsAsync(categoryId))
+                        set.Add(descendantId);
+                }
+                categoryIdSet = set.ToList();
             }
 
             dbQuery = ApplyFilters(dbQuery, productQueryParams, categoryIdSet);
@@ -166,7 +228,7 @@ namespace ECommerce.Application.Services
         private static IQueryable<Domain.Entities.Product> ApplyFilters(
             IQueryable<Domain.Entities.Product> query,
             ProductQueryParams p,
-            List<int>? categoryIdSet)
+            List<int>? categoryIdSet = null)
         {
             if (p.MinPrice.HasValue)
                 query = query.Where(x =>
@@ -178,14 +240,28 @@ namespace ECommerce.Application.Services
                     x.ProductSkus.Any(s => s.IsDefault && s.Price <= p.MaxPrice.Value)
                 );
 
+            // Category filtering:
+            //  - `categoryIdSet` — the requested categories plus their
+            //    descendants (set by GetFilteredAsync when IncludeSubcategories
+            //    is on); a product matches if it is in ANY of them.
+            //  - otherwise `CategoryIds` — a product must be tagged with ALL of
+            //    the requested categories.
             if (categoryIdSet is { Count: > 0 })
+            {
                 query = query.Where(x =>
                     x.ProductCategories.Any(pc => categoryIdSet.Contains(pc.CategoryId))
                 );
-            else if (p.CategoryId.HasValue)
-                query = query.Where(x =>
-                    x.ProductCategories.Any(pc => pc.CategoryId == p.CategoryId.Value)
-                );
+            }
+            else
+            {
+                var categoryIds = p.CategoryIds?.Where(id => id > 0).Distinct().ToList() ?? [];
+                if (categoryIds.Count > 0)
+                {
+                    query = query.Where(x =>
+                        categoryIds.All(id => x.ProductCategories.Any(pc => pc.CategoryId == id))
+                    );
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(p.Brand))
                 query = query.Where(x =>

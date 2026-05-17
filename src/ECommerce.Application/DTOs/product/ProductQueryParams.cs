@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ECommerce.Application.Common.Pagination;
 
 namespace ECommerce.Application.DTOs.product
@@ -27,7 +28,7 @@ namespace ECommerce.Application.DTOs.product
         /// <summary>
         /// Filter by category ID
         /// </summary>
-        public int? CategoryId { get; set; }
+        public List<int> CategoryIds { get; set; } = [];
 
         /// <summary>
         /// When <c>true</c> and <see cref="CategoryId"/> is set, the filter
