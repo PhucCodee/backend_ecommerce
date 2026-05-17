@@ -346,7 +346,13 @@ namespace ECommerce.Application.Services
 
                 "newest" or "createdat" => query.OrderByDescending(p => p.CreatedAt),
                 "oldest" => query.OrderBy(p => p.CreatedAt),
-                _ => query.OrderByDescending(p => p.CreatedAt),
+                _ => query
+                    .OrderBy(p =>
+                        p.ProductCategories.Where(pc => pc.IsPrimary)
+                            .Select(pc => pc.Category.DisplayOrder)
+                            .FirstOrDefault()
+                    )
+                    .ThenBy(p => p.ProductName),
             };
         }
 

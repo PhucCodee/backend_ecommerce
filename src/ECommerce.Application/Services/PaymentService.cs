@@ -127,6 +127,7 @@ public class PaymentService(
                     SourceEventId = Guid.Empty,
                     Reason = payment.FailureReason,
                     ErrorCode = gatewayResult.ErrorCode,
+                    Amount = order.TotalAmount,
                 }
             );
 
@@ -194,7 +195,7 @@ public class PaymentService(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             );
         }
-        catch
+        catch (Exception)
         {
             return new ZaloPayCallbackResultDto { ReturnCode = 0, ReturnMessage = "invalid data" };
         }
@@ -274,6 +275,7 @@ public class PaymentService(
                     SourceEventId = Guid.Empty,
                     Reason = payment.FailureReason,
                     ErrorCode = "amount_mismatch",
+                    Amount = order.TotalAmount,
                 }
             );
 
@@ -296,7 +298,8 @@ public class PaymentService(
         );
         payment.UpdatedAt = DateTime.UtcNow;
 
-        if (data.ReturnCode == 1)
+        var isPaymentSuccess = data.ZpTransId.HasValue && data.ZpTransId.Value > 0;
+        if (isPaymentSuccess)
         {
             payment.Status = PaymentStatus.completed;
             payment.PaidAt = DateTime.UtcNow;
@@ -314,7 +317,7 @@ public class PaymentService(
                     OrderNumber = order.OrderNumber,
                     UserId = order.UserId,
                     SourceEventId = Guid.Empty,
-                    TransactionId = data.ZpTransId ?? data.AppTransId ?? "zalopay",
+                    TransactionId = data.ZpTransId?.ToString() ?? "",
                     Amount = order.TotalAmount,
                 }
             );
@@ -322,7 +325,7 @@ public class PaymentService(
         else
         {
             payment.Status = PaymentStatus.failed;
-            payment.FailureReason = data.ReturnMessage ?? "ZaloPay payment failed";
+            payment.FailureReason = "ZaloPay callback missing zp_trans_id";
 
             await _eventPublisher.PublishAsync(
                 new PaymentFailedEvent
@@ -332,7 +335,8 @@ public class PaymentService(
                     UserId = order.UserId,
                     SourceEventId = Guid.Empty,
                     Reason = payment.FailureReason,
-                    ErrorCode = data.ReturnCode.ToString(),
+                    ErrorCode = "missing_zp_trans_id",
+                    Amount = order.TotalAmount,
                 }
             );
         }
@@ -351,7 +355,7 @@ public class PaymentService(
         var callbackData = new ZaloPayCallbackData
         {
             AppTransId = appTransId,
-            ZpTransId = Guid.NewGuid().ToString("N"),
+            ZpTransId = 260517000000563,
             ReturnCode = 1,
             ReturnMessage = "Success",
             Amount = (long)amount,
@@ -421,44 +425,6 @@ public class PaymentService(
         return true;
     }
 
-    private CreateZaloPayPaymentResponseDto MapExisting(OrderPayment payment)
-    {
-        string? orderUrl = null;
-        string? zpTransToken = null;
-
-        if (!string.IsNullOrWhiteSpace(payment.GatewayResponse))
-        {
-            try
-            {
-                using var doc = JsonDocument.Parse(payment.GatewayResponse);
-                if (doc.RootElement.TryGetProperty("orderUrl", out var p))
-                    orderUrl = p.GetString();
-
-                if (doc.RootElement.TryGetProperty("zpTransToken", out var q))
-                    zpTransToken = q.GetString();
-            }
-            catch
-            {
-                // Ignore parse errors and return minimal response
-            }
-        }
-
-        return new CreateZaloPayPaymentResponseDto
-        {
-            PaymentId = payment.PaymentId,
-            AppTransId = payment.TransactionId,
-            OrderUrl = orderUrl,
-            ZpTransToken = zpTransToken,
-            Status = payment.Status.ToString(),
-        };
-    }
-
-    private bool IsValidCallbackMac(string data, string mac)
-    {
-        var expected = SignHmacSha256(_zaloPayOptions.Key2, data);
-        return string.Equals(expected, mac, StringComparison.OrdinalIgnoreCase);
-    }
-
     private static string SignHmacSha256(string secretKey, string rawData)
     {
         var keyBytes = Encoding.UTF8.GetBytes(secretKey);
@@ -474,7 +440,7 @@ public class PaymentService(
         public string? AppTransId { get; set; }
 
         [JsonPropertyName("zp_trans_id")]
-        public string? ZpTransId { get; set; }
+        public long? ZpTransId { get; set; }
 
         [JsonPropertyName("return_code")]
         public int ReturnCode { get; set; }
