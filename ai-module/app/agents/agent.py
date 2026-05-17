@@ -23,7 +23,7 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
     # Lấy 5 tin nhắn gần nhất để tránh tràn token và giảm nhiễu
-    recent_history = chat_history[-5:] 
+    recent_history = chat_history[-6:] 
     
     # Format lịch sử thành một chuỗi text dễ đọc cho LLM
     history_text = "\n".join([
@@ -36,7 +36,7 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
 
     prompt = """
 You are an intent classification engine for a production fashion e-commerce AI assistant .
-Your ONLY job is to output ONE intent label. No explanation. No extra text.
+Your ONLY job is to output ONE intent label
 ═══════════════════════════════════════════
 CONVERSATION HISTORY (most recent last):
 {history_text}
@@ -87,8 +87,8 @@ Trigger for EVERYTHING that does not fit the above.
 Covers:
   • Greetings & small talk         → "Hi", "Good morning!", "Thanks", "You're helpful"
   • Personal questions             → "What's your name?", "Are you a bot?"
-  • Requests to talk to humans      → "I want to speak to a human"
-  • Negative feedback               → "You're useless", "I want to complain"
+  • Requests to talk to humans     → "I want to speak to a human"
+  • Negative feedback              → "You're useless", "I want to complain"
 
 
 ═══════════════════════════════════════════
@@ -103,31 +103,12 @@ RULE 1 — CONTEXT INHERITANCE (most important)
   Example:
     History:  User asked about summer dresses → AI listed dress options
     Message:  "do you have them in white?"
-    Intent:   product_search  ✓   (NOT general ✗)
+    Intent:   product_search  ✓   
 
   Example:
-    History:  User asked about summer jeans → AI listed dress options and say "Do you want to see more?"
+    History:  User asked about summer jeans → AI listed dress options and say "Do you want to see more? Would you like to see more details about any of these products?"
     Message:  "Yes"
-    Intent:   product_search  ✓   (NOT general ✗)
-
-RULE 2 — ORDER vs POLICY DISAMBIGUATION
-  • References a specific, already-placed order  → order_tracking
-  • Asks about how the store handles orders/refunds/exchanges in general → policy_question
-
-  Example:
-    "What is your exchange policy for wrong sizes?"  → policy_question
-    "I want to exchange the size on order #999"      → order_tracking
-
-RULE 3 — COMPOUND MESSAGES
-  If a message spans two intents, pick the PRIMARY action the user wants.
-
-  Example:
-    "What's your return policy and do you have floral blouses?"
-    Primary action: product_search (the product question is more actionable)
-
-RULE 4 — UNCERTAINTY FALLBACK
-  If you genuinely cannot determine the intent even after applying Rules 1–3,
-  output: general
+    Intent:   product_search  ✓  
 
 ═══════════════════════════════════════════
 OUTPUT FORMAT

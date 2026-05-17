@@ -50,13 +50,14 @@ def retriever_tool(query: str) -> str:
     """
     Use this tool to find information about "Sanquo" e-commerce store policies.
     This tool is the ONLY source for information on:
-    - Return policy, cancellations, and refunds
-    - Shipping and delivery information
-    - Payment methods
-    - Privacy notice and Conditions of Use
-    - How to contact customer support
-    - Technical issues or device support
-    - Introduction to the store
+    _ Introduction (information about the store, its features, and how it works)
+    _ Conditions of use (rules and guidelines for using the store)
+    _ Payment methods (available payment options and instructions)
+    _ Shipping and delivery (shipping options, delivery times, and related policies)
+    _ Return and refund policies (conditions for returns, refunds, and exchanges)
+    _ Privacy note (how user data is handled and protected)
+    _ Contact information (how to reach customer support for policy-related questions)
+    _ Technical issues (troubleshooting common problems related to policies or store features)
     """
     print(f"Calling retriever_tool with query: {query}")
     docs = retriever.invoke(query)
@@ -168,7 +169,7 @@ def call_llm(state: MasterState):
     2. **STOP SEARCHING IMMEDIATELY** once you have found relevant information in the tool output. Do not re-query with different keywords if you already have the answer.
     3. Answer **ONLY** based on the information provided by the tool. Use the "readable" field in the tool output for your answer.
     4. If the tool returns no contexts, clearly state that and **STOP**.
-    5. **Citation is mandatory.** Example: "You can cancel an order... (Source: Policy Doc, Page 2)."
+    5. **Citation is mandatory.** Example: "You can cancel an order..."
     """
     messages = [SystemMessage(content=prompt)] + state["messages"]
     response = tool_llm.invoke(messages)
@@ -242,13 +243,13 @@ def faq_synthesize(state: MasterState):
 policy_workflow = StateGraph(MasterState)
 
 policy_workflow.add_node("policy_faq",    policy_faq)
-# policy_workflow.add_node("faq_lookup",    faq_lookup)      # 👈 node mới
+# policy_workflow.add_node("faq_lookup",    faq_lookup)      
 policy_workflow.add_node("call_llm",      call_llm)
 policy_workflow.add_node("find_context",  find_context)
 policy_workflow.add_node("faq_synthesize", faq_synthesize)
 
 policy_workflow.add_edge(START,        "policy_faq")
-policy_workflow.add_edge("policy_faq", "call_llm")       # 👈 đổi từ call_llm sang faq_lookup
+policy_workflow.add_edge("policy_faq", "call_llm")       
 
 # policy_workflow.add_conditional_edges(
 #     "faq_lookup",

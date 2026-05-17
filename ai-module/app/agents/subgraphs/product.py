@@ -1,10 +1,12 @@
 # app/agents/subgraphs/product.py
+import time
+
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from psycopg2.extras import RealDictCursor
 
 # Import from core
-from app.agents.state import MasterState, ProductSearchAction, Product, ProductUIResponse
+from app.agents.state import MasterState, ProductSearchAction, Product
 from app.agents.config import llm, get_db_connection
 
 from pydantic import BaseModel, Field
@@ -14,6 +16,7 @@ class UIResponse(BaseModel):
     text: str = Field(description="Natural language response from the AI (concise)")
     product_ids: List[int] = Field(default_factory=list, description="List of product IDs found in the database results")
 
+
 def product_search(state: MasterState) -> MasterState:
     print("\n--- 🔀 Routing to Product search Agent ---")
 
@@ -21,7 +24,7 @@ def product_search(state: MasterState) -> MasterState:
         msg for msg in state["messages"] 
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
-    recent_history = chat_history[-5:] 
+    recent_history = chat_history[-6:] 
     
     history_text = "\n".join([
         f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" 
@@ -31,7 +34,7 @@ def product_search(state: MasterState) -> MasterState:
     if not history_text:
         history_text = "This is the start of the conversation."
 
-    product_llm = llm.with_structured_output(Product)
+    product_llm = llm.with_structured_output(Product, method="json_mode")
     prompt = f"""
         You are a product query parser for an e-commerce platform.
         Your ONLY job is to extract structured product search fields from the user's latest message.
@@ -43,17 +46,7 @@ def product_search(state: MasterState) -> MasterState:
         OUTPUT SCHEMA
         ═══════════════════════════════════════════
         name  : The core product name (noun only, no adjectives, no brand unless user specifies)
-        des   : All descriptive attributes — color, material, style, brand, size, use-case, etc.
-                Combine context + latest message. Use "none" if no description.
-        price : A tuple of (operator, amount)
-                Operators:
-                "less"    → user said "under", "below", "cheaper than", "at most", "max"
-                "equal"   → user said "exactly", "is it", "costs"
-                "greater" → user said "above", "over", "at least", "more than"
-                "ask"     → user is asking for the price (e.g. "how much is...?")
-                "unknown" → no price info mentioned
-                Amount: integer in USD. Use 0 when operator is "unknown" or "ask".
-
+        des: A JSON array of strings. Extract all descriptive attributes. If no description, output an empty array [].
         ═══════════════════════════════════════════
         CONTEXT INHERITANCE RULE
         ═══════════════════════════════════════════
@@ -64,45 +57,59 @@ def product_search(state: MasterState) -> MasterState:
         Example:
         History:  User: "Show me waterproof jackets"
         Latest:   "Do you have them under $80 in black?"
-        → name: "jacket", des: "waterproof, black", price: ("less", 80)  ✓
-        → name: "them", des: "black", price: ("less", 80)                ✗
+        → name: "jacket", des: "waterproof, black"  ✓
+        → name: "them", des: "black"                ✗
 
         ═══════════════════════════════════════════
         EXTRACTION EXAMPLES
         ═══════════════════════════════════════════
         "Do you have any red shirts"
-        → name: "shirt",            des: "red",                   price: ("unknown", 0)
+        → name: "shirt",            des: ["red"],                   
 
         "waterproof jacket less than 50 usd"
-        → name: "jacket",           des: "waterproof",            price: ("less", 50)
+        → name: "jacket",           des: ["waterproof"],           
 
         "How much is the Minimal Logo Tee?"
-        → name: "Minimal Logo Tee", des: "Minimal Logo",          price: ("ask", 0)
+        → name: "Minimal Logo Tee", des: ["Minimal Logo"],          
 
         "Nike running shoes above $120"
-        → name: "shoes",            des: "Nike, running",         price: ("greater", 120)
+        → name: "shoes",            des: ["Nike", "running"],        
 
         "something casual for summer under $40"
-        → name: "clothing",         des: "casual, summer",        price: ("less", 40)
+        → name: "clothing",         des: ["casual", "summer"],     
 
         [History: User asked for hoodies → AI listed hoodies]
         "how about in white, size L?"
-        → name: "hoodie",           des: "white, size L",         price: ("unknown", 0)
+        → name: "hoodie",           des: ["white", "size L"],        
+
+        [History: User asked for hoodies → AI listed hoodies and ask "Would you like to see more details?"]
+        "Yes, please"
+        -> define name based on history, not latest message:
 
         ═══════════════════════════════════════════
         EDGE CASE RULES
         ═══════════════════════════════════════════
-        - Brand names go into `des`, not `name`.           Nike shoes → name: "shoes", des: "Nike"
+        - Brand names go into `des`, not `name`.           Nike shoes → name: "shoes", des: ["Nike"]
         - If name is truly unresolvable, use "unknown".
-        - Never include adjectives in `name`.              "blue jacket" → name: "jacket", des: "blue"
-        - Ranges like "$50-$100": pick the upper bound with operator "less". → ("less", 100)
-        - Vague queries like "something cheap": name: "unknown", des: "cheap", price: ("unknown", 0)
+        - Never include adjectives in `name`.              "blue jacket" → name: "jacket", des: ["blue"]
+        - Vague queries like "something cheap": name: "unknown", des: "cheap"
+        - All of the product name is lowercased except for proper nouns or specific model names. "minimal logo tee" → name: "Minimal Logo Tee"
         """
     
-    response = product_llm.invoke([
-        SystemMessage(content=prompt),
-        HumanMessage(content=state['user_prompt']),
-    ])
+    for attempt in range(2):
+        try:
+            response = product_llm.invoke([
+                SystemMessage(content=prompt),
+                HumanMessage(content=state['user_prompt']),
+            ])
+            break # Success! Break out of the loop
+        except Exception as e:
+            if attempt == 0:
+                print(f"⚠️ Groq transient error caught: {e}. Retrying execution...")
+                time.sleep(0.5) # Short backoff
+                continue
+            else:
+                raise e # If it fails twice, raise it up
     
     action = ProductSearchAction().set_product(response)
     print(f"Product Context Extraction: {response}")
@@ -133,16 +140,21 @@ TABLE: product_skus (ps)
   - color         : TEXT
   - size          : TEXT
 
+TABLE: product_skus (ps)
+  - sku_id        : UUID, FK -> products sku 
+  - quantity_available : INTEGER
+
 JOINS (always use these):
   products p
   JOIN product_skus ps ON p.product_id = ps.product_id
+  JOIN inventory i ON ps.sku_id = i.sku_id
 
 ═══════════════════════════════════════════
 MANDATORY RULES (never violate)
 ═══════════════════════════════════════════
 [R1] ALWAYS enforce operator precedence correctly. Group all search criteria inside a single parenthesis block combined with AND p.status = 1 to avoid leaking hidden/inactive products.
 [R2] ALWAYS SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size.
-[R3] ALWAYS end with ORDER BY SIMILARITY(...) DESC LIMIT 5.
+[R3] ALWAYS end with ORDER BY SIMILARITY(...) DESC LIMIT 10.
 [R4] Output PLAIN SQL TEXT only — no markdown, no code fences, no comments.
 
 ═══════════════════════════════════════════
@@ -150,7 +162,7 @@ QUERY CONSTRUCTION GUIDE
 ═══════════════════════════════════════════
 
 SELECT clause (always include):
-  p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
+  p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size , i.quantity_available
 
 WHERE clause — build with these blocks:
 
@@ -169,43 +181,32 @@ WHERE clause — build with these blocks:
   │ )                                                                   │
   └─────────────────────────────────────────────────────────────────────┘
 
-  ┌─ PRICE BLOCK (conditional, appended inside the search block if needed) ┐
-  │ operator = "less"    → AND ps.price < <amount>                      │
-  │ operator = "equal"   → AND ps.price = <amount>                      │
-  │ operator = "greater" → AND ps.price > <amount>                      │
-  │ operator = "ask"     → OMIT price condition                         │
-  │ operator = "unknown" → OMIT price condition                         │
-  └──────────────────────────────────────────────────────────────────────┘
+
 
 ORDER BY clause (always include):
-  ORDER BY SIMILARITY(p.product_name, '<name> <des>') DESC LIMIT 5
+  ORDER BY SIMILARITY(p.product_name, '<name> <des>') DESC LIMIT 10
 
 ═══════════════════════════════════════════
 EXAMPLES
 ═══════════════════════════════════════════
 
-INPUT:  product=jacket, des=waterproof, price=("equal", 100)
+INPUT:  product=jacket, des=waterproof
 OUTPUT:
 SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
 FROM products p
 JOIN product_skus ps ON p.product_id = ps.product_id
 WHERE p.status = 1
   AND (
-    (p.product_name ILIKE '%jacket%' OR p.product_name ILIKE '%waterproof%')
+    (p.product_name ILIKE '%jacket%')
     OR (
       p.description ILIKE '%waterproof%'
-      OR p.description ILIKE '%jacket%'
-      OR p.description ILIKE '%rain%'
-      OR p.description ILIKE '%windbreaker%'
-      OR p.description ILIKE '%weather resistant%'
     )
   )
-  AND ps.price = 100
-ORDER BY SIMILARITY(p.product_name, 'waterproof jacket') DESC LIMIT 5
+ORDER BY SIMILARITY(p.product_name, 'jacket') DESC LIMIT 10
 
 ---
 
-INPUT:  product=shirt, des=red, price=("unknown", 0)
+INPUT:  product=shirt, des=red
 OUTPUT:
 SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
 FROM products p
@@ -220,11 +221,11 @@ WHERE p.status = 1
       OR p.description ILIKE '%scarlet%'
     )
   )
-ORDER BY SIMILARITY(p.product_name, 'red shirt') DESC LIMIT 5
+ORDER BY SIMILARITY(p.product_name, 'shirt') DESC LIMIT 10
 
 ---
 
-INPUT:  product=Minimal Logo Tee, des=Minimal Logo, price=("ask", 0)
+INPUT:  product=Minimal Logo Tee, des=Minimal Logo
 OUTPUT:
 SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size
 FROM products p
@@ -239,7 +240,7 @@ WHERE p.status = 1
       OR p.description ILIKE '%graphic tee%'
     )
   )
-ORDER BY SIMILARITY(p.product_name, 'Minimal Logo Tee') DESC LIMIT 5
+ORDER BY SIMILARITY(p.product_name, 'Minimal Logo Tee') DESC LIMIT 10
 """
 
     convert_prompt = f"""
@@ -247,7 +248,6 @@ Generate a SQL query for the following product search:
 
 Product name : {product_model.name}
 Description  : {product_model.des}
-Price filter : operator={product_model.price[0]}, amount={product_model.price[1]} VND
 """
     
     result = llm.invoke([
@@ -293,7 +293,7 @@ def execute_product_query(state: MasterState) -> MasterState:
 def synthesize_product_answer(state: MasterState):
     action = state["log_action"][-1]
     results = action.get_product_res()
-
+    print(f"Raw DB Results: {results}")
     # If DB has an error or found nothing
     if not results or "error" in results[0] or "Executed (no data)" in str(results[0].get("status", "")):
         fallback_msg = "I couldn't find any products matching your request at the moment. Please try different keywords!"
@@ -306,24 +306,36 @@ def synthesize_product_answer(state: MasterState):
     # If data exists, use Structured Output to create the MCP JSON
     ui_llm = llm.with_structured_output(UIResponse)
     
-    system_prompt = system_prompt = """You are a helpful e-commerce assistant.
+    system_prompt = system_prompt = """You are a helpful e-commerce assistant of Sanquo.
     You receive data from the database containing products matching the user's request.
-    
+    The currency is VND
     YOUR TASK:
-    1. Consider the database results and user query. Only consider the top 5 results that match the user's intent. If there are more than 5 results of none of them match, return an empty list.
-    2. Give answer base on the data, but keep it concise and natural. Don't just read out the product names — synthesize a helpful response. For example, if the user asked for "red shirts under $50" and you found 3 matching products, you might say: "I found 3 red shirts under $50. The 'Crimson Tee' is $30, the 'Scarlet Blouse' is $45, and the 'Ruby Polo' is $25. Would you like to see more details on any of these?"
+    1. Give answer base on the data, but keep it concise and natural. Don't just read out the product names — synthesize a helpful response.
+    2. The context data may contain more than you need or more than user need. 
+        Focus on relevance and helpfulness, not exhaustiveness. 
+        If the results are not relevant, it's better to say "I couldn't find any products matching your request" than to list irrelevant items.
+        For example if the user asked for "red shirts" but the results are mostly blue pants, it's better to say you found nothing than to list irrelevant products.
     3. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
+
+    The answer should be the format:
+    I found products matching your request. 
+    - The 'Product A' is $Y, available in [color/size]. Some information about the product is: [description].
+    - The 'Product B' is $Z, available in [color/size]. Some information about the product is: [description].
+    - ...
+    Would you like to see more details about any of these products?
     """
     
     response_model = ui_llm.invoke([
         SystemMessage(content=system_prompt + f"Data Results: {results}"),
         HumanMessage(content=state["user_prompt"])
     ])
+
+    non_duplicate_product_ids = set(response_model.product_ids)
     
     # 3. Trả về rành mạch từng field vào MasterState
     return {
         "answer": response_model.text,
-        "ui_data": {"product_ids": response_model.product_ids},
+        "ui_data": {"product_ids": list(non_duplicate_product_ids)},
         "messages": [AIMessage(content=response_model.text)]
     }
     

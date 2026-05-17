@@ -92,6 +92,7 @@ services:
         - DB_PASSWORD=${POSTGRES_PASSWORD} # Use variable
         - DB_PORT=5432
         - CHROMA_DB_PATH=/app/chroma_db
+        - GROQ_API_KEY=${GROQ_API_KEY} # Use variable
         - GOOGLE_API_KEY=${GOOGLE_API_KEY} # Use variable
         env_file:
         - .env

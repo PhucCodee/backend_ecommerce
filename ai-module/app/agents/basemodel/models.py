@@ -18,9 +18,13 @@ from langgraph.graph.message import add_messages
 # ──────────────────────────────────────────────────────────────────────────────
 
 class Product(BaseModel):
-    name: str = Field(...)
-    des: str = Field(...)
-    price: Tuple[Literal["less", "equal", "greater", "unknown", "ask"], int] = Field(...)
+    name: str = Field(
+        description="The core product noun only (e.g., 'jacket', 'shirt', 'shoes'). No adjectives."
+    )
+    des: List[str] = Field(
+        default_factory=list,
+        description="List of isolated descriptive attributes or modifiers (e.g., ['blue', 'size L', 'waterproof'])."
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
