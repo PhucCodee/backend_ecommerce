@@ -7,6 +7,7 @@ using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -16,6 +17,7 @@ namespace ECommerce.API.Controllers
     {
         private readonly IAuthService _authService = authService;
 
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -23,6 +25,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<AuthResponseDto>.Ok(result, "User registered successfully"));
         }
 
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
@@ -30,6 +33,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<AuthResponseDto>.Ok(result, "Login successful"));
         }
 
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("change-password")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)

@@ -8,6 +8,7 @@ using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -17,6 +18,7 @@ namespace ECommerce.API.Controllers
     {
         private readonly IReviewService _reviewService = reviewService;
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("product/{productId:int}")]
         public async Task<IActionResult> GetByProductId(
             int productId,
@@ -27,6 +29,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<ReviewDto>>.Ok(reviews));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("product/{productId:int}/summary")]
         public async Task<IActionResult> GetSummary(int productId)
         {
@@ -34,6 +37,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<ReviewSummaryDto>.Ok(summary));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("product/{productId:int}/reviewable-items")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> GetReviewableItems(int productId)
@@ -45,6 +49,7 @@ namespace ECommerce.API.Controllers
             );
         }
 
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpPost]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> Create([FromBody] ReviewCreateDto dto)
@@ -57,6 +62,7 @@ namespace ECommerce.API.Controllers
             );
         }
 
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpPut("{reviewId:int}")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> Update(int reviewId, [FromBody] ReviewUpdateDto dto)
@@ -66,6 +72,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<ReviewDto>.Ok(review, "Review updated successfully"));
         }
 
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpDelete("{reviewId:int}")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> Delete(int reviewId)

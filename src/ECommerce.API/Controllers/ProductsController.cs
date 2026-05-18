@@ -9,6 +9,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -39,6 +40,7 @@ namespace ECommerce.API.Controllers
         /// - /api/products?categoryId=5&amp;brand=Apple
         /// - /api/products?search=phone&amp;inStock=true
         /// </remarks>
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] ProductQueryParams query)
         {
@@ -46,6 +48,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<PublicProductSummaryDto>>.Ok(products));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
