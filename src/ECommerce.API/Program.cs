@@ -179,13 +179,27 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq(
         (context, cfg) =>
         {
+            var rabbitMqHost = builder.Configuration["RabbitMQ:Host"];
+            var rabbitMqVirtualHost = builder.Configuration["RabbitMQ:VirtualHost"] ?? "/";
+            var rabbitMqUser = builder.Configuration["RabbitMQ:User"];
+            var rabbitMqPassword = builder.Configuration["RabbitMQ:Password"];
+            var rabbitMqPort = ushort.TryParse(builder.Configuration["RabbitMQ:Port"], out var port)
+                ? port
+                : (ushort)5671;
+
             cfg.Host(
-                builder.Configuration["RabbitMQ:Host"] ?? "message_broker",
-                "/",
+                rabbitMqHost,
+                rabbitMqPort,
+                rabbitMqVirtualHost,
                 h =>
                 {
-                    h.Username(builder.Configuration["RabbitMQ:User"] ?? "guest");
-                    h.Password(builder.Configuration["RabbitMQ:Pass"] ?? "guest");
+                    h.Username(rabbitMqUser);
+                    h.Password(rabbitMqPassword);
+                    h.UseSsl(s =>
+                    {
+                        s.Protocol = System.Security.Authentication.SslProtocols.Tls12;
+                        s.ServerName = rabbitMqHost;
+                    });
                 }
             );
 
