@@ -9,6 +9,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -18,6 +19,7 @@ namespace ECommerce.API.Controllers
     public class UsersController(IUserService userService) : ControllerBase
     {
         // Get current user's profile
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpGet("profile")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> GetProfile()
@@ -28,6 +30,7 @@ namespace ECommerce.API.Controllers
         }
 
         // Update current user's profile
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpPut("profile")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDto updateDto)

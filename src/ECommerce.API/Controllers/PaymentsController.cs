@@ -7,6 +7,7 @@ using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers;
 
@@ -16,6 +17,7 @@ public class PaymentsController(IPaymentService paymentService) : ControllerBase
 {
     private readonly IPaymentService _paymentService = paymentService;
 
+    [EnableRateLimiting("UserActionPolicy")]
     [Authorize]
     [HttpPost("create")]
     public async Task<IActionResult> CreatePayment(

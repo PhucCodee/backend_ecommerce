@@ -13,4 +13,5 @@ public record PaymentFailedEvent
     public required Guid SourceEventId { get; init; }
     public required string Reason { get; init; }
     public string? ErrorCode { get; init; }
+    public required decimal Amount { get; init; }
 }

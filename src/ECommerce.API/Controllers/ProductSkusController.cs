@@ -9,6 +9,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -24,6 +25,7 @@ namespace ECommerce.API.Controllers
 
         #region Public Endpoints
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("products/{productId:int}/skus")]
         public async Task<IActionResult> GetByProductId(
             int productId,
@@ -37,6 +39,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<ProductSkuDto>>.Ok(skus));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("skus/{skuId:int}")]
         public async Task<IActionResult> GetById(int skuId)
         {

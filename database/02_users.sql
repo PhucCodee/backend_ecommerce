@@ -14,10 +14,10 @@ VALUES (
     ('lebron@gmail.com', 'king', 0),
     ('stephen@gmail.com', 'curry', 0),
     ('ye@gmail.com', 'west', 0),
-    ('taylor@gmail.com', 'taylorswift', 0),
-    ('elon@gmail.com', 'elonmusk', 0),
-    ('bill@gmail.com', 'billgates', 0),
-    ('beyonce@gmail.com', 'beyonce', 0),
+    ('taylor@gmail.com', 'swift', 0),
+    ('elon@gmail.com', 'musk', 0),
+    ('bill@gmail.com', 'gates', 0),
+    ('jeffrey@gmail.com', 'epstein', 0),
     ('drake@gmail.com', 'drake', 0);
 -- ====================================
 -- 2. USER CREDENTIALS
@@ -80,15 +80,14 @@ INSERT INTO user_profiles (
         timezone,
         currency
     )
-VALUES
-    (
+VALUES (
         1,
         'Cristiano',
         'Ronaldo',
         '+351123456789',
         '1985-02-05',
         0,
-        'https://example.com/avatars/ronaldo.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/goat.jpg',
         'Football legend and entrepreneur. The GOAT.',
         0,
         'Europe/Lisbon',
@@ -101,7 +100,7 @@ VALUES
         '+5491123456789',
         '1987-06-24',
         0,
-        'https://example.com/avatars/messi.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/messi.jpg',
         '2nd GOAT. Loves mate and family.',
         0,
         'America/Argentina/Buenos_Aires',
@@ -114,7 +113,7 @@ VALUES
         '+12135551234',
         '1984-12-30',
         0,
-        'https://example.com/avatars/lebron.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/lebron.png',
         'King of the court. Lakers.',
         0,
         'America/Los_Angeles',
@@ -127,7 +126,7 @@ VALUES
         '+19255551234',
         '1988-03-14',
         0,
-        'https://example.com/avatars/stephen.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/curry.jpeg',
         'Chef Curry with the shot.',
         0,
         'America/Los_Angeles',
@@ -140,7 +139,7 @@ VALUES
         '+13105551234',
         '1977-06-08',
         0,
-        'https://example.com/avatars/ye.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/kanye.jpg',
         'Producer, rapper, designer. Like children.',
         0,
         'America/Chicago',
@@ -153,7 +152,7 @@ VALUES
         '+16175550123',
         '1989-12-13',
         1,
-        'https://example.com/avatars/taylor.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/swift.webp',
         'Singer-songwriter. Lover of cats and catchy hooks.',
         0,
         'America/New_York',
@@ -166,7 +165,7 @@ VALUES
         '+16505550123',
         '1971-06-28',
         0,
-        'https://example.com/avatars/elon.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/musk.avif',
         'Entrepreneur. Rockets, cars, and memes.',
         0,
         'America/Los_Angeles',
@@ -179,13 +178,24 @@ VALUES
         '+12065550123',
         '1955-10-28',
         0,
-        'https://example.com/avatars/bill.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/gates.webp',
         'Philanthropist. Co-founder of Microsoft.',
         0,
         'America/Los_Angeles',
         0
     ),
-    ( 9, 'Beyoncé', 'Knowles', '+17185550123', '1981-09-04', 1, 'https://example.com/avatars/beyonce.jpg', 'Queen Bey. Singer, actress, icon.', 0, 'America/Chicago', 0
+    (
+        9,
+        'Jeffrey',
+        'Epstein',
+        '+17185550123',
+        '1953-01-20',
+        0,
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/epstein.webp',
+        'Financier. Known for controversial connections. Doesn''t like adults?',
+        0,
+        'America/Chicago',
+        0
     ),
     (
         10,
@@ -194,7 +204,7 @@ VALUES
         '+14165550123',
         '1986-10-24',
         0,
-        'https://example.com/avatars/drake.jpg',
+        'https://pub-0ba1e2c508fe4438a2885e8c43b1efec.r2.dev/drake.jpg',
         'Rapper, singer, and global superstar.',
         0,
         'America/Toronto',
@@ -402,9 +412,11 @@ VALUES -- User 1: 3 addresses
 INSERT INTO user_roles (user_id, role)
 VALUES (1, 0),
     (2, 0),
-    (3, 0), -- Seller can also buy
+    (3, 0),
+    -- Seller can also buy
     (3, 1),
-    (4, 0), -- Seller can also buy
+    (4, 0),
+    -- Seller can also buy
     (4, 1),
     (5, 2),
     (6, 2),

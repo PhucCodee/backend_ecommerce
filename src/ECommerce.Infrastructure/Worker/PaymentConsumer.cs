@@ -178,6 +178,9 @@ public sealed class PaymentConsumer(
         System.Threading.CancellationToken ct
     )
     {
+        var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId, ct);
+        var amount = order?.TotalAmount ?? 0m;
+
         await _publishEndpoint.Publish(
             new PaymentFailedEvent
             {
@@ -187,6 +190,7 @@ public sealed class PaymentConsumer(
                 SourceEventId = sourceEventId,
                 Reason = reason,
                 ErrorCode = errorCode,
+                Amount = amount,
             },
             ct
         );
