@@ -165,11 +165,12 @@ def call_llm(state: MasterState):
     Your primary role is to answer customer questions about the store's policies and features.
 
     **Core Rules:**
-    1. For **all** questions related to store policies, you **MUST** use the `retriever_tool`.
+    1. You **MUST** use the `retriever_tool`.
     2. **STOP SEARCHING IMMEDIATELY** once you have found relevant information in the tool output. Do not re-query with different keywords if you already have the answer.
     3. Answer **ONLY** based on the information provided by the tool. Use the "readable" field in the tool output for your answer.
     4. If the tool returns no contexts, clearly state that and **STOP**.
     5. **Citation is mandatory.** Example: "You can cancel an order..."
+    6. You should not make up any information that is not present in the tool output. If you don't know, say you don't know. Focus on enhancing Contextual Relevance and Faithfulness, not just Answer Relevancy.
     """
     messages = [SystemMessage(content=prompt)] + state["messages"]
     response = tool_llm.invoke(messages)
