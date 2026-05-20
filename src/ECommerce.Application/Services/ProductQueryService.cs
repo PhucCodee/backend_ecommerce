@@ -200,8 +200,8 @@ namespace ECommerce.Application.Services
         /// </summary>
         private async Task<List<int>> GetCategorySubtreeIdsAsync(int rootId)
         {
-            var lookup = await _context.Categories
-                .Where(c => c.IsActive)
+            var lookup = await _context
+                .Categories.Where(c => c.IsActive)
                 .Select(c => new { c.CategoryId, c.ParentCategoryId })
                 .ToListAsync();
 
@@ -216,10 +216,12 @@ namespace ECommerce.Application.Services
             while (queue.Count > 0)
             {
                 var id = queue.Dequeue();
-                if (!byParent.TryGetValue(id, out var children)) continue;
+                if (!byParent.TryGetValue(id, out var children))
+                    continue;
                 foreach (var childId in children)
                 {
-                    if (result.Add(childId)) queue.Enqueue(childId);
+                    if (result.Add(childId))
+                        queue.Enqueue(childId);
                 }
             }
             return result.ToList();
@@ -228,7 +230,8 @@ namespace ECommerce.Application.Services
         private static IQueryable<Domain.Entities.Product> ApplyFilters(
             IQueryable<Domain.Entities.Product> query,
             ProductQueryParams p,
-            List<int>? categoryIdSet = null)
+            List<int>? categoryIdSet = null
+        )
         {
             if (p.MinPrice.HasValue)
                 query = query.Where(x =>

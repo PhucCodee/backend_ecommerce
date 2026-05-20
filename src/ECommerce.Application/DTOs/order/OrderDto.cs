@@ -34,6 +34,7 @@ public class OrderItemDto
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal Subtotal { get; set; }
+
     /// <summary>
     /// Primary image URL of the purchased SKU (or first non-deleted image),
     /// used as the thumbnail on order list / order detail screens.

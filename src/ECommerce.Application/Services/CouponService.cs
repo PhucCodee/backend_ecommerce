@@ -15,7 +15,8 @@ namespace ECommerce.Application.Services
     public class CouponService(
         ICouponRepository couponRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : ICouponService
+        IMapper mapper
+    ) : ICouponService
     {
         private readonly ICouponRepository _couponRepository = couponRepository;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -25,7 +26,8 @@ namespace ECommerce.Application.Services
         {
             var (coupons, totalCount) = await _couponRepository.GetPagedAsync(
                 paginationParams.PageNumber,
-                paginationParams.PageSize);
+                paginationParams.PageSize
+            );
 
             var dtos = _mapper.Map<IEnumerable<CouponDto>>(coupons);
 
@@ -33,7 +35,8 @@ namespace ECommerce.Application.Services
                 dtos,
                 paginationParams.PageNumber,
                 paginationParams.PageSize,
-                totalCount);
+                totalCount
+            );
         }
 
         public async Task<CouponDto> CreateAsync(CouponCreateDto createDto)
@@ -52,14 +55,17 @@ namespace ECommerce.Application.Services
                 Code = code,
                 Description = createDto.Description,
                 DiscountType = createDto.DiscountType,
-                DiscountValue = createDto.DiscountType == DiscountType.free_shipping ? 0 : createDto.DiscountValue,
+                DiscountValue =
+                    createDto.DiscountType == DiscountType.free_shipping
+                        ? 0
+                        : createDto.DiscountValue,
                 MinOrderAmount = createDto.MinOrderAmount,
                 UsageLimit = createDto.UsageLimit,
                 ValidFrom = createDto.ValidFrom,
                 ValidUntil = createDto.ValidUntil,
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
             };
 
             await _couponRepository.AddAsync(coupon);
@@ -70,7 +76,8 @@ namespace ECommerce.Application.Services
 
         public async Task<CouponDto> UpdateAsync(int couponId, CouponUpdateDto updateDto)
         {
-            var coupon = await _couponRepository.GetByIdAsync(couponId)
+            var coupon =
+                await _couponRepository.GetByIdAsync(couponId)
                 ?? throw new NotFoundException("Coupon not found");
 
             if (!string.IsNullOrWhiteSpace(updateDto.Code))
@@ -89,7 +96,10 @@ namespace ECommerce.Application.Services
             var nextType = updateDto.DiscountType ?? coupon.DiscountType;
             var nextValue = updateDto.DiscountValue ?? coupon.DiscountValue;
 
-            ValidateDateRange(updateDto.ValidFrom ?? coupon.ValidFrom, updateDto.ValidUntil ?? coupon.ValidUntil);
+            ValidateDateRange(
+                updateDto.ValidFrom ?? coupon.ValidFrom,
+                updateDto.ValidUntil ?? coupon.ValidUntil
+            );
             ValidateDiscountRules(nextType, nextValue);
 
             if (updateDto.Description != null)
@@ -121,7 +131,8 @@ namespace ECommerce.Application.Services
 
         public async Task<bool> DeleteAsync(int couponId)
         {
-            var coupon = await _couponRepository.GetByIdAsync(couponId)
+            var coupon =
+                await _couponRepository.GetByIdAsync(couponId)
                 ?? throw new NotFoundException("Coupon not found");
 
             var usageCount = await _couponRepository.CountUsageAsync(couponId);
@@ -145,7 +156,8 @@ namespace ECommerce.Application.Services
         {
             var normalized = NormalizeCode(code);
 
-            var coupon = await _couponRepository.GetByCodeAsync(normalized)
+            var coupon =
+                await _couponRepository.GetByCodeAsync(normalized)
                 ?? throw new NotFoundException("Coupon not found");
 
             if (!coupon.IsActive)
@@ -165,8 +177,11 @@ namespace ECommerce.Application.Services
                     throw new BadRequestException("Coupon usage limit reached");
             }
 
-            if (subtotal.HasValue && coupon.MinOrderAmount.HasValue &&
-                subtotal.Value < coupon.MinOrderAmount.Value)
+            if (
+                subtotal.HasValue
+                && coupon.MinOrderAmount.HasValue
+                && subtotal.Value < coupon.MinOrderAmount.Value
+            )
                 throw new BadRequestException("Order amount too low for this coupon");
 
             return _mapper.Map<CouponDto>(coupon);
@@ -192,7 +207,9 @@ namespace ECommerce.Application.Services
             {
                 case DiscountType.percentage:
                     if (value <= 0 || value > 20)
-                        throw new BadRequestException("Percentage coupon must be greater than 0 and at most 20%");
+                        throw new BadRequestException(
+                            "Percentage coupon must be greater than 0 and at most 20%"
+                        );
                     break;
 
                 case DiscountType.fixed_amount:
@@ -202,7 +219,9 @@ namespace ECommerce.Application.Services
 
                 case DiscountType.free_shipping:
                     if (value != 0)
-                        throw new BadRequestException("Free shipping coupon must have discount value = 0");
+                        throw new BadRequestException(
+                            "Free shipping coupon must have discount value = 0"
+                        );
                     break;
 
                 default:

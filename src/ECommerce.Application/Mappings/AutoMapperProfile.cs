@@ -567,18 +567,19 @@ namespace ECommerce.Application.Mappings
                                     .ThenBy(i => i.DisplayOrder)
                                     .Select(i => i.ImageUrl)
                                     .FirstOrDefault()
-                                ?? (
-                                    src.SkuNavigation.Product == null
-                                        ? null
-                                        : src.SkuNavigation.Product.ProductSkus.SelectMany(ps =>
-                                                ps.ProductImages
-                                            )
-                                            .Where(i => !i.IsDeleted)
-                                            .OrderByDescending(i => i.IsPrimary)
-                                            .ThenBy(i => i.DisplayOrder)
-                                            .Select(i => i.ImageUrl)
-                                            .FirstOrDefault()
-                                )
+                                    ?? (
+                                        src.SkuNavigation.Product == null
+                                            ? null
+                                            : src
+                                                .SkuNavigation.Product.ProductSkus.SelectMany(ps =>
+                                                    ps.ProductImages
+                                                )
+                                                .Where(i => !i.IsDeleted)
+                                                .OrderByDescending(i => i.IsPrimary)
+                                                .ThenBy(i => i.DisplayOrder)
+                                                .Select(i => i.ImageUrl)
+                                                .FirstOrDefault()
+                                    )
                         )
                 );
 
