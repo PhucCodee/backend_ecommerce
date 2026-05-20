@@ -11,6 +11,8 @@ namespace ECommerce.Application.DTOs.product
         public string? Description { get; set; }
         public string? Brand { get; set; }
         public string? CategoryName { get; set; }
+        public List<int> CategoryIds { get; set; } = [];
+        public List<string> CategoryNames { get; set; } = [];
         public string? SellerName { get; set; }
         public decimal? WeightKg { get; set; }
         public string? DimensionsCm { get; set; }

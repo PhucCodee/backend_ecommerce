@@ -34,15 +34,16 @@ namespace ECommerce.Infrastructure.Repositories
 
         public async Task<(IEnumerable<Category> Categories, int TotalCount)> GetPagedAsync(
             int pageNumber,
-            int pageSize
+            int pageSize,
+            bool includeInactive = false
         )
         {
             var query = _context
                 .Categories.Include(c => c.ParentCategory)
-                .Include(c => c.ChildCategories.Where(cc => cc.IsActive))
+                .Include(c => c.ChildCategories.Where(cc => includeInactive || cc.IsActive))
                 .Include(c => c.ProductCategories)
                     .ThenInclude(pc => pc.Product)
-                .Where(c => c.IsActive)
+                .Where(c => includeInactive || c.IsActive)
                 .OrderBy(c => c.DisplayOrder)
                 .ThenBy(c => c.CategoryName);
 

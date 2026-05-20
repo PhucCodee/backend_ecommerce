@@ -8,5 +8,6 @@ namespace ECommerce.Domain.Repositories
         Task<Product?> GetByIdWithDetailsAsync(int id);
         Task<Product?> GetByIdIncludingRemovedAsync(int id);
         Task<bool> SlugExistsAsync(string slug, int? excludeProductId = null);
+        Task<bool> HasOrderItemsAsync(int productId);
     }
 }
