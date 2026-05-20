@@ -155,10 +155,44 @@ namespace ECommerce.Application.Services
             if (product.IsDeleted())
                 throw new BadRequestException("Product is already deleted");
 
-            product.SoftDelete();
+            // Products referenced by an order_item must stay around: the FK
+            // from order_items.sku_id is ON DELETE RESTRICT so historical
+            // sales can never lose their target SKU. Keep those rows by
+            // soft-deleting (sets RemovedAt + Status=removed). Everything
+            // else is permanently removed; the schema cascades through SKUs,
+            // inventory, images, cart items, reviews, metrics, and category
+            // join rows automatically.
+            if (await _productRepository.HasOrderItemsAsync(productId))
+            {
+                product.SoftDelete();
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
 
-            await _unitOfWork.SaveChangesAsync();
+            await _productRepository.DeleteAsync(productId);
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsForeignKeyViolation(ex))
+            {
+                // Race: an order was placed between the pre-check and
+                // SaveChanges. Surface a clean 409 so the caller can retry
+                // — the next attempt will fall through to the soft-delete
+                // branch above.
+                throw new ConflictException(
+                    "Cannot delete this product right now because an order is referencing it. Please try again."
+                );
+            }
+
             return true;
+        }
+
+        private static bool IsForeignKeyViolation(DbUpdateException ex)
+        {
+            return ex.InnerException is PostgresException pg
+                && pg.SqlState == PostgresErrorCodes.ForeignKeyViolation;
         }
 
         public async Task<ProductDto> RestoreAsync(int productId, int? sellerId = null)

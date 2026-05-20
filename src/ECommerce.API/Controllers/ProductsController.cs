@@ -57,6 +57,22 @@ namespace ECommerce.API.Controllers
 
         #region Admin Endpoints
 
+        /// <summary>
+        /// Admin product list — returns full <see cref="ProductSummaryDto"/>
+        /// (including moderation status) so the admin table reflects the real
+        /// status instead of inferring it from the public endpoint.
+        /// </summary>
+        [HttpGet("admin")]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> GetAllProductsForAdmin(
+            [FromQuery] ProductQueryParams productQueryParams
+        )
+        {
+            productQueryParams.IncludeSuspended = true;
+            var products = await _productQueryService.GetFilteredAsync(productQueryParams);
+            return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));
+        }
+
         [HttpPut("{id:int}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> Update(int id, [FromBody] ProductUpdateDto updateDto)

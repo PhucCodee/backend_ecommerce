@@ -17,9 +17,15 @@ namespace ECommerce.API.Controllers
         private readonly ICategoryService _categoryService = categoryService;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] PaginationParams paginationParams,
+            [FromQuery] bool includeInactive = false
+        )
         {
-            var categories = await _categoryService.GetAllPagedAsync(paginationParams);
+            var categories = await _categoryService.GetAllPagedAsync(
+                paginationParams,
+                includeInactive
+            );
             return Ok(ApiResponse<PagedResult<CategoryDto>>.Ok(categories));
         }
 

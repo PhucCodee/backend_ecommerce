@@ -15,7 +15,8 @@ namespace ECommerce.Infrastructure.Repositories
         public async Task<Order?> GetOrderWithDetailsAsync(int orderId)
         {
             return await _context
-                .Orders.Include(o => o.OrderItems)
+                .Orders.AsSplitQuery()
+                .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.SkuNavigation)
                         .ThenInclude(s => s.ProductImages)
                 .Include(o => o.OrderItems)
@@ -23,6 +24,8 @@ namespace ECommerce.Infrastructure.Repositories
                         .ThenInclude(s => s.Product)
                             .ThenInclude(p => p.ProductSkus)
                                 .ThenInclude(ps => ps.ProductImages)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Seller)
                 .Include(o => o.OrderShipping)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
@@ -33,9 +36,19 @@ namespace ECommerce.Infrastructure.Repositories
             int pageSize
         )
         {
-            // Include OrderItems so the OrderSummaryDto.TotalItems mapping
-            // (Sum of OrderItems.Quantity) returns the real count instead of 0.
-            var query = _context.Orders.Include(o => o.OrderItems).Where(o => o.UserId == userId);
+            // Include OrderItems (for TotalItems) plus each item's SKU images
+            // so OrderSummaryDto items resolve a thumbnail.
+            var query = _context
+                .Orders.AsSplitQuery()
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.Product)
+                            .ThenInclude(p => p.ProductSkus)
+                                .ThenInclude(ps => ps.ProductImages)
+                .Where(o => o.UserId == userId);
 
             var totalCount = await query.CountAsync();
             var orders = await query
@@ -52,7 +65,16 @@ namespace ECommerce.Infrastructure.Repositories
             int pageSize
         )
         {
-            var query = _context.Orders.Include(o => o.OrderItems);
+            var query = _context
+                .Orders.AsSplitQuery()
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.Product)
+                            .ThenInclude(p => p.ProductSkus)
+                                .ThenInclude(ps => ps.ProductImages);
 
             var totalCount = await query.CountAsync();
             var orders = await query
@@ -71,7 +93,15 @@ namespace ECommerce.Infrastructure.Repositories
         )
         {
             var query = _context
-                .Orders.Include(o => o.OrderItems)
+                .Orders.AsSplitQuery()
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.ProductImages)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                        .ThenInclude(s => s.Product)
+                            .ThenInclude(p => p.ProductSkus)
+                                .ThenInclude(ps => ps.ProductImages)
                 .Where(o => o.OrderItems.Any(i => i.SellerId == sellerId));
 
             var totalCount = await query.CountAsync();

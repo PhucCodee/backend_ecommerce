@@ -84,27 +84,73 @@ services:
     #     volumes:
     #         - redis_data:/data
 
-    # chatbot_api:
-    #     build:
-    #         context: ./ai-module/
-    #         dockerfile: Dockerfile
-    #     ports:
-    #     - "8000:8000"
-    #     environment:
-    #     - DB_HOST=db
-    #     - DB_NAME=database
-    #     - DB_USER=postgres
-    #     - DB_PASSWORD=${POSTGRES_PASSWORD} # Use variable
-    #     - DB_PORT=5432
-    #     - CHROMA_DB_PATH=/app/chroma_db
-    #     - GOOGLE_API_KEY=${GOOGLE_API_KEY} # Use variable
-    #     depends_on:
-    #     - db
-    #     volumes:
-    #     - ./ai-module/app:/app/app
-    #     - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
+    chatbot_api:
+        build:
+            context: ./ai-module/
+            dockerfile: Dockerfile
+        ports:
+            - "8000:8000"
+        environment:
+            - DB_HOST=db
+            - DB_NAME=database
+            - DB_USER=postgres
+            - DB_PASSWORD=${POSTGRES_PASSWORD}
+            - DB_PORT=5432
+            - CHROMA_DB_PATH=/app/chroma_db
+            # The AI module uses Groq for the LLM (chat) and (optionally) Google
+            # for embeddings — pass whichever keys are set in .env.
+            - GROQ_API_KEY=${GROQ_API_KEY}
+            - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+        depends_on:
+            - db
+        volumes:
+            - ./ai-module/app:/app/app
+            - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
+
+    # ── Observability stack: Loki (logs) + Promtail (shipper) + Grafana ──────
+    loki:
+        image: grafana/loki:3.0.0
+        # Run as root so Loki can create its data dirs inside the named volume
+        # (a fresh volume at /tmp/loki is root-owned, blocking the loki user).
+        user: root
+        command: -config.file=/etc/loki/loki-config.yml
+        ports:
+            - "3100:3100"
+        volumes:
+            - ./monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+            - loki_data:/tmp/loki
+
+    promtail:
+        image: grafana/promtail:3.0.0
+        command: -config.file=/etc/promtail/promtail-config.yml
+        volumes:
+            - ./monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        depends_on:
+            - loki
+
+    grafana:
+        image: grafana/grafana:11.0.0
+        # Host port 3003 — 3000 buyer, 3001 admin, 3002 seller are all taken.
+        ports:
+            - "3003:3000"
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_USERS_ALLOW_SIGN_UP=false
+            # Allow the admin app to embed dashboards in an iframe.
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+            - GF_SECURITY_ALLOW_EMBEDDING=true
+        volumes:
+            - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+            - grafana_data:/var/lib/grafana
+        depends_on:
+            - loki
 
 volumes:
     postgres_data:
     redis_data:
     uploads_data:
+    loki_data:
+    grafana_data:

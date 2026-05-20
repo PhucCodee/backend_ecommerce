@@ -126,9 +126,17 @@ namespace ECommerce.Application.Services
 
             var usageCount = await _couponRepository.CountUsageAsync(couponId);
             if (usageCount > 0)
-                throw new BadRequestException("Cannot delete coupon that has already been used");
-
-            await _couponRepository.DeleteAsync(coupon.CouponId);
+            {
+                // A used coupon is referenced by order history, so it cannot be
+                // hard-deleted. Deactivate it instead — it can no longer be
+                // applied but past orders keep their record.
+                coupon.IsActive = false;
+                coupon.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                await _couponRepository.DeleteAsync(coupon.CouponId);
+            }
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

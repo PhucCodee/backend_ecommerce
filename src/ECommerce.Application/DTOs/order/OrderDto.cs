@@ -26,6 +26,8 @@ public class OrderItemDto
 {
     public int OrderItemId { get; set; }
     public int SkuId { get; set; }
+    public int SellerId { get; set; }
+    public string? SellerName { get; set; }
     public required string ProductName { get; set; }
     public required string Sku { get; set; }
     public string? VariantDescription { get; set; }
