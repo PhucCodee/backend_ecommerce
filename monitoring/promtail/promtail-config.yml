@@ -26,5 +26,11 @@ scrape_configs:
         target_label: "project"
       - source_labels: ["__meta_docker_container_log_stream"]
         target_label: "stream"
+      # Tag the API container with app="ecommerce-api" so the provisioned
+      # Grafana dashboard's {app="ecommerce-api"} queries match.
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+        regex: "api"
+        target_label: "app"
+        replacement: "ecommerce-api"
     pipeline_stages:
       - docker: {}

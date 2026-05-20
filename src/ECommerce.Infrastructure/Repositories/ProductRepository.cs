@@ -65,5 +65,15 @@ namespace ECommerce.Infrastructure.Repositories
                 query = query.Where(p => p.ProductId != excludeProductId.Value);
             return await query.AnyAsync();
         }
+
+        public async Task<bool> HasOrderItemsAsync(int productId)
+        {
+            // Any historical order line tied to one of this product's SKUs
+            // forces us to keep the product around (order_items.sku_id is
+            // ON DELETE RESTRICT and carries the buyer-facing snapshot).
+            return await _context.ProductSkus
+                .Where(s => s.ProductId == productId)
+                .AnyAsync(s => s.OrderItems.Any());
+        }
     }
 }

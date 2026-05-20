@@ -45,7 +45,7 @@ public sealed class NotificationConsumer(
             return;
         }
 
-        var subject = $"Payment Confirmation for Order #{message.OrderId}";
+        var subject = $"Payment Receipt for Order #{message.OrderId}";
         var body = $"""
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5; font-family:Arial, sans-serif;">
   <tr>

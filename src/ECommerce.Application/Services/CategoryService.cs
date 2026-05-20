@@ -10,6 +10,8 @@ using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace ECommerce.Application.Services
 {
@@ -42,12 +44,14 @@ namespace ECommerce.Application.Services
         }
 
         public async Task<PagedResult<CategoryDto>> GetAllPagedAsync(
-            PaginationParams paginationParams
+            PaginationParams paginationParams,
+            bool includeInactive = false
         )
         {
             var (categories, totalCount) = await _categoryRepository.GetPagedAsync(
                 paginationParams.PageNumber,
-                paginationParams.PageSize
+                paginationParams.PageSize,
+                includeInactive
             );
 
             var categoryDtos = _mapper.Map<IEnumerable<CategoryDto>>(categories);
@@ -149,26 +153,43 @@ namespace ECommerce.Application.Services
             if (category.IsDeleted())
                 throw new BadRequestException("Category is already deleted");
 
-            // Check if category has active children
             var children = await _categoryRepository.GetChildCategoriesAsync(categoryId);
             if (children.Any())
                 throw new BadRequestException(
                     "Cannot delete category with active child categories"
                 );
 
-            // Check if category has any products
             if (await _categoryRepository.HasProductsAsync(categoryId))
                 throw new BadRequestException("Cannot delete category with products");
 
-            // Check if category has any products
-            if (await _categoryRepository.HasProductsAsync(categoryId))
-                throw new BadRequestException("Cannot delete category with products");
+            // Hard delete: the row is permanently removed from the DB.
+            // Pre-checks above guarantee no active products or child
+            // categories reference this row, so the only path that can
+            // still trip the product_categories / categories foreign keys
+            // is a soft-deleted product (preserved for order history) that
+            // still carries this category. Convert that to a 409 so the
+            // admin gets a clear message instead of a generic 500.
+            await _categoryRepository.DeleteAsync(categoryId);
 
-            // Soft delete
-            category.SoftDelete();
-            await _unitOfWork.SaveChangesAsync();
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsForeignKeyViolation(ex))
+            {
+                throw new ConflictException(
+                    "Cannot delete this category because it is still referenced by removed products kept for order history. "
+                        + "Reassign or permanently remove those products first."
+                );
+            }
 
             return true;
+        }
+
+        private static bool IsForeignKeyViolation(DbUpdateException ex)
+        {
+            return ex.InnerException is PostgresException pg
+                && pg.SqlState == PostgresErrorCodes.ForeignKeyViolation;
         }
 
         private static void ApplyUpdates(Category category, CategoryUpdateDto updateDto)
