@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.RateLimiting;
 using ECommerce.API.Logging;
 using ECommerce.API.Middleware;
 using ECommerce.Application.Common.Authorization;
@@ -19,6 +20,8 @@ using ECommerce.Infrastructure.Worker;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,11 +43,12 @@ var logBuffer = new InMemoryLogBuffer();
 builder.Services.AddSingleton(logBuffer);
 
 // ── Serilog: Console + in-memory sink ─────────────────────────────────────────
-builder.Host.UseSerilog((ctx, cfg) =>
-{
-    cfg.ReadFrom.Configuration(ctx.Configuration)
-       .WriteTo.Sink(new InMemoryLogSink(logBuffer));
-});
+builder.Host.UseSerilog(
+    (ctx, cfg) =>
+    {
+        cfg.ReadFrom.Configuration(ctx.Configuration).WriteTo.Sink(new InMemoryLogSink(logBuffer));
+    }
+);
 
 builder.Services.AddCors(options =>
 {
@@ -54,7 +58,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers()
+builder
+    .Services.AddControllers()
     .AddJsonOptions(options =>
     {
         // Accept and return enum values as strings (e.g. "percentage" not 0)
@@ -64,7 +69,6 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -88,6 +92,41 @@ builder
         };
     });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter(
+        "AuthPolicy",
+        opt =>
+        {
+            opt.PermitLimit = 5;
+            opt.Window = TimeSpan.FromMinutes(1);
+            opt.QueueLimit = 0;
+        }
+    );
+
+    options.AddFixedWindowLimiter(
+        "ApiPolicy",
+        opt =>
+        {
+            opt.PermitLimit = 100;
+            opt.Window = TimeSpan.FromMinutes(1);
+            opt.QueueLimit = 0;
+        }
+    );
+
+    options.AddFixedWindowLimiter(
+        "UserActionPolicy",
+        opt =>
+        {
+            opt.PermitLimit = 30;
+            opt.Window = TimeSpan.FromMinutes(1);
+            opt.QueueLimit = 0;
+        }
+    );
+});
+
 builder
     .Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Roles.Admin))
@@ -110,7 +149,7 @@ builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 builder.Services.AddScoped<ICouponRepository, CouponRepository>();
 builder.Services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
-    builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<UserValidationHelper>();
@@ -146,13 +185,27 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq(
         (context, cfg) =>
         {
+            var rabbitMqHost = builder.Configuration["RabbitMQ:Host"];
+            var rabbitMqVirtualHost = builder.Configuration["RabbitMQ:VirtualHost"] ?? "/";
+            var rabbitMqUser = builder.Configuration["RabbitMQ:User"];
+            var rabbitMqPassword = builder.Configuration["RabbitMQ:Password"];
+            var rabbitMqPort = ushort.TryParse(builder.Configuration["RabbitMQ:Port"], out var port)
+                ? port
+                : (ushort)5671;
+
             cfg.Host(
-                builder.Configuration["RabbitMQ:Host"] ?? "message_broker",
-                "/",
+                rabbitMqHost,
+                rabbitMqPort,
+                rabbitMqVirtualHost,
                 h =>
                 {
-                    h.Username(builder.Configuration["RabbitMQ:User"] ?? "guest");
-                    h.Password(builder.Configuration["RabbitMQ:Pass"] ?? "guest");
+                    h.Username(rabbitMqUser);
+                    h.Password(rabbitMqPassword);
+                    h.UseSsl(s =>
+                    {
+                        s.Protocol = System.Security.Authentication.SslProtocols.Tls12;
+                        s.ServerName = rabbitMqHost;
+                    });
                 }
             );
 
@@ -210,6 +263,7 @@ app.UseStaticFiles(
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();

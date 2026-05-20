@@ -7,6 +7,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -16,6 +17,7 @@ namespace ECommerce.API.Controllers
     {
         private readonly ICategoryService _categoryService = categoryService;
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] PaginationParams paginationParams,
@@ -29,6 +31,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<CategoryDto>>.Ok(categories));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("core")]
         public async Task<IActionResult> GetCoreCategories(
             [FromQuery] PaginationParams paginationParams
@@ -38,6 +41,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<PagedResult<CategoryDto>>.Ok(categories));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -45,6 +49,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<CategoryDto>.Ok(category));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("slug/{slug}")]
         public async Task<IActionResult> GetBySlug(string slug)
         {
@@ -52,6 +57,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<CategoryDto>.Ok(category));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("{id:int}/children")]
         public async Task<IActionResult> GetChildren(int id)
         {

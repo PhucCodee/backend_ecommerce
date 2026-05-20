@@ -9,6 +9,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers;
 
@@ -20,6 +21,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     private readonly IOrderService _orderService = orderService;
 
     // Create a new order from the current cart
+    [EnableRateLimiting("UserActionPolicy")]
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
@@ -32,6 +34,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     // Get a specific order by ID
+    [EnableRateLimiting("ApiPolicy")]
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrder(int orderId)
     {
@@ -45,6 +48,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     // Get all orders for the current user
+    [EnableRateLimiting("ApiPolicy")]
     [HttpGet]
     public async Task<IActionResult> GetOrders([FromQuery] PaginationParams paginationParams)
     {
@@ -54,6 +58,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     // Cancel an order
+    [EnableRateLimiting("UserActionPolicy")]
     [HttpPost("{orderId}/cancel")]
     public async Task<IActionResult> CancelOrder(int orderId)
     {

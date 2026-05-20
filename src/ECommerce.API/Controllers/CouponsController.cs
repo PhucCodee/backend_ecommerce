@@ -7,6 +7,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -51,6 +52,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<object>.Ok(new { id }, "Coupon deleted successfully"));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("code/{code}")]
         [Authorize]
         public async Task<IActionResult> GetByCode(string code, [FromQuery] decimal? subtotal)
