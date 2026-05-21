@@ -2,9 +2,9 @@ import os
 import requests
 import json
 import time
+import asyncio
 from datetime import datetime
 from dotenv import load_dotenv
-from deepeval import assert_test
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric, ContextualRelevancyMetric
 from deepeval.models.base_model import DeepEvalBaseLLM
@@ -13,35 +13,18 @@ from groq import Groq
 # --- Cấu hình Môi trường & API ---
 load_dotenv()
 API_URL = "http://localhost:8000/api/ai/chat"  # Endpoint local của bạn
-RESULT_FILE = "test_results_2.txt"  # File lưu kết quả
-DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (120 giây = 2 phút)
+MODEL_FOLDER = "llama-3.3-70b-versatile"
+RESULT_FILE = f"{MODEL_FOLDER}/results_product_1.txt"  # Đã thêm lại biến RESULT_FILE
+DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (180 giây = 3 phút)
 
 # --- 1. Danh sách Test Cases ---
 FULL_TEST_SUITE = [
-    ("What is your return policy?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    ("How long does shipping take?", ["relevancy", "faithfulness", "contextual_relevancy"], "shipping"),
-    ("Do you accept visa card?", ["relevancy", "faithfulness", "contextual_relevancy"], "payment"),
-    ("How can I get help with technical issue", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Can I get a refund for a broken item?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Is my personal information privately protected", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Do I have to pay for return shipping?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How many days do I have to exchange a shirt if it doesn't fit?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Do you ship internationally to Ho Chi Minh City, Vietnam?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Can I use Apple Pay or Momo for checkout?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("What is your warranty policy for leather bags?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Are custom-made items refundable?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I contact customer support for help with my order?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I apply a discount code to my purchase?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I reset my password?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I create an account?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Is my information secure?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
+    ("Do you have any blue jacket?", ["relevancy"], "product"),
 ]
-
 # --- 2. Cấu hình Model Đánh giá (DeepEval) ---
 class GroqEvalModel(DeepEvalBaseLLM):
     def __init__(self):
         self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        # Sử dụng model mạnh hơn để đảm bảo khả năng lập luận
         self.model_name = "llama-3.3-70b-versatile" 
 
     def load_model(self):
@@ -57,29 +40,33 @@ class GroqEvalModel(DeepEvalBaseLLM):
                 },
                 {"role": "user", "content": prompt}
             ],
-            # Ép xung đầu ra là JSON để DeepEval không bị parse lỗi
             response_format={"type": "json_object"},
             temperature=0,
         )
         return response.choices[0].message.content
 
     async def a_generate(self, prompt: str) -> str:
-        return self.generate(prompt)
+        # Bao bọc hàm đồng bộ bằng asyncio để tránh lỗi DeepEval
+        return await asyncio.to_thread(self.generate, prompt)
 
     def get_model_name(self) -> str:
         return self.model_name
-# Khởi tạo model đánh giá bên ngoài vòng lặp để tránh khởi tạo lại nhiều lần
+
 eval_model = GroqEvalModel()
 
 # --- 3. Hàm xử lý chạy Đánh giá chính ---
 def run_evaluation():
+    # FIX: Chỉnh lại hàm tạo thư mục (chỉ cần gọi thẳng MODEL_FOLDER)
+    os.makedirs(MODEL_FOLDER, exist_ok=True)
+    
     total_tests = len(FULL_TEST_SUITE)
     print(f"🚀 Bắt đầu quá trình đánh giá hệ thống RAG ({total_tests} test cases)...")
-    with open(RESULT_FILE, "a", encoding="utf-8") as f:
-        f.write(f"{'='*60}\n")
-        f.write(f"STARTING NEW EVALUATION SESSION - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"{'='*60}\n\n")
-        f.write(f"Evaluation model: {eval_model.get_model_name()}\n")
+    
+    # with open(RESULT_FILE, "a", encoding="utf-8") as f:
+    #     f.write(f"{'='*60}\n")
+    #     f.write(f"STARTING NEW EVALUATION SESSION - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+    #     f.write(f"{'='*60}\n\n")
+    #     f.write(f"Evaluation model: {eval_model.get_model_name()}\n")
 
     for current_index, (user_input, metrics_to_run, category) in enumerate(FULL_TEST_SUITE):
         print(f"\n{'='*50}")
@@ -95,14 +82,14 @@ def run_evaluation():
         }
 
         try:
-            response = requests.post(API_URL, json=payload, timeout=30000)
+            response = requests.post(API_URL, json=payload, timeout=3000)
             response.raise_for_status()  
             result = response.json()
         except requests.exceptions.RequestException as e:
             print(f"❌ LỖI API tại test case này: Không thể kết nối {API_URL}. Lỗi: {e}")
-            continue  # Bỏ qua test case này và chạy tiếp câu sau
+            continue 
 
-        if result is None:
+        if not result:
             print("❌ LỖI: API trả về dữ liệu rỗng.")
             continue
 
@@ -112,23 +99,15 @@ def run_evaluation():
             print("❌ LỖI: API không cung cấp trường dữ liệu 'text'")
             continue
 
-        # Trích xuất context
         context = result.get("data", {}).get("Context", [])
-        retrieval_context = [data["content"] for data in context if "content" in data]
+
 
         print(f"ANSWER   : {actual_output[:150]}...")
-        print(f"CONTEXT  : Đã nhận {len(retrieval_context)} đoạn dữ liệu.")
 
         # --- C. Khởi tạo DeepEval Test Case ---
-        test_case = LLMTestCase(
+        test_case= LLMTestCase(
             input=user_input,
             actual_output=actual_output,
-        )
-
-        test_case_context = LLMTestCase(
-            input=user_input,
-            actual_output=actual_output,
-            retrieval_context=retrieval_context
         )
 
         # --- D. Khởi tạo các Metrics ---
@@ -147,8 +126,7 @@ def run_evaluation():
         for metric in active_metrics:
             metric_name = metric.__class__.__name__
             try:
-
-                metric.measure(test_case_context)
+                metric.measure(test_case)
                 
                 passed = metric.is_successful() if callable(metric.is_successful) else metric.is_successful
                 score = metric.score
@@ -186,11 +164,10 @@ def run_evaluation():
 
         # --- G. Cơ chế Sleep chuẩn xác giữa các câu hỏi ---
         if current_index < total_tests - 1:
-            print(f"⏱️ Sẽ nghỉ đúng {DELAY_BETWEEN_TESTS} giây (2 phút) trước câu tiếp theo để tránh dính Rate Limit...")
+            print(f"⏱️ Sẽ nghỉ đúng {DELAY_BETWEEN_TESTS} giây (3 phút) trước câu tiếp theo để tránh dính Rate Limit...")
             time.sleep(DELAY_BETWEEN_TESTS)
             
     print("\n🎉 Hoàn thành đánh giá toàn bộ danh sách test cases!")
 
-# --- Điểm kích hoạt chạy script ---
 if __name__ == "__main__":
     run_evaluation()
