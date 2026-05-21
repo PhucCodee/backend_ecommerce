@@ -26,10 +26,18 @@ public class OrderItemDto
 {
     public int OrderItemId { get; set; }
     public int SkuId { get; set; }
+    public int SellerId { get; set; }
+    public string? SellerName { get; set; }
     public required string ProductName { get; set; }
     public required string Sku { get; set; }
     public string? VariantDescription { get; set; }
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal Subtotal { get; set; }
+
+    /// <summary>
+    /// Primary image URL of the purchased SKU (or first non-deleted image),
+    /// used as the thumbnail on order list / order detail screens.
+    /// </summary>
+    public string? VariantImageUrl { get; set; }
 }

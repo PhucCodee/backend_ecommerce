@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using ECommerce.Application.Common.Authorization;
@@ -7,6 +5,8 @@ using ECommerce.Application.Common.Responses;
 using ECommerce.Application.DTOs.inventory;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
 {
@@ -18,7 +18,10 @@ namespace ECommerce.API.Controllers
         private readonly IInventoryService _inventoryService = inventoryService;
 
         [HttpPut("skus/{skuId:int}")]
-        public async Task<IActionResult> UpdateBySku(int skuId, [FromBody] InventoryUpdateDto updateDto)
+        public async Task<IActionResult> UpdateBySku(
+            int skuId,
+            [FromBody] InventoryUpdateDto updateDto
+        )
         {
             var sellerId = GetCurrentUserId();
             var inventory = await _inventoryService.UpdateAsync(skuId, updateDto, sellerId);

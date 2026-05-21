@@ -4,5 +4,5 @@ public enum Currency
 {
     vnd,
     usd,
-    eur
+    eur,
 }

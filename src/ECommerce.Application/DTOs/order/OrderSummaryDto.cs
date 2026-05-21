@@ -2,14 +2,6 @@ using System.Collections.Generic;
 
 namespace ECommerce.Application.DTOs.order;
 
-public class OrderListDto
-{
-    public List<OrderSummaryDto> Orders { get; set; } = [];
-    public int TotalCount { get; set; }
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-}
-
 public class OrderSummaryDto
 {
     public int OrderId { get; set; }

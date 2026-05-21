@@ -1,14 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using ECommerce.Application.DTOs.product;
-using ECommerce.Application.Interfaces;
-using ECommerce.Application.Common.Responses;
-using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.Common.Authorization;
+using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.Common.Responses;
+using ECommerce.Application.DTOs.product;
 using ECommerce.Application.Exceptions;
+using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -16,20 +17,29 @@ namespace ECommerce.API.Controllers
     [Route("api")]
     public class ProductSkusController(
         IProductSkuQueryService productSkuQueryService,
-        IProductSkuService productSkuService) : ControllerBase
+        IProductSkuService productSkuService
+    ) : ControllerBase
     {
         private readonly IProductSkuQueryService _productSkuQueryService = productSkuQueryService;
         private readonly IProductSkuService _productSkuService = productSkuService;
 
         #region Public Endpoints
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("products/{productId:int}/skus")]
-        public async Task<IActionResult> GetByProductId(int productId, [FromQuery] PaginationParams paginationParams)
+        public async Task<IActionResult> GetByProductId(
+            int productId,
+            [FromQuery] PaginationParams paginationParams
+        )
         {
-            var skus = await _productSkuQueryService.GetByProductIdPagedAsync(productId, paginationParams);
+            var skus = await _productSkuQueryService.GetByProductIdPagedAsync(
+                productId,
+                paginationParams
+            );
             return Ok(ApiResponse<PagedResult<ProductSkuDto>>.Ok(skus));
         }
 
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet("skus/{skuId:int}")]
         public async Task<IActionResult> GetById(int skuId)
         {
@@ -63,10 +73,15 @@ namespace ECommerce.API.Controllers
 
         [HttpGet("skus/seller")]
         [Authorize(Policy = Policies.SellerOnly)]
-        public async Task<IActionResult> GetSellerSkus([FromQuery] PaginationParams paginationParams)
+        public async Task<IActionResult> GetSellerSkus(
+            [FromQuery] PaginationParams paginationParams
+        )
         {
             var sellerId = GetCurrentUserId();
-            var skus = await _productSkuQueryService.GetBySellerPagedAsync(sellerId, paginationParams);
+            var skus = await _productSkuQueryService.GetBySellerPagedAsync(
+                sellerId,
+                paginationParams
+            );
             return Ok(ApiResponse<PagedResult<ProductSkuDto>>.Ok(skus));
         }
 
@@ -78,12 +93,16 @@ namespace ECommerce.API.Controllers
             var sku = await _productSkuService.CreateAsync(createDto, sellerId);
             return StatusCode(
                 StatusCodes.Status201Created,
-                ApiResponse<ProductSkuDto>.Ok(sku, "Product SKU created successfully"));
+                ApiResponse<ProductSkuDto>.Ok(sku, "Product SKU created successfully")
+            );
         }
 
         [HttpPut("skus/seller/{skuId:int}")]
         [Authorize(Policy = Policies.SellerOnly)]
-        public async Task<IActionResult> UpdateAsSeller(int skuId, [FromBody] ProductSkuUpdateDto updateDto)
+        public async Task<IActionResult> UpdateAsSeller(
+            int skuId,
+            [FromBody] ProductSkuUpdateDto updateDto
+        )
         {
             var sellerId = GetCurrentUserId();
             var sku = await _productSkuService.UpdateAsync(skuId, updateDto, sellerId);

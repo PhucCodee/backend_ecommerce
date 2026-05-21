@@ -6,5 +6,5 @@ public enum ProductStatus
     active,
     inactive,
     removed,
-    archived
+    archived,
 }

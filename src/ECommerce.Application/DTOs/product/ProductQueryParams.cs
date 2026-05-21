@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ECommerce.Application.Common.Pagination;
 
 namespace ECommerce.Application.DTOs.product
@@ -27,7 +28,16 @@ namespace ECommerce.Application.DTOs.product
         /// <summary>
         /// Filter by category ID
         /// </summary>
-        public int? CategoryId { get; set; }
+        public List<int> CategoryIds { get; set; } = [];
+
+        /// <summary>
+        /// When <c>true</c> and <see cref="CategoryId"/> is set, the filter
+        /// matches products in the given category <i>or any descendant</i>
+        /// (so picking "Shoes" returns "Sneakers", "Boots", etc. as well).
+        /// Defaults to <c>false</c> to preserve exact-match behavior for
+        /// admin/seller queries; the buyer frontend opts in explicitly.
+        /// </summary>
+        public bool IncludeSubcategories { get; set; } = false;
 
         /// <summary>
         /// Filter by brand name
@@ -58,5 +68,11 @@ namespace ECommerce.Application.DTOs.product
         /// Filter by in-stock products only
         /// </summary>
         public bool? InStock { get; set; }
+
+        /// <summary>
+        /// When true, includes soft-deleted (suspended) products in results.
+        /// Should only be set for authenticated seller/admin queries.
+        /// </summary>
+        public bool IncludeSuspended { get; set; } = false;
     }
 }

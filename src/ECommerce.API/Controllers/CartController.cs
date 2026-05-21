@@ -1,13 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using ECommerce.Application.DTOs.cart;
-using ECommerce.Application.Interfaces;
 using ECommerce.Application.Common.Responses;
+using ECommerce.Application.DTOs.cart;
 using ECommerce.Application.Exceptions;
-using System.Linq;
+using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -18,6 +19,7 @@ namespace ECommerce.API.Controllers
         private readonly ICartService _cartService = cartService;
 
         // Get current cart (supports both authenticated users and guests)
+        [EnableRateLimiting("ApiPolicy")]
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
@@ -26,6 +28,7 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<CartDto>.Ok(cart));
         }
 
+        [EnableRateLimiting("UserActionPolicy")]
         // Add item to cart
         [HttpPost("items")]
         public async Task<IActionResult> AddToCart([FromBody] AddToCartDto addDto)
@@ -37,15 +40,25 @@ namespace ECommerce.API.Controllers
         }
 
         // Update cart item quantity
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpPut("items/{cartItemId}")]
-        public async Task<IActionResult> UpdateCartItem(int cartItemId, [FromBody] UpdateCartItemDto updateDto)
+        public async Task<IActionResult> UpdateCartItem(
+            int cartItemId,
+            [FromBody] UpdateCartItemDto updateDto
+        )
         {
             var (userId, sessionId) = GetCartIdentifiers();
-            var cart = await _cartService.UpdateCartItemAsync(userId, sessionId, cartItemId, updateDto);
+            var cart = await _cartService.UpdateCartItemAsync(
+                userId,
+                sessionId,
+                cartItemId,
+                updateDto
+            );
             return Ok(ApiResponse<CartDto>.Ok(cart, "Cart item updated"));
         }
 
         // Remove item from cart
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpDelete("items/{cartItemId}")]
         public async Task<IActionResult> RemoveCartItem(int cartItemId)
         {
@@ -55,6 +68,7 @@ namespace ECommerce.API.Controllers
         }
 
         // Clear entire cart
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpDelete]
         public async Task<IActionResult> ClearCart()
         {
@@ -64,6 +78,7 @@ namespace ECommerce.API.Controllers
         }
 
         // Merge guest cart with user cart after login
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpPost("merge")]
         [Authorize]
         public async Task<IActionResult> MergeCarts()
@@ -72,7 +87,12 @@ namespace ECommerce.API.Controllers
             var sessionId = GetSessionId();
 
             if (string.IsNullOrEmpty(sessionId))
-                return Ok(ApiResponse<CartDto>.Ok(await _cartService.GetCartAsync(userId, null), "No guest cart to merge"));
+                return Ok(
+                    ApiResponse<CartDto>.Ok(
+                        await _cartService.GetCartAsync(userId, null),
+                        "No guest cart to merge"
+                    )
+                );
 
             var cart = await _cartService.MergeCartsAsync(userId, sessionId);
             return Ok(ApiResponse<CartDto>.Ok(cart, "Carts merged successfully"));

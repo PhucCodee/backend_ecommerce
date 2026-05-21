@@ -1,14 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
-using ECommerce.Application.Interfaces;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using ECommerce.Application.DTOs.user;
-using ECommerce.Application.Common.Responses;
-using ECommerce.Application.Common.Pagination;
+using System.Threading.Tasks;
 using ECommerce.Application.Common.Authorization;
-using Microsoft.AspNetCore.Http;
+using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.Common.Responses;
+using ECommerce.Application.DTOs.user;
 using ECommerce.Application.Exceptions;
+using ECommerce.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers
 {
@@ -18,6 +19,7 @@ namespace ECommerce.API.Controllers
     public class UsersController(IUserService userService) : ControllerBase
     {
         // Get current user's profile
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpGet("profile")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> GetProfile()
@@ -28,6 +30,7 @@ namespace ECommerce.API.Controllers
         }
 
         // Update current user's profile
+        [EnableRateLimiting("UserActionPolicy")]
         [HttpPut("profile")]
         [Authorize(Policy = Policies.Authenticated)]
         public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDto updateDto)
@@ -43,7 +46,7 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
         {
             var users = await userService.GetAllPagedAsync(paginationParams);
-            return Ok(ApiResponse<PagedResult<UserProfileDto>>.Ok(users));
+            return Ok(ApiResponse<PagedResult<UserDto>>.Ok(users));
         }
 
         // Get user by id
@@ -52,7 +55,7 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var user = await userService.GetByIdAsync(id);
-            return Ok(ApiResponse<UserProfileDto>.Ok(user));
+            return Ok(ApiResponse<UserDto>.Ok(user));
         }
 
         // Create a new user
@@ -63,7 +66,7 @@ namespace ECommerce.API.Controllers
             var user = await userService.CreateAsync(createDto);
             return StatusCode(
                 StatusCodes.Status201Created,
-                ApiResponse<UserProfileDto>.Ok(user, "User created successfully")
+                ApiResponse<UserDto>.Ok(user, "User created successfully")
             );
         }
 
@@ -73,7 +76,7 @@ namespace ECommerce.API.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto updateDto)
         {
             var user = await userService.UpdateAsync(id, updateDto);
-            return Ok(ApiResponse<UserProfileDto>.Ok(user, "User updated successfully"));
+            return Ok(ApiResponse<UserDto>.Ok(user, "User updated successfully"));
         }
 
         // Delete user

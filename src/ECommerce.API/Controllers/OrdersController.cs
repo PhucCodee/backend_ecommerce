@@ -9,6 +9,7 @@ using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.API.Controllers;
 
@@ -20,6 +21,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     private readonly IOrderService _orderService = orderService;
 
     // Create a new order from the current cart
+    [EnableRateLimiting("UserActionPolicy")]
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
@@ -32,6 +34,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     // Get a specific order by ID
+    [EnableRateLimiting("ApiPolicy")]
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrder(int orderId)
     {
@@ -45,6 +48,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     // Get all orders for the current user
+    [EnableRateLimiting("ApiPolicy")]
     [HttpGet]
     public async Task<IActionResult> GetOrders([FromQuery] PaginationParams paginationParams)
     {
@@ -54,6 +58,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     // Cancel an order
+    [EnableRateLimiting("UserActionPolicy")]
     [HttpPost("{orderId}/cancel")]
     public async Task<IActionResult> CancelOrder(int orderId)
     {
@@ -73,6 +78,17 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     {
         var orders = await _orderService.GetAllOrdersAsync(paginationParams);
         return Ok(ApiResponse<PagedResult<OrderSummaryDto>>.Ok(orders));
+    }
+
+    // Admin: get a specific order by ID
+    [HttpGet("admin/{orderId:int}")]
+    [Authorize(Policy = Policies.AdminOnly)]
+    public async Task<IActionResult> GetAdminOrder(int orderId)
+    {
+        var order = await _orderService.GetByIdAsAdminAsync(orderId);
+        if (order == null)
+            return NotFound(ApiResponse<object>.Fail("Order not found"));
+        return Ok(ApiResponse<OrderDto>.Ok(order));
     }
 
     // Seller: get orders (paged)

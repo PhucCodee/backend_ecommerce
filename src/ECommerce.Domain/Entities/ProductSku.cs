@@ -11,7 +11,9 @@ public partial class ProductSku
 
     public required string Sku { get; set; } = string.Empty;
 
-    public string? VariantAttributes { get; set; }
+    public string? Color { get; set; }
+
+    public string? Size { get; set; }
 
     public decimal Price { get; set; }
 
@@ -39,23 +41,21 @@ public partial class ProductSku
 
     public virtual Inventory? Inventory { get; set; }
 
-    public required virtual Product Product { get; set; }
+    public virtual required Product Product { get; set; }
 
-    public static ProductSku CreateDefault(
-        Product product,
-        string sku,
-        decimal price)
+    public static ProductSku CreateDefault(Product product, string sku, decimal price)
     {
         return new ProductSku
         {
             Product = product,
             Sku = sku,
-            VariantAttributes = "{}",
+            Color = null,
+            Size = null,
             Price = price,
             IsActive = true,
             IsDefault = true,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 }

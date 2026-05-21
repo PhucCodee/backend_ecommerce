@@ -5,5 +5,5 @@ public enum NotificationPriority
     low,
     normal,
     high,
-    urgent
+    urgent,
 }

@@ -29,5 +29,5 @@ public partial class OrderFulfillment
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual Order Order { get; set; }
+    public virtual required Order Order { get; set; }
 }

@@ -13,10 +13,14 @@ namespace ECommerce.Infrastructure.Services
 {
     public class JwtService(IConfiguration configuration) : IJwtService
     {
-        private readonly string _secretKey = configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+        private readonly string _secretKey =
+            configuration["Jwt:SecretKey"]
+            ?? throw new InvalidOperationException("JWT SecretKey not configured");
         private readonly string _issuer = configuration["Jwt:Issuer"] ?? "ECommerce";
         private readonly string _audience = configuration["Jwt:Audience"] ?? "ECommerce";
-        private readonly int _accessTokenExpirationMinutes = int.Parse(configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60");
+        private readonly int _accessTokenExpirationMinutes = int.Parse(
+            configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60"
+        );
 
         public string GenerateAccessToken(int userId, string email, IEnumerable<string> roles)
         {
@@ -24,7 +28,7 @@ namespace ECommerce.Infrastructure.Services
             {
                 new(ClaimTypes.NameIdentifier, userId.ToString()),
                 new(ClaimTypes.Email, email),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
             // Add role claims
@@ -62,20 +66,26 @@ namespace ECommerce.Infrastructure.Services
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.UTF8.GetBytes(_secretKey);
 
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidIssuer = _issuer,
-                    ValidateAudience = true,
-                    ValidAudience = _audience,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                tokenHandler.ValidateToken(
+                    token,
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = true,
+                        ValidIssuer = _issuer,
+                        ValidateAudience = true,
+                        ValidAudience = _audience,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero,
+                    },
+                    out SecurityToken validatedToken
+                );
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var userId = int.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+                var userId = int.Parse(
+                    jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value
+                );
 
                 return userId;
             }

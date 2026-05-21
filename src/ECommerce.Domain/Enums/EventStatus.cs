@@ -6,5 +6,5 @@ public enum EventStatus
     success,
     failed,
     retrying,
-    pending
+    pending,
 }

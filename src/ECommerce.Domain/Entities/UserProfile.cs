@@ -34,9 +34,14 @@ public partial class UserProfile
 
     public DateTime UpdatedAt { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 
-    public static UserProfile CreateDefault(User user, string firstName, string lastName, string phone)
+    public static UserProfile CreateDefault(
+        User user,
+        string firstName,
+        string lastName,
+        string phone
+    )
     {
         return new UserProfile
         {
@@ -49,7 +54,7 @@ public partial class UserProfile
             PreferredLanguage = Language.vi,
             PreferredCurrency = Currency.vnd,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
     }
 }

@@ -19,7 +19,7 @@ public partial class UserRole
 
     public virtual User? GrantedByNavigation { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 
     public static UserRole CreateDefault(User user, UserRoleType role, User? grantedBy = null)
     {
@@ -28,7 +28,7 @@ public partial class UserRole
             User = user,
             Role = role,
             GrantedAt = DateTime.UtcNow,
-            GrantedByNavigation = grantedBy
+            GrantedByNavigation = grantedBy,
         };
     }
 

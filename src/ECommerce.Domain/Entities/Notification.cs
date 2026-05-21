@@ -36,5 +36,5 @@ public partial class Notification
 
     public DateTime? LastRetryAt { get; set; }
 
-    public required virtual User User { get; set; }
+    public virtual required User User { get; set; }
 }

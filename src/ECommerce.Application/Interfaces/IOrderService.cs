@@ -14,6 +14,7 @@ public interface IOrderService
     );
     Task<OrderDto?> CancelAsync(int userId, int orderId);
     Task<PagedResult<OrderSummaryDto>> GetAllOrdersAsync(PaginationParams paginationParams);
+    Task<OrderDto?> GetByIdAsAdminAsync(int orderId);
     Task<PagedResult<OrderSummaryDto>> GetSellerOrdersAsync(
         int sellerId,
         PaginationParams paginationParams

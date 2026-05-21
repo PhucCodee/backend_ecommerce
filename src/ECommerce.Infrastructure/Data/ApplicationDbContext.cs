@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Data
 {
-    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : DbContext(options)
     {
         public DbSet<User> Users { get; set; }
         public DbSet<UserCredential> UserCredentials { get; set; }
@@ -60,6 +61,8 @@ namespace ECommerce.Infrastructure.Data
                 .HasPostgresEnum<OrderStatus>()
                 .HasPostgresEnum<PaymentMethod>()
                 .HasPostgresEnum<PaymentStatus>()
+                .HasPostgresEnum<ProductColor>()
+                .HasPostgresEnum<ProductSize>()
                 .HasPostgresEnum<ProductStatus>()
                 .HasPostgresEnum<ShippingMethod>()
                 .HasPostgresEnum<UserGender>()

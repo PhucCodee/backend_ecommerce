@@ -19,6 +19,7 @@ public class OrderService(
     IOrderRepository orderRepository,
     ICartRepository cartRepository,
     ICouponRepository couponRepository,
+    IInventoryService inventoryService,
     IUnitOfWork unitOfWork,
     IEventPublisher eventPublisher,
     IMapper mapper
@@ -27,9 +28,27 @@ public class OrderService(
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly ICartRepository _cartRepository = cartRepository;
     private readonly ICouponRepository _couponRepository = couponRepository;
+    private readonly IInventoryService _inventoryService = inventoryService;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEventPublisher _eventPublisher = eventPublisher;
     private readonly IMapper _mapper = mapper;
+
+    private async Task ReleaseInventoryForOrderAsync(Order order)
+    {
+        var reservations = order
+            .OrderItems.Where(oi => oi.SkuId > 0 && oi.Quantity > 0)
+            .Select(oi => (oi.SkuId, oi.Quantity))
+            .ToList();
+
+        if (reservations.Count == 0)
+            return;
+
+        await _inventoryService.ReleaseReservationAsync(
+            order.OrderId,
+            order.OrderNumber,
+            reservations
+        );
+    }
 
     public async Task<OrderDto> CreateAsync(int userId, CreateOrderRequest request)
     {
@@ -114,7 +133,12 @@ public class OrderService(
                     sellerId: cartItem.Sku?.Product?.SellerId ?? 0,
                     quantity: cartItem.Quantity,
                     unitPrice: cartItem.PriceSnapshot,
-                    variantDescription: cartItem.Sku?.VariantAttributes
+                    variantDescription: string.Join(
+                        ", ",
+                        new[] { cartItem.Sku?.Color, cartItem.Sku?.Size }.Where(v =>
+                            !string.IsNullOrWhiteSpace(v)
+                        )
+                    )
                 );
                 order.OrderItems.Add(orderItem);
             }
@@ -264,6 +288,14 @@ public class OrderService(
         return _mapper.Map<OrderDto>(order);
     }
 
+    public async Task<OrderDto?> GetByIdAsAdminAsync(int orderId)
+    {
+        var order = await _orderRepository.GetOrderWithDetailsAsync(orderId);
+        if (order == null)
+            return null;
+        return _mapper.Map<OrderDto>(order);
+    }
+
     public async Task<OrderDto?> CancelAsync(int userId, int orderId)
     {
         var order = await _orderRepository.GetOrderWithDetailsAsync(orderId);
@@ -271,12 +303,18 @@ public class OrderService(
         if (order == null || order.UserId != userId)
             return null;
 
-        if (order.Status != OrderStatus.created && order.Status != OrderStatus.confirmed)
-            throw new BadRequestException("Order cannot be cancelled at this stage");
+        // Buyer can only cancel before the seller has confirmed/processed the order.
+        if (order.Status != OrderStatus.created)
+            throw new BadRequestException(
+                "Order can no longer be cancelled by buyer — please contact the seller"
+            );
 
         order.Status = OrderStatus.cancelled;
         order.CancelledAt = DateTime.UtcNow;
         order.UpdatedAt = DateTime.UtcNow;
+
+        // Release reserved inventory back to "available"
+        await ReleaseInventoryForOrderAsync(order);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -303,16 +341,31 @@ public class OrderService(
         if (!Enum.TryParse<OrderStatus>(request.Status, true, out var newStatus))
             throw new BadRequestException("Invalid order status");
 
-        // Example: allow confirmed/shipped (adjust as needed)
-        if (newStatus is not (OrderStatus.confirmed or OrderStatus.shipped))
-            throw new BadRequestException("Seller can only set status to confirmed or shipped");
+        if (
+            newStatus
+            is not (OrderStatus.confirmed or OrderStatus.delivered or OrderStatus.cancelled)
+        )
+        {
+            throw new BadRequestException(
+                "Seller can only set status to confirmed, delivered, or cancelled"
+            );
+        }
 
         var oldStatus = order.Status;
         if (oldStatus == newStatus)
             return _mapper.Map<OrderDto>(order);
 
+        if (oldStatus is OrderStatus.delivered or OrderStatus.cancelled)
+            throw new BadRequestException("Order is already finalized and cannot change status");
+
         order.Status = newStatus;
         order.UpdatedAt = DateTime.UtcNow;
+        if (newStatus == OrderStatus.cancelled)
+        {
+            order.CancelledAt = DateTime.UtcNow;
+            // Seller-initiated cancel must also release reserved stock back to available.
+            await ReleaseInventoryForOrderAsync(order);
+        }
 
         order.OrderStatusHistories.Add(
             new OrderStatusHistory

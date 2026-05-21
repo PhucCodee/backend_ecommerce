@@ -1,5 +1,5 @@
-using ECommerce.Application.DTOs.auth;
 using System.Threading.Tasks;
+using ECommerce.Application.DTOs.auth;
 
 namespace ECommerce.Application.Interfaces
 {
@@ -9,7 +9,11 @@ namespace ECommerce.Application.Interfaces
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
         Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
         Task<AuthOperationResultDto> LogoutAsync(string accessToken);
-        Task<AuthOperationResultDto> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
+        Task<AuthOperationResultDto> ChangePasswordAsync(
+            int userId,
+            string currentPassword,
+            string newPassword
+        );
         Task<AuthOperationResultDto> ResetPasswordAsync(string email);
         Task<AuthOperationResultDto> ConfirmEmailAsync(string token, string email);
     }

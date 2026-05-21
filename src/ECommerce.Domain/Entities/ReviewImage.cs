@@ -17,5 +17,5 @@ public partial class ReviewImage
 
     public DateTime CreatedAt { get; set; }
 
-    public required virtual Review Review { get; set; }
+    public virtual required Review Review { get; set; }
 }
