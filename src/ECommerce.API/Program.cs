@@ -30,19 +30,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
-// Npgsql 6+ rejects mixed DateTime kinds in a single insert (UTC for
-// CreatedAt/UpdatedAt vs Unspecified for date-picker fields like ValidFrom).
-// All our timestamp columns are `TIMESTAMP WITHOUT TIME ZONE`, so the legacy
-// behavior — treat all DateTime values as local/unspecified — is what we want.
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── In-memory log buffer (must be registered before Serilog config) ───────────
 var logBuffer = new InMemoryLogBuffer();
 builder.Services.AddSingleton(logBuffer);
 
-// ── Serilog: Console + in-memory sink ─────────────────────────────────────────
 builder.Host.UseSerilog(
     (ctx, cfg) =>
     {
@@ -62,7 +56,6 @@ builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Accept and return enum values as strings (e.g. "percentage" not 0)
         options.JsonSerializerOptions.Converters.Add(
             new System.Text.Json.Serialization.JsonStringEnumConverter()
         );
@@ -138,7 +131,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductSkuRepository, ProductSkuRepository>();
@@ -185,10 +177,13 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq(
         (context, cfg) =>
         {
-            var rabbitMqHost = builder.Configuration["RabbitMQ:Host"];
-            var rabbitMqVirtualHost = builder.Configuration["RabbitMQ:VirtualHost"] ?? "/";
-            var rabbitMqUser = builder.Configuration["RabbitMQ:User"];
-            var rabbitMqPassword = builder.Configuration["RabbitMQ:Password"];
+            static string OrDefault(string? value, string fallback) =>
+                string.IsNullOrWhiteSpace(value) ? fallback : value!;
+
+            var rabbitMqHost = OrDefault(builder.Configuration["RabbitMQ:Host"], "message_broker");
+            var rabbitMqVirtualHost = OrDefault(builder.Configuration["RabbitMQ:VirtualHost"], "/");
+            var rabbitMqUser = OrDefault(builder.Configuration["RabbitMQ:User"], "guest");
+            var rabbitMqPassword = OrDefault(builder.Configuration["RabbitMQ:Password"], "guest");
             var rabbitMqPort = ushort.TryParse(builder.Configuration["RabbitMQ:Port"], out var port)
                 ? port
                 : (ushort)5672;
@@ -219,7 +214,6 @@ builder.Services.AddMassTransit(x =>
     );
 });
 
-// Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
@@ -251,7 +245,6 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseCors();
 
-// Serve uploaded files publicly — must be before auth middleware
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
 if (!Directory.Exists(uploadsPath))
 {

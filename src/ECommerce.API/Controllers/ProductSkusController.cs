@@ -118,6 +118,15 @@ namespace ECommerce.API.Controllers
             return Ok(ApiResponse<object>.Ok(new { skuId }, "Product SKU deleted successfully"));
         }
 
+        [HttpPut("skus/seller/{skuId:int}/restore")]
+        [Authorize(Policy = Policies.SellerOnly)]
+        public async Task<IActionResult> RestoreAsSeller(int skuId)
+        {
+            var sellerId = GetCurrentUserId();
+            var sku = await _productSkuService.RestoreAsync(skuId, sellerId);
+            return Ok(ApiResponse<ProductSkuDto>.Ok(sku, "Product SKU restored successfully"));
+        }
+
         #endregion
 
         private int GetCurrentUserId()
