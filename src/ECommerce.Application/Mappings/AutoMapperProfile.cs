@@ -550,37 +550,15 @@ namespace ECommerce.Application.Mappings
                     opt => opt.MapFrom(src => src.UnitPrice * src.Quantity)
                 )
                 .ForMember(
-                    dest => dest.SellerName,
-                    opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null)
-                )
-                // Thumbnail for order list / detail. Prefer the ordered SKU's
-                // own image, else fall back to any image of a sibling SKU of
-                // the same product (size variants often carry no photo).
-                .ForMember(
-                    dest => dest.VariantImageUrl,
+                    dest => dest.ProductId,
                     opt =>
                         opt.MapFrom(src =>
-                            src.SkuNavigation == null
-                                ? null
-                                : src.SkuNavigation.ProductImages.Where(i => !i.IsDeleted)
-                                    .OrderByDescending(i => i.IsPrimary)
-                                    .ThenBy(i => i.DisplayOrder)
-                                    .Select(i => i.ImageUrl)
-                                    .FirstOrDefault()
-                                    ?? (
-                                        src.SkuNavigation.Product == null
-                                            ? null
-                                            : src
-                                                .SkuNavigation.Product.ProductSkus.SelectMany(ps =>
-                                                    ps.ProductImages
-                                                )
-                                                .Where(i => !i.IsDeleted)
-                                                .OrderByDescending(i => i.IsPrimary)
-                                                .ThenBy(i => i.DisplayOrder)
-                                                .Select(i => i.ImageUrl)
-                                                .FirstOrDefault()
-                                    )
+                            src.SkuNavigation != null ? src.SkuNavigation.ProductId : 0
                         )
+                )
+                .ForMember(
+                    dest => dest.SellerName,
+                    opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null)
                 );
 
             CreateMap<Order, OrderSummaryDto>()

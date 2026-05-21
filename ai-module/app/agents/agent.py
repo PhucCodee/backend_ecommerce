@@ -1,6 +1,6 @@
 # app/agents/agent.py
 from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.runnables import RunnableConfig
 
@@ -23,23 +23,21 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
     # Lấy 5 tin nhắn gần nhất để tránh tràn token và giảm nhiễu
-    recent_history = chat_history[-6:] 
+    recent_history = chat_history[-7:] 
     
     # Format lịch sử thành một chuỗi text dễ đọc cho LLM
     history_text = "\n".join([
-        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" 
-        for msg in recent_history[:-1] # Trừ câu cuối cùng (câu hiện tại) ra
+        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}"
+        for msg in recent_history[:-1]
+        if isinstance(msg, (HumanMessage, AIMessage)) # Bỏ qua ToolMessage
     ])
     
     if not history_text:
         history_text = "This is the start of conversation"
-
+    history_text = history_text.replace("AI: \n", "")
     prompt = """
 You are an intent classification engine for a production fashion e-commerce AI assistant .
 Your ONLY job is to output ONE intent label
-═══════════════════════════════════════════
-CONVERSATION HISTORY (most recent last):
-{history_text}
 
 INTENT DEFINITIONS
 ═══════════════════════════════════════════
@@ -57,7 +55,11 @@ Covers:
   • Promotions & vouchers           → "How do I apply a discount code?"
   • Guidance on using the platform  → "How do I create an account?", "How to contact customer service?"
   • Technical issue queries         → "How can i get help with technical issue"
-
+  • Greetings & small talk         → "Hi", "Good morning!", "Thanks", "You're helpful"
+  • Personal questions             → "What's your name?", "Are you a bot?"
+  • Requests to talk to humans     → "I want to speak to a human"
+  • Negative feedback              → "You're useless", "I want to complain"
+  
 [product_search]
 Trigger when the user wants to FIND, BROWSE, FILTER, or COMPARE clothing items.
 Covers:
@@ -82,20 +84,15 @@ Covers:
   • Delivery issues                 → "My package hasn't arrived"
   • Modifying an existing order     → "Change the size on my order", "Update delivery address"
 
-[general]
-Trigger for EVERYTHING that does not fit the above.
-Covers:
-  • Greetings & small talk         → "Hi", "Good morning!", "Thanks", "You're helpful"
-  • Personal questions             → "What's your name?", "Are you a bot?"
-  • Requests to talk to humans     → "I want to speak to a human"
-  • Negative feedback              → "You're useless", "I want to complain"
+
 
 
 ═══════════════════════════════════════════
 CLASSIFICATION RULES (apply in order)
 ═══════════════════════════════════════════
 
-RULE 1 — CONTEXT INHERITANCE (most important)
+STEP TO FOLLOW — 
+1. DEFINE THE INTENT BASED ON THE LATEST USER MESSAGE AND THE CONVERSATION HISTORY:
   If the latest message is short or ambiguous (e.g., "what about blue?",
   "cheaper?", "size M?", "yes", "that one"), resolve its intent using the
   CONVERSATION HISTORY — do NOT default to [general].
@@ -109,19 +106,26 @@ RULE 1 — CONTEXT INHERITANCE (most important)
     History:  User asked about summer jeans → AI listed dress options and say "Do you want to see more? Would you like to see more details about any of these products?"
     Message:  "Yes"
     Intent:   product_search  ✓  
+2. IF THE LATEST USER MESSAGE REFERENCES AN ORDER NUMBER OR SPECIFIC ORDER DETAILS, CLASSIFY AS [order_tracking]
+3. IF THE LATEST USER MESSAGE ASKS ABOUT STORE POLICIES, PROCEDURES, OR SUPPORT, CONTACT, CLASSIFY AS [policy_question]
+4. IF THE LATEST USER MESSAGE ASKS TO BROWSE, FILTER, COMPARE, OR GET RECOMMENDATIONS ABOUT PRODUCTS, CLASSIFY AS [product_search]
 
+
+---------------History----------------
+{history_text}
 ═══════════════════════════════════════════
 OUTPUT FORMAT
 ═══════════════════════════════════════════
 Return exactly one of:
-  product_search | order_tracking | policy_question | general
+  product_search | order_tracking | policy_question |
 """
-    message = state['user_prompt']
+
+    print(history_text)
     intent_llm = llm.with_structured_output(IntentOutput)
 
     response = intent_llm.invoke([
         SystemMessage(content = prompt),
-        HumanMessage(content = message)
+        HumanMessage(content = state["user_prompt"])
     ])
 
     return {

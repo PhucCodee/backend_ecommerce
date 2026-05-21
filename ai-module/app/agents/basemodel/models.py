@@ -154,7 +154,7 @@ class OrderTrackingAction(Action):
 
 class IntentOutput(BaseModel):
     """Output model for intent classification"""
-    intent: Literal["policy_question", "product_search", "general", "order_tracking"] = Field(...)
+    intent: Literal["policy_question", "product_search", "order_tracking"] = Field(...)
 
 
 class BaseUIResponse(BaseModel):

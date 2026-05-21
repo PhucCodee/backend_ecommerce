@@ -3,40 +3,23 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-
         ports:
             - "8080:8080"
-
+        env_file:
+            - .env
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
-            # General
-            - ASPNETCORE_URLS=${ASPNETCORE_URLS}
-            - TZ=${TZ}
-            # Database
-            # - ConnectionStrings__DefaultConnection=${DATABASE_CONNECTION_STRING}
-            # RabbitMQ
-            # - RabbitMQ__Host=${RABBITMQ_HOST}
-            # - RabbitMQ__User=${RABBITMQ_USER}
-            # - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-            # - RabbitMQ__VirtualHost=${RABBITMQ_VHOST}
-            # - RabbitMQ__Port=${RABBITMQ_PORT}
-            # JWT
+            - TZ=Asia/Ho_Chi_Minh
             - Jwt__SecretKey=${JWT_SECRET_KEY}
-            - Jwt__Issuer=${JWT_ISSUER}
-            - Jwt__Audience=${JWT_AUDIENCE}
-            # SendGrid
-            - EmailSettings__ApiKey=${SENDGRID_API_KEY}
-            # ZaloPay
-            - ZaloPay__AppId=${ZALOPAY_APP_ID}
-            - ZaloPay__Key1=${ZALOPAY_KEY1}
-            - ZaloPay__Key2=${ZALOPAY_KEY2}
-            - ZaloPay__CreateOrderUrl=${ZALOPAY_CREATE_ORDER_URL}
-            - ZaloPay__CallbackUrl=${ZALOPAY_CALLBACK_URL}
-            - ZaloPay__BankCode=${ZALOPAY_BANK_CODE}
-
+            - Jwt__Issuer=ECommerce.API
+            - Jwt__Audience=ECommerce.Client
+            - RabbitMQ__Host=message_broker
+            - RabbitMQ__User=${RABBITMQ_DEFAULT_USER}
+            - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS}
+            - RabbitMQ__VirtualHost=/
+            - Chatbot__BaseUrl=http://chatbot_api:8000
         volumes:
             - uploads_data:/app/uploads
-
         depends_on:
             - db
             - message_broker
@@ -70,34 +53,29 @@ services:
             - "5672:5672"
             - "15672:15672"
 
-    # chatbot_api:
-    #     build:
-    #         context: ./ai-module/
-    #         dockerfile: Dockerfile
-    #     ports:
-    #         - "8000:8000"
-    #     environment:
-    #         - DB_HOST=db
-    #         - DB_NAME=database
-    #         - DB_USER=postgres
-    #         - DB_PASSWORD=${POSTGRES_PASSWORD}
-    #         - DB_PORT=5432
-    #         - CHROMA_DB_PATH=/app/chroma_db
-    #         # The AI module uses Groq for the LLM (chat) and (optionally) Google
-    #         # for embeddings — pass whichever keys are set in .env.
-    #         - GROQ_API_KEY=${GROQ_API_KEY}
-    #         - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-    #     depends_on:
-    #         - db
-    #     volumes:
-    #         - ./ai-module/app:/app/app
-    #         - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
+    chatbot_api:
+        build:
+            context: ./ai-module
+            dockerfile: Dockerfile
+        ports:
+        - "8000:8000"
+        environment:
+        - DB_HOST=aws-1-ap-northeast-1.pooler.supabase.com
+        - DB_NAME=postgres
+        - DB_USER=postgres.krcpbzniiauqtdogamze
+        - DB_PASSWORD=${POSTGRES_PASSWORD} # Use variable
+        - DB_PORT=5432
+        - CHROMA_DB_PATH=/app/chroma_db
+        - GROQ_API_KEY=${GROQ_API_KEY} # Use variable
+        - GOOGLE_API_KEY=${GOOGLE_API_KEY} # Use variable
+        env_file:
+        - .env
+        volumes:
+        - ./ai-module/app:/app/app
+        - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
 
-    # ── Observability stack: Loki (logs) + Promtail (shipper) + Grafana ──────
     loki:
         image: grafana/loki:3.0.0
-        # Run as root so Loki can create its data dirs inside the named volume
-        # (a fresh volume at /tmp/loki is root-owned, blocking the loki user).
         user: root
         command: -config.file=/etc/loki/loki-config.yml
         ports:
@@ -117,14 +95,12 @@ services:
 
     grafana:
         image: grafana/grafana:11.0.0
-        # Host port 3003 — 3000 buyer, 3001 admin, 3002 seller are all taken.
         ports:
             - "3003:3000"
         environment:
             - GF_SECURITY_ADMIN_USER=admin
             - GF_SECURITY_ADMIN_PASSWORD=admin
             - GF_USERS_ALLOW_SIGN_UP=false
-            # Allow the admin app to embed dashboards in an iframe.
             - GF_AUTH_ANONYMOUS_ENABLED=true
             - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
             - GF_SECURITY_ALLOW_EMBEDDING=true

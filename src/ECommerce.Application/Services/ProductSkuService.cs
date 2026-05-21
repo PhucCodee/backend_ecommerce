@@ -95,6 +95,12 @@ namespace ECommerce.Application.Services
             if (sellerId.HasValue && sku.Product.SellerId != sellerId.Value)
                 throw new ForbiddenException("You do not have permission to delete this SKU");
 
+            if (await _productSkuRepository.HasActiveOrdersAsync(skuId))
+                throw new BadRequestException(
+                    "This SKU is part of an active order and cannot be deleted. "
+                        + "Wait until those orders are delivered or cancelled."
+                );
+
             sku.IsActive = false;
             sku.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync();
@@ -102,7 +108,29 @@ namespace ECommerce.Application.Services
             return true;
         }
 
-        #region Private Helpers
+        public async Task<ProductSkuDto> RestoreAsync(int skuId, int? sellerId = null)
+        {
+            var sku =
+                await _productSkuRepository.GetByIdWithDetailsAsync(skuId)
+                ?? throw new NotFoundException("Product SKU not found");
+
+            if (sku.Product.IsDeleted())
+                throw new BadRequestException(
+                    "Cannot restore a SKU whose parent product is deleted"
+                );
+
+            if (sellerId.HasValue && sku.Product.SellerId != sellerId.Value)
+                throw new ForbiddenException("You do not have permission to restore this SKU");
+
+            if (sku.IsActive)
+                return _mapper.Map<ProductSkuDto>(sku);
+
+            sku.IsActive = true;
+            sku.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<ProductSkuDto>(sku);
+        }
 
         private async Task<ProductSku> GetActiveSkuAsync(int skuId)
         {
@@ -260,7 +288,5 @@ namespace ECommerce.Application.Services
 
             throw new BadRequestException("Invalid size");
         }
-
-        #endregion
     }
 }

@@ -14,8 +14,14 @@ namespace ECommerce.Infrastructure.Repositories
     {
         public async Task<Order?> GetOrderWithDetailsAsync(int orderId)
         {
+            // SkuNavigation → resolves OrderItemDto.ProductId (deep-link to the
+            // product page) + SKU code; Seller → SellerName. No ProductImages —
+            // orders no longer show images.
             return await _context
                 .Orders.Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.SkuNavigation)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Seller)
                 .Include(o => o.OrderShipping)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
