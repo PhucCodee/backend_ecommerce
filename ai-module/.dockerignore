@@ -10,6 +10,7 @@ Dockerfile*
 # Environment variables and secrets
 *.pem
 *.key
+.env
 
 # Dependencies (Let Docker install these inside the container)
 node_modules/

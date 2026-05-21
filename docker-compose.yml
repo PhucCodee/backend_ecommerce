@@ -134,6 +134,7 @@ services:
         depends_on:
             - loki
 
+
 volumes:
     postgres_data:
     uploads_data:

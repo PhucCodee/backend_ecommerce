@@ -23,7 +23,7 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
     # Lấy 5 tin nhắn gần nhất để tránh tràn token và giảm nhiễu
-    recent_history = chat_history[-5:] 
+    recent_history = chat_history[-6:] 
     
     # Format lịch sử thành một chuỗi text dễ đọc cho LLM
     history_text = "\n".join([
@@ -35,28 +35,41 @@ def intent_classifier(state: MasterState,config: RunnableConfig) -> MasterState:
         history_text = "This is the start of conversation"
 
     prompt = """
-You are an intent classification engine for a production e-commerce AI assistant.
-Your ONLY job is to output ONE intent label. No explanation. No extra text.
-
+You are an intent classification engine for a production fashion e-commerce AI assistant .
+Your ONLY job is to output ONE intent label
 ═══════════════════════════════════════════
 CONVERSATION HISTORY (most recent last):
 {history_text}
-═══════════════════════════════════════════
 
-═══════════════════════════════════════════
 INTENT DEFINITIONS
 ═══════════════════════════════════════════
+[policy_question]
+Trigger when the user asks about HOW THE STORE OPERATES — rules, procedures, or support.
+Covers:
+  • Return / exchange policy        → "Can I return clothes that don't fit?"
+  • Sizing & fit guidance           → "How do your sizes run?", "Do you have a size guide?"
+  • Shipping & delivery times       → "How long does delivery take?"
+  • Payment methods                 → "Do you accept Visa / MoMo / COD?"
+  • Refund procedures               → "How do I request a refund?" "How can i return my order?"
+  • Privacy & data                  → "Is my information safe?"
+  • Warranty / quality guarantee    → "What if the stitching comes apart?"
+  • Technical / account support     → "How do I reset my password?"
+  • Promotions & vouchers           → "How do I apply a discount code?"
+  • Guidance on using the platform  → "How do I create an account?", "How to contact customer service?"
+  • Technical issue queries         → "How can i get help with technical issue"
 
 [product_search]
-Trigger when the user wants to FIND, BROWSE, FILTER, or COMPARE products.
+Trigger when the user wants to FIND, BROWSE, FILTER, or COMPARE clothing items.
 Covers:
-  • Direct product queries          → "Show me Nike shoes under $100"
-  • Category browsing               → "What laptops do you have?"
-  • Attribute filtering             → "In blue?", "Cheaper ones?", "Size M?"
-  • Availability checks             → "Do you stock waterproof jackets?"
-  • Product comparisons             → "Which is better, A or B?"
-  • Recommendations                 → "What's popular?", "Best gaming mouse?"
-  • Follow-ups refining a search    → "What about red?", "Under $50?"
+  • Direct product queries          → "Show me women's dresses under 500k"
+  • Category browsing               → "What types of jeans do you have?"
+  • Attribute filtering             → "In white?", "Cheaper ones?", "Size M?", "Slim fit?"
+  • Availability checks             → "Do you stock oversized hoodies?"
+  • Product comparisons             → "Which is better, the linen or cotton shirt?"
+  • Recommendations                 → "What's trending?", "Best outfit for the office?"
+  • Follow-ups refining a search    → "What about in black?", "Under 300k?"
+  • Outfit / styling queries        → "What matches with these pants?"
+  
 
 [order_tracking]
 Trigger when the user references a SPECIFIC ORDER they have placed.
@@ -67,28 +80,16 @@ Covers:
   • Cancellation confirmation       → "Did my cancellation go through?"
   • Refund status                   → "When will I get my refund?"
   • Delivery issues                 → "My package hasn't arrived"
-  • Modifying an existing order     → "Change the address on my order"
-
-[policy_question]
-Trigger when the user asks about HOW THE STORE OPERATES — rules, procedures, or support.
-Covers:
-  • Return / exchange policy        → "Can I return this after 30 days?"
-  • Shipping & delivery times       → "How long does standard shipping take?"
-  • Payment methods                 → "Do you accept Visa / PayPal / COD?"
-  • Refund procedures               → "How do I request a refund?"
-  • Privacy & data                  → "Is my information safe?"
-  • Warranty / guarantees           → "Is there a warranty?"
-  • Technical / account support     → "How do I reset my password?"
-  • Promotions & vouchers           → "How do I apply a discount code?"
+  • Modifying an existing order     → "Change the size on my order", "Update delivery address"
 
 [general]
 Trigger for EVERYTHING that does not fit the above.
 Covers:
-  • Greetings                       → "Hi", "Hello", "Good morning"
-  • Farewells / thanks              → "Bye", "Thanks!", "You're helpful"
-  • Bot identity questions          → "Who are you?", "Are you a robot?"
-  • Unrelated small talk            → "What's the weather?", "Tell me a joke"
-  • Ambiguous / empty messages      → "...", "ok", "hmm"
+  • Greetings & small talk         → "Hi", "Good morning!", "Thanks", "You're helpful"
+  • Personal questions             → "What's your name?", "Are you a bot?"
+  • Requests to talk to humans     → "I want to speak to a human"
+  • Negative feedback              → "You're useless", "I want to complain"
+
 
 ═══════════════════════════════════════════
 CLASSIFICATION RULES (apply in order)
@@ -96,32 +97,18 @@ CLASSIFICATION RULES (apply in order)
 
 RULE 1 — CONTEXT INHERITANCE (most important)
   If the latest message is short or ambiguous (e.g., "what about blue?",
-  "cheaper?", "how much?", "yes", "that one"), resolve its intent using the
+  "cheaper?", "size M?", "yes", "that one"), resolve its intent using the
   CONVERSATION HISTORY — do NOT default to [general].
 
   Example:
-    History:  User asked about jackets → AI listed jacket options
-    Message:  "do you have them in black?"
-    Intent:   product_search  ✓   (NOT general ✗)
-
-RULE 2 — ORDER vs POLICY DISAMBIGUATION
-  • References a specific, already-placed order  → order_tracking
-  • Asks about how the store handles orders/refunds in general → policy_question
+    History:  User asked about summer dresses → AI listed dress options
+    Message:  "do you have them in white?"
+    Intent:   product_search  ✓   
 
   Example:
-    "What is your refund policy?"         → policy_question
-    "I want a refund for order #999"      → order_tracking
-
-RULE 3 — COMPOUND MESSAGES
-  If a message spans two intents, pick the PRIMARY action the user wants.
-
-  Example:
-    "What's your return policy and do you have blue hoodies?"
-    Primary action: product_search (the product question is more actionable)
-
-RULE 4 — UNCERTAINTY FALLBACK
-  If you genuinely cannot determine the intent even after applying Rules 1–3,
-  output: general
+    History:  User asked about summer jeans → AI listed dress options and say "Do you want to see more? Would you like to see more details about any of these products?"
+    Message:  "Yes"
+    Intent:   product_search  ✓  
 
 ═══════════════════════════════════════════
 OUTPUT FORMAT
@@ -205,7 +192,8 @@ if __name__ == "__main__":
             # Extract the final response
             final_msg = result["answer"]
             print(f"Assistant: {final_msg}\n")
-            
+            print(f"Data: {result.get('ui_data', {})}\n")
+
         except Exception as e:
             print(f"An error occurred: {e}")
             # Optional: Print stack trace for debugging

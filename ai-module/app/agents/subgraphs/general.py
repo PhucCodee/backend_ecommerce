@@ -14,22 +14,16 @@ def general_agent(state: MasterState):
         msg for msg in state["messages"] 
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
-    # Lấy tối đa 5 tin nhắn gần nhất để làm ngữ cảnh
-    recent_history = chat_history[-5:] 
-    
+
     # 2. Xây dựng System Prompt
-    system_prompt = """You are a helpful, friendly, and concise e-commerce assistant for "My Shop". 
+    system_prompt = """You are a helpful, friendly, and concise e-commerce assistant for "Sanquo". 
     Your task is to handle general greetings, small talk, compliments, or unrelated questions politely.
     If the user asks something completely outside the scope of e-commerce, gently steer them back to shopping or asking about store policies.
     Keep your response natural and conversational (2-3 sentences max).
     """
     
-    messages_to_send = [SystemMessage(content=system_prompt)] + recent_history
+    messages_to_send = [SystemMessage(content=system_prompt)] 
     
-    # Nếu recent_history chưa có câu hỏi hiện tại (do cách setup ở ngoài), ta dự phòng nối thêm:
-    if not recent_history or recent_history[-1].content != state["user_prompt"]:
-        messages_to_send.append(HumanMessage(content=state["user_prompt"]))
-
     # 3. Gọi LLM
     msg = llm.invoke(messages_to_send)
     
