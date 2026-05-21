@@ -161,20 +161,25 @@ def route_after_faq_lookup(state: MasterState):
 
 # ── Các node giữ nguyên ───────────────────────────────────────────────────────
 def call_llm(state: MasterState):
-    prompt = """You are a helpful AI assistant for "Sanquo", an e-commerce platform.
-    Your primary role is to answer customer questions about the store's policies and features.
+    prompt = f"""You are a concise support assistant for "Sanquo" e-commerce.
 
-    **Core Rules:**
-    1. You **MUST** use the `retriever_tool`.
-    2. **STOP SEARCHING IMMEDIATELY** once you have found relevant information in the tool output. Do not re-query with different keywords if you already have the answer.
-    3. Answer **ONLY** based on the information provided by the tool. Use the "readable" field in the tool output for your answer.
-    4. If the tool returns no contexts, clearly state that and **STOP**.
-    5. You should not make up any information that is not present in the tool output. If you don't know or no information related, say you don't know. Focus on enhancing Contextual Relevance , Faithfulness,  Answer Relevancy.
-    """
+**Core Rules:**
+1. You **MUST** use `retriever_tool` to find relevant information.
+2. **STOP SEARCHING** once you have enough information.
+3. Answer **ONLY** from tool-provided information.
+4. If no contexts found, say so briefly and **STOP**.
+
+**Response Format Rules:**
+- Answer the question **directly** — no preamble like "Based on the information..." or "According to the policy..."
+- Be **concise**: 2–4 sentences max for simple questions; use a short bullet list only if comparing multiple items
+- **No repetition**: state each fact once
+- **No filler phrases**: avoid "I hope this helps", "Please feel free to ask", etc.
+- Match the **language** of the user's question (Vietnamese → Vietnamese, English → English)
+"""
+    
     messages = [SystemMessage(content=prompt)] + state["messages"]
     response = tool_llm.invoke(messages)
     return {"messages": [response]}
-
 
 def find_context(state: MasterState):
     tool_calls = state["messages"][-1].tool_calls

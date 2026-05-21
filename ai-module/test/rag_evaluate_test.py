@@ -19,23 +19,32 @@ DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (180 giây = 3 phút)
 
 # --- 1. Danh sách Test Cases ---
 FULL_TEST_SUITE = [
-    # ("What is your return policy?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How long does shipping take?", ["relevancy", "faithfulness", "contextual_relevancy"], "shipping"),
-    # ("Do you accept visa card?", ["relevancy", "faithfulness", "contextual_relevancy"], "payment"),
-    # ("How can I get help with technical issue", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    ("Can I get a refund for a broken item?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Is my personal information privately protected", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Do I have to pay for return shipping?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How many days do I have to exchange a shirt if it doesn't fit?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Do you ship internationally to Ho Chi Minh City, Vietnam?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Can I use Apple Pay or Momo for checkout?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("What is your warranty policy for leather bags?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Are custom-made items refundable?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I contact customer support for help with my order?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I apply a discount code to my purchase?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I reset my password?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("How do I create an account?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
-    # ("Is my information secure?", ["relevancy", "faithfulness", "contextual_relevancy"], "policy"),
+    # ("What is your return policy?", [   "faithfulness" ], "policy"),
+    # ("How long does shipping take?", [   "faithfulness" ], "shipping"),
+    # ("How can I get help with technical issue", [   "faithfulness" ], "policy"),
+    # ("Can I get a refund for a broken item?", [   "faithfulness" ], "policy"),
+    # ("Is my personal information privately protected", [   "faithfulness" ], "policy"),
+    # ("Do I have to pay for return shipping?", [   "faithfulness" ], "policy"),
+    # ("How many days do I have to exchange a shirt if it doesn't fit?", [   "faithfulness" ], "policy"),
+    # ("Do you ship internationally to Ho Chi Minh City, Vietnam?", [   "faithfulness" ], "policy"),
+    # ("Can I use Apple Pay or Momo for checkout?", [ "faithfulness" ], "policy"),
+    # ("What is your warranty policy for leather bags?", [   "faithfulness" ], "policy"),
+    # ("Are custom-made items refundable?", [   "faithfulness" ], "policy"),
+    # ("How do I contact customer support for help with my order?", [   "faithfulness" ], "policy"),
+    # ("How do I apply a discount code to my purchase?", [   "faithfulness" ], "policy"),
+    # ("How do I reset my password?", [   "faithfulness" ], "policy"),
+    # ("How do I create an account?", [   "faithfulness" ], "policy"),
+    # ("Is my information secure?", [   "faithfulness" ], "policy"),
+    # ("Do you accept ZaloPay?", [   "faithfulness" ], "policy"),
+    # ("How do I change my email address or phone number?", [   "faithfulness" ], "policy"),
+    # ("How do I delete my Sanquo account?", [   "faithfulness" ], "policy"),
+    # ("Is it safe to pay on Sanquo?", [   "faithfulness" ], "policy"),
+    # ("What shipping options are available?", [   "faithfulness" ], "policy"),
+    # ("Is there free shipping?", [   "faithfulness" ], "policy"),
+    # ("What personal data does Sanquo collect?", [   "faithfulness" ], "policy"),
+    # ("Does Sanquo use my data for advertising?", [   "faithfulness" ], "policy"),
+    # ("The app keeps crashing. What should I do?", [   "faithfulness" ], "policy"),
+    # ("What is Sanquo?", [   "faithfulness" ], "policy"),
 ]
 # --- 2. Cấu hình Model Đánh giá (DeepEval) ---
 class GroqEvalModel(DeepEvalBaseLLM):
@@ -88,7 +97,6 @@ def run_evaluation():
         print(f"\n{'='*50}")
         print(f"CHẠY TEST CASE [{current_index + 1}/{total_tests}]")
         print(f"INPUT    : {user_input}")
-        print(f"CATEGORY : {category}")
         print(f"{'='*50}")
 
         # --- A. Gọi API Localhost ---
@@ -163,8 +171,6 @@ def run_evaluation():
 
         # --- F. Ghi kết quả vào file TXT tức thời ---
         with open(RESULT_FILE, "a", encoding="utf-8") as f:
-            f.write(f"TIMESTAMP : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write(f"CATEGORY  : {category}\n")
             f.write(f"QUERY     : {user_input}\n")
             f.write(f"ANSWER    : {actual_output}\n")
             f.write("METRICS   :\n")

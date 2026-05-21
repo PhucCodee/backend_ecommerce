@@ -20,6 +20,10 @@ DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (180 giây = 3 phút)
 # --- 1. Danh sách Test Cases ---
 FULL_TEST_SUITE = [
     ("Do you have any blue jacket?", ["relevancy"], "product"),
+    ("What is the price of the red dress?", ["relevancy"], "product"),
+    ("Is the black shoes available in size 9?", ["relevancy"], "product"),
+    ("Can I get a discount on the green sweater?", ["relevancy"], "product"),
+    ("What materials are used in the white shirt?", ["relevancy"], "product"),
 ]
 # --- 2. Cấu hình Model Đánh giá (DeepEval) ---
 class GroqEvalModel(DeepEvalBaseLLM):
@@ -114,10 +118,6 @@ def run_evaluation():
         active_metrics = []
         if "relevancy" in metrics_to_run:
             active_metrics.append(AnswerRelevancyMetric(threshold=0.8, model=eval_model, strict_mode=False))
-        if "faithfulness" in metrics_to_run:
-            active_metrics.append(FaithfulnessMetric(threshold=0.8, model=eval_model, strict_mode=False))
-        if "contextual_relevancy" in metrics_to_run:
-            active_metrics.append(ContextualRelevancyMetric(threshold=0.8, model=eval_model, strict_mode=False))
 
         # --- E. Chạy & Tính toán điểm Metrics ---
         print("\n🤖 Đang gửi lên Groq để chấm điểm qua DeepEval...")

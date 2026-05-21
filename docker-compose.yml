@@ -68,14 +68,19 @@ services:
         ports:
             - "8000:8000"
         environment:
+            # - DB_HOST=aws-1-ap-northeast-1.pooler.supabase.com
+            # - DB_NAME=postgres
+            # - DB_USER=postgres.krcpbzniiauqtdogamze
+            # - DB_PASSWORD=${POSTGRES_PASSWORD} # Use variable
+            # - DB_PORT=5432
             - DB_HOST=db
-            - DB_NAME=postgres
+            - DB_NAME=database
             - DB_USER=postgres
-            - DB_PASSWORD=123
+            - DB_PASSWORD=123 # Use variable
             - DB_PORT=5432
             - CHROMA_DB_PATH=/app/chroma_db
-            - GROQ_API_KEY=${GROQ_API_KEY}
-            - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+            - GROQ_API_KEY=${GROQ_API_KEY1} # Use variable
+            - GOOGLE_API_KEY=${GOOGLE_API_KEY} # Use variable
         env_file:
             - .env
         volumes:

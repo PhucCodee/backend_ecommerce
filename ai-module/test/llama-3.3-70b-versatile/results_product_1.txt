@@ -1,9 +1,0 @@
-TIMESTAMP : 2026-05-20 23:54:00
-CATEGORY  : product
-QUERY     : Do you have any blue jacket?
-ANSWER    : I found products matching your request. - The 'Cotton Workwear Jacket' is 12,000,000 VND, available in Beige/S, Beige/M, Beige/L, Black/S, Black/M, Black/L. Some information about the product is: Jacket in a sturdy cotton weave with embroidered motifs. Featuring a collar, a zip down the front, a zipped chest pocket and jetted front pockets. Long sleeves with a press-stud at the cuffs. Lined. Would you like to see more details about any of these products?
-METRICS   :
-  - AnswerRelevancyMetric:
-    LỖI: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kda828djf3jsmvs8kxtemgct` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99654, Requested 720. Please try again in 5m23.135999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
-------------------------------------------------------------
-

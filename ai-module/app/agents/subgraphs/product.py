@@ -320,13 +320,11 @@ YOUR TASK:
     Focus on relevance and helpfulness, not exhaustiveness. 
     If the results are not relevant, it's better to say "I couldn't find any products matching your request" than to list irrelevant items.
     For example if the user asked for "red shirts" but the results are mostly blue pants, it's better to say you found nothing than to list irrelevant products.
-3. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
-4. The 'answer' field should be a string in the format:
-"I found products matching your request. 
-- The 'Product A' is $Y, available in [color/size]. Some great information about the product is: [short-parahphased description].
-- The 'Product B' is $Z, available in [color/size]. Some great information about the product is: [short-parahphased description].
-Would you like to see more details about any of these products?"
+3. The 'answer' field should be a string in the format:
+"I found some products matching your request.\\n- **Product A** — 100,000 VND, available in [color/size].\\n  [Short description].\\n- **Product B** — 200,000 VND, available in [color/size].\\n  [Short description].\\nWould you like to see more details about any of these?"
 
+IMPORTANT: Each bullet point MUST start on a new line using \\n. Never put everything on one line.
+4. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
     """
     
     response_model = ui_llm.invoke([
