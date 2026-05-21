@@ -14,14 +14,12 @@ namespace ECommerce.Infrastructure.Repositories
     {
         public async Task<Order?> GetOrderWithDetailsAsync(int orderId)
         {
-            // SkuNavigation → resolves OrderItemDto.ProductId (deep-link to the
-            // product page) + SKU code; Seller → SellerName. No ProductImages —
-            // orders no longer show images.
             return await _context
                 .Orders.Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.SkuNavigation)
                 .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Seller)
+                .ThenInclude(oi => oi.Seller)
+                .Include(o => o.OrderPayments)
                 .Include(o => o.OrderShipping)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
@@ -32,7 +30,10 @@ namespace ECommerce.Infrastructure.Repositories
             int pageSize
         )
         {
-            var query = _context.Orders.Include(o => o.OrderItems).Where(o => o.UserId == userId);
+            var query = _context
+                .Orders.Include(o => o.OrderItems)
+                .Include(o => o.OrderPayments)
+                .Where(o => o.UserId == userId);
 
             var totalCount = await query.CountAsync();
             var orders = await query
@@ -49,7 +50,7 @@ namespace ECommerce.Infrastructure.Repositories
             int pageSize
         )
         {
-            var query = _context.Orders.Include(o => o.OrderItems);
+            var query = _context.Orders.Include(o => o.OrderItems).Include(o => o.OrderPayments);
 
             var totalCount = await query.CountAsync();
             var orders = await query
@@ -69,6 +70,7 @@ namespace ECommerce.Infrastructure.Repositories
         {
             var query = _context
                 .Orders.Include(o => o.OrderItems)
+                .Include(o => o.OrderPayments)
                 .Where(o => o.OrderItems.Any(i => i.SellerId == sellerId));
 
             var totalCount = await query.CountAsync();

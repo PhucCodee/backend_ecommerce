@@ -9,6 +9,7 @@ public class OrderDto
     public required string OrderNumber { get; set; }
     public int UserId { get; set; }
     public required string Status { get; set; }
+    public required string PaymentStatus { get; set; }
     public decimal Subtotal { get; set; }
     public decimal ShippingFee { get; set; }
     public decimal TaxAmount { get; set; }
