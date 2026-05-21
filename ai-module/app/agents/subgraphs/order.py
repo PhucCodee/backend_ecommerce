@@ -1,6 +1,6 @@
 # app/agents/subgraphs/order.py
 from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
 from psycopg2.extras import RealDictCursor
 
 # Import từ core
@@ -16,10 +16,11 @@ def order_tracking(state: MasterState) -> MasterState:
         msg for msg in state["messages"]
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
-    recent_history = chat_history[-5:]
+    recent_history = chat_history[-6:]
     history_text = "\n".join([
         f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}"
         for msg in recent_history[:-1]
+        if isinstance(msg, (HumanMessage, AIMessage))
     ])
     if not history_text:
         history_text = "This is the start of the conversation."
@@ -29,9 +30,6 @@ def order_tracking(state: MasterState) -> MasterState:
 
     prompt = f"""You are an order query parser for an e-commerce platform.
 Extract structured tracking fields from the user's latest message.
-
-CONVERSATION HISTORY (recent, oldest→newest):
-{history_text}
 
 ---
 FIELD DEFINITIONS
@@ -87,7 +85,12 @@ EXAMPLES
 "What's the tracking number?"
 → order_number: "ORD-2025-005", time_context: "any",        
   order_intent: "track_location"     
+
+--------------History----------------
+{history_text}
 """
+    
+
     order_llm = llm.with_structured_output(Order)
 
     response = order_llm.invoke([
@@ -225,7 +228,7 @@ def synthesize_order_answer(state: MasterState):
     }
     intent_note = INTENT_GUIDANCE.get(order_model.order_intent, "")
 
-    system_prompt = f"""You are a friendly, professional customer support agent for an e-commerce platform.
+    system_prompt = f"""You are a friendly, professional customer support agent for an e-commerce platform named Sanquo.
 The ORDER DATA below is real and retrieved from the database. Present it clearly and answer the customer's actual question.
 
 CUSTOMER INTENT: {order_model.order_intent}

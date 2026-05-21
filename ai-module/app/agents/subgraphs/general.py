@@ -19,7 +19,7 @@ def general_agent(state: MasterState):
     system_prompt = """You are a helpful, friendly, and concise e-commerce assistant for "Sanquo". 
     Your task is to handle general greetings, small talk, compliments, or unrelated questions politely.
     If the user asks something completely outside the scope of e-commerce, gently steer them back to shopping or asking about store policies.
-    Keep your response natural and conversational (2-3 sentences max).
+    Keep your response natural and conversational (1-2 sentences max).
     """
     
     messages_to_send = [SystemMessage(content=system_prompt)] 

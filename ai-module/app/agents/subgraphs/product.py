@@ -2,7 +2,7 @@
 import time
 
 from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage,ToolMessage
 from psycopg2.extras import RealDictCursor
 
 # Import from core
@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from typing import List
 
 class UIResponse(BaseModel):
-    text: str = Field(description="Natural language response from the AI (concise)")
+    answer: str = Field(description="Natural language response from the AI (concise)")
     product_ids: List[int] = Field(default_factory=list, description="List of product IDs found in the database results")
 
 
@@ -24,11 +24,12 @@ def product_search(state: MasterState) -> MasterState:
         msg for msg in state["messages"] 
         if isinstance(msg, (HumanMessage, AIMessage))
     ]
-    recent_history = chat_history[-6:] 
+    recent_history = chat_history[-7:] 
     
     history_text = "\n".join([
-        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}" 
-        for msg in recent_history[:-1] 
+        f"{'User' if isinstance(msg, HumanMessage) else 'AI'}: {msg.content}"
+        for msg in recent_history[:-1]
+        if isinstance(msg, (HumanMessage, AIMessage))
     ])
     
     if not history_text:
@@ -38,10 +39,6 @@ def product_search(state: MasterState) -> MasterState:
     prompt = f"""
         You are a product query parser for an e-commerce platform.
         Your ONLY job is to extract structured product search fields from the user's latest message.
-
-        CONVERSATION HISTORY (most recent last):
-        {history_text}
-
         ═══════════════════════════════════════════
         OUTPUT SCHEMA
         ═══════════════════════════════════════════
@@ -94,13 +91,15 @@ def product_search(state: MasterState) -> MasterState:
         - Never include adjectives in `name`.              "blue jacket" → name: "jacket", des: ["blue"]
         - Vague queries like "something cheap": name: "unknown", des: "cheap"
         - All of the product name is lowercased except for proper nouns or specific model names. "minimal logo tee" → name: "Minimal Logo Tee"
+
+        ---------------History----------------
+        {history_text}
         """
-    
     for attempt in range(2):
         try:
             response = product_llm.invoke([
                 SystemMessage(content=prompt),
-                HumanMessage(content=state['user_prompt']),
+                HumanMessage(content=state["user_prompt"]),
             ])
             break # Success! Break out of the loop
         except Exception as e:
@@ -156,7 +155,9 @@ MANDATORY RULES (never violate)
 [R2] ALWAYS SELECT p.product_id, p.product_name, ps.price, p.description, p.status, ps.sku, ps.color, ps.size.
 [R3] ALWAYS end with ORDER BY SIMILARITY(...) DESC LIMIT 10.
 [R4] Output PLAIN SQL TEXT only — no markdown, no code fences, no comments.
-
+[R5] If Description is empty, "N/A", or missing, OMIT the description ILIKE block entirely.
+     Only generate ILIKE clauses for keywords that actually exist in the input.
+     NEVER generate ILIKE '%%' — it matches everything and is forbidden.
 ═══════════════════════════════════════════
 QUERY CONSTRUCTION GUIDE
 ═══════════════════════════════════════════
@@ -304,39 +305,41 @@ def synthesize_product_answer(state: MasterState):
         }
 
     # If data exists, use Structured Output to create the MCP JSON
-    ui_llm = llm.with_structured_output(UIResponse)
+    ui_llm = llm.with_structured_output(UIResponse, method="json_mode")
     
     system_prompt = system_prompt = """You are a helpful e-commerce assistant of Sanquo.
-    You receive data from the database containing products matching the user's request.
-    The currency is VND
-    YOUR TASK:
-    1. Give answer base on the data, but keep it concise and natural. Don't just read out the product names — synthesize a helpful response.
-    2. The context data may contain more than you need or more than user need. 
-        Focus on relevance and helpfulness, not exhaustiveness. 
-        If the results are not relevant, it's better to say "I couldn't find any products matching your request" than to list irrelevant items.
-        For example if the user asked for "red shirts" but the results are mostly blue pants, it's better to say you found nothing than to list irrelevant products.
-    3. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
+You receive data from the database containing products matching the user's request. The currency is VND
 
-    The answer should be the format:
-    I found products matching your request. 
-    - The 'Product A' is $Y, available in [color/size]. Some information about the product is: [description].
-    - The 'Product B' is $Z, available in [color/size]. Some information about the product is: [description].
-    - ...
-    Would you like to see more details about any of these products?
+OUTPUT SCHEMA as JSON FORM:
+    - answer: Your given answer based on the user query and context retrieved
+    - product_ids: A list of all product_id values extracted from the database results
+
+YOUR TASK:
+1. Give answer base on the data, but keep it concise and natural. Don't just read out the product names — synthesize a helpful response.
+2. The context data may contain more than you need or more than user need. 
+    Focus on relevance and helpfulness, not exhaustiveness. 
+    If the results are not relevant, it's better to say "I couldn't find any products matching your request" than to list irrelevant items.
+    For example if the user asked for "red shirts" but the results are mostly blue pants, it's better to say you found nothing than to list irrelevant products.
+3. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
+4. The 'answer' field should be a string in the format:
+"I found products matching your request. 
+- The 'Product A' is $Y, available in [color/size]. Some great information about the product is: [short-parahphased description].
+- The 'Product B' is $Z, available in [color/size]. Some great information about the product is: [short-parahphased description].
+Would you like to see more details about any of these products?"
+
     """
     
     response_model = ui_llm.invoke([
         SystemMessage(content=system_prompt + f"Data Results: {results}"),
         HumanMessage(content=state["user_prompt"])
     ])
-
     non_duplicate_product_ids = set(response_model.product_ids)
-    
+    print("passed")
     # 3. Trả về rành mạch từng field vào MasterState
     return {
-        "answer": response_model.text,
+        "answer": response_model.answer,
         "ui_data": {"product_ids": list(non_duplicate_product_ids)},
-        "messages": [AIMessage(content=response_model.text)]
+        "messages": [AIMessage(content=response_model.answer)]
     }
     
 

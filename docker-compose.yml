@@ -55,24 +55,24 @@ services:
 
     chatbot_api:
         build:
-            context: ./ai-module/
+            context: ./ai-module
             dockerfile: Dockerfile
         ports:
-            - "8000:8000"
+        - "8000:8000"
         environment:
-            - DB_HOST=db
-            - DB_NAME=database
-            - DB_USER=postgres
-            - DB_PASSWORD=${POSTGRES_PASSWORD}
-            - DB_PORT=5432
-            - CHROMA_DB_PATH=/app/chroma_db
-            - GROQ_API_KEY=${GROQ_API_KEY}
-            - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-        depends_on:
-            - db
+        - DB_HOST=aws-1-ap-northeast-1.pooler.supabase.com
+        - DB_NAME=postgres
+        - DB_USER=postgres.krcpbzniiauqtdogamze
+        - DB_PASSWORD=${POSTGRES_PASSWORD} # Use variable
+        - DB_PORT=5432
+        - CHROMA_DB_PATH=/app/chroma_db
+        - GROQ_API_KEY=${GROQ_API_KEY} # Use variable
+        - GOOGLE_API_KEY=${GOOGLE_API_KEY} # Use variable
+        env_file:
+        - .env
         volumes:
-            - ./ai-module/app:/app/app
-            - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
+        - ./ai-module/app:/app/app
+        - ./ai-module/data/vector/chroma_db_data1:/app/chroma_db
 
     loki:
         image: grafana/loki:3.0.0
