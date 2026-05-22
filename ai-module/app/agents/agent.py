@@ -96,7 +96,7 @@ STEP TO FOLLOW —
 
   Example:
     History:  User asked about summer dresses → AI listed dress options
-    Message:  "do you have them in white?"
+    Message:  "do you have them in white ?"
     Intent:   product_search  ✓   
 
   Example:

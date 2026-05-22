@@ -171,7 +171,7 @@ def call_llm(state: MasterState):
 
 **Response Format Rules:**
 - Answer the question **directly** — no preamble like "Based on the information..." or "According to the policy..."
-- Be **concise**: 2–4 sentences max for simple questions; use a short bullet list only if comparing multiple items
+- Be **concise**: 2-4 sentences max for simple questions; use a short bullet list only if comparing multiple items
 - **No repetition**: state each fact once
 - **No filler phrases**: avoid "I hope this helps", "Please feel free to ask", etc.
 - Match the **language** of the user's question (Vietnamese → Vietnamese, English → English)
