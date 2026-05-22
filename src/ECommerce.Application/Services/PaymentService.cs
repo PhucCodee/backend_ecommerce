@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using ECommerce.Application.Abstractions.Events;
 using ECommerce.Application.DTOs.payment;
 using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
@@ -27,7 +28,7 @@ public class PaymentService(
     IOrderPaymentRepository orderPaymentRepository,
     IUnitOfWork unitOfWork,
     IPaymentGatewayClient paymentGatewayClient,
-    IEventPublisher eventPublisher,
+    IOrderEventService orderEventService,
     IOptions<ZaloPayOptions> zaloPayOptions,
     IHttpClientFactory httpClientFactory,
     ILogger<PaymentService> logger
@@ -38,7 +39,7 @@ public class PaymentService(
     private readonly IOrderPaymentRepository _orderPaymentRepository = orderPaymentRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IPaymentGatewayClient _paymentGatewayClient = paymentGatewayClient;
-    private readonly IEventPublisher _eventPublisher = eventPublisher;
+    private readonly IOrderEventService _orderEventService = orderEventService;
     private readonly ZaloPayOptions _zaloPayOptions = zaloPayOptions.Value;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly ILogger<PaymentService> _logger = logger;
@@ -118,17 +119,11 @@ public class PaymentService(
             );
             payment.UpdatedAt = DateTime.UtcNow;
 
-            await _eventPublisher.PublishAsync(
-                new PaymentFailedEvent
-                {
-                    OrderId = order.OrderId,
-                    OrderNumber = order.OrderNumber,
-                    UserId = order.UserId,
-                    SourceEventId = Guid.Empty,
-                    Reason = payment.FailureReason,
-                    ErrorCode = gatewayResult.ErrorCode,
-                    Amount = order.TotalAmount,
-                }
+            await _orderEventService.PublishPaymentFailedAsync(
+                order,
+                payment,
+                payment.FailureReason,
+                gatewayResult.ErrorCode
             );
 
             await _unitOfWork.SaveChangesAsync();
@@ -266,17 +261,11 @@ public class PaymentService(
             );
             payment.UpdatedAt = DateTime.UtcNow;
 
-            await _eventPublisher.PublishAsync(
-                new PaymentFailedEvent
-                {
-                    OrderId = order.OrderId,
-                    OrderNumber = order.OrderNumber,
-                    UserId = order.UserId,
-                    SourceEventId = Guid.Empty,
-                    Reason = payment.FailureReason,
-                    ErrorCode = "amount_mismatch",
-                    Amount = order.TotalAmount,
-                }
+            await _orderEventService.PublishPaymentFailedAsync(
+                order,
+                payment,
+                payment.FailureReason,
+                "amount_mismatch"
             );
 
             await _unitOfWork.SaveChangesAsync();
@@ -304,22 +293,10 @@ public class PaymentService(
             payment.Status = PaymentStatus.completed;
             payment.PaidAt = DateTime.UtcNow;
 
-            if (order.Status == OrderStatus.created)
-            {
-                order.Status = OrderStatus.confirmed;
-                order.UpdatedAt = DateTime.UtcNow;
-            }
-
-            await _eventPublisher.PublishAsync(
-                new PaymentSucceededEvent
-                {
-                    OrderId = order.OrderId,
-                    OrderNumber = order.OrderNumber,
-                    UserId = order.UserId,
-                    SourceEventId = Guid.Empty,
-                    TransactionId = data.ZpTransId?.ToString() ?? "",
-                    Amount = order.TotalAmount,
-                }
+            await _orderEventService.PublishPaymentSucceededAsync(
+                order,
+                payment,
+                data.ZpTransId?.ToString() ?? ""
             );
         }
         else
@@ -327,17 +304,11 @@ public class PaymentService(
             payment.Status = PaymentStatus.failed;
             payment.FailureReason = "ZaloPay callback missing zp_trans_id";
 
-            await _eventPublisher.PublishAsync(
-                new PaymentFailedEvent
-                {
-                    OrderId = order.OrderId,
-                    OrderNumber = order.OrderNumber,
-                    UserId = order.UserId,
-                    SourceEventId = Guid.Empty,
-                    Reason = payment.FailureReason,
-                    ErrorCode = "missing_zp_trans_id",
-                    Amount = order.TotalAmount,
-                }
+            await _orderEventService.PublishPaymentFailedAsync(
+                order,
+                payment,
+                payment.FailureReason,
+                "missing_zp_trans_id"
             );
         }
 

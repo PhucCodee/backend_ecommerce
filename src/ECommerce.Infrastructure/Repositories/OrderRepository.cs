@@ -15,10 +15,11 @@ namespace ECommerce.Infrastructure.Repositories
         public async Task<Order?> GetOrderWithDetailsAsync(int orderId)
         {
             return await _context
-                .Orders.Include(o => o.OrderItems)
+                .Orders.AsSplitQuery()
+                .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.SkuNavigation)
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Seller)
+                    .ThenInclude(oi => oi.Seller)
                 .Include(o => o.OrderPayments)
                 .Include(o => o.OrderShipping)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);

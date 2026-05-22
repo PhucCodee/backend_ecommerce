@@ -15,7 +15,7 @@ public sealed class InventoryConsumer(
     ApplicationDbContext db,
     IPublishEndpoint publishEndpoint,
     ILogger<InventoryConsumer> logger
-) : IConsumer<OrderCreatedEvent>
+) : IConsumer<OrderCreatedEvent>, IConsumer<OrderConfirmedEvent>
 {
     private readonly ApplicationDbContext _db = db;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
@@ -187,5 +187,126 @@ public sealed class InventoryConsumer(
             message.OrderId,
             reservedItems.Count
         );
+    }
+
+    public async Task Consume(ConsumeContext<OrderConfirmedEvent> context)
+    {
+        var message = context.Message;
+        const string processedBy = "inventory-consumer";
+
+        var alreadyProcessed = await _db.ProcessedEvents.AnyAsync(
+            x => x.EventId == message.EventId && x.ProcessedBy == processedBy,
+            context.CancellationToken
+        );
+
+        if (alreadyProcessed)
+        {
+            _logger.LogInformation(
+                "InventoryConsumer skipped already processed order.confirmed {EventId}",
+                message.EventId
+            );
+            return;
+        }
+
+        var order = await _db
+            .Orders.Include(o => o.OrderItems)
+            .FirstOrDefaultAsync(o => o.OrderId == message.OrderId, context.CancellationToken);
+
+        if (order is null)
+        {
+            _db.ProcessedEvents.Add(
+                new ProcessedEvent
+                {
+                    EventId = message.EventId,
+                    EventType = message.EventType,
+                    ProcessedAt = DateTime.UtcNow,
+                    ProcessedBy = processedBy,
+                }
+            );
+
+            await _db.SaveChangesAsync(context.CancellationToken);
+            return;
+        }
+
+        var reservations = order
+            .OrderItems.Where(oi => oi.SkuId > 0 && oi.Quantity > 0)
+            .GroupBy(oi => oi.SkuId)
+            .Select(g => new { SkuId = g.Key, Quantity = g.Sum(x => x.Quantity) })
+            .ToList();
+
+        if (reservations.Count > 0)
+        {
+            var skuIds = reservations.Select(x => x.SkuId).ToList();
+            var inventoryBySku = await _db
+                .Inventories.Where(i => skuIds.Contains(i.SkuId))
+                .ToDictionaryAsync(i => i.SkuId, context.CancellationToken);
+
+            var now = DateTime.UtcNow;
+
+            foreach (var item in reservations)
+            {
+                if (!inventoryBySku.TryGetValue(item.SkuId, out var inventory))
+                    continue;
+
+                var moveQty = Math.Min(item.Quantity, inventory.QuantityReserved);
+                if (moveQty <= 0)
+                    continue;
+
+                var beforeReserved = inventory.QuantityReserved;
+                var beforeSold = inventory.QuantitySold;
+
+                inventory.QuantityReserved -= moveQty;
+                inventory.QuantitySold += moveQty;
+                inventory.UpdatedAt = now;
+
+                _db.InventoryHistories.Add(
+                    new InventoryHistory
+                    {
+                        Inventory = inventory,
+                        ChangedByNavigation = null!,
+                        ChangeType = "sold",
+                        QuantityChange = moveQty,
+                        QuantityBefore = beforeSold,
+                        QuantityAfter = inventory.QuantitySold,
+                        ReferenceType = "order",
+                        ReferenceId = order.OrderId,
+                        Notes = $"Marked sold for order {order.OrderNumber}",
+                        CreatedAt = now,
+                        UpdatedAt = now,
+                    }
+                );
+
+                _db.InventoryHistories.Add(
+                    new InventoryHistory
+                    {
+                        Inventory = inventory,
+                        ChangedByNavigation = null!,
+                        ChangeType = "reserve_to_sold",
+                        QuantityChange = -moveQty,
+                        QuantityBefore = beforeReserved,
+                        QuantityAfter = inventory.QuantityReserved,
+                        ReferenceType = "order",
+                        ReferenceId = order.OrderId,
+                        Notes = $"Reserve released to sold for order {order.OrderNumber}",
+                        CreatedAt = now,
+                        UpdatedAt = now,
+                    }
+                );
+            }
+        }
+
+        _db.ProcessedEvents.Add(
+            new ProcessedEvent
+            {
+                EventId = message.EventId,
+                EventType = message.EventType,
+                ProcessedAt = DateTime.UtcNow,
+                ProcessedBy = processedBy,
+            }
+        );
+
+        await _db.SaveChangesAsync(context.CancellationToken);
+
+        _logger.LogInformation("Inventory moved to sold for order {OrderId}", message.OrderId);
     }
 }
