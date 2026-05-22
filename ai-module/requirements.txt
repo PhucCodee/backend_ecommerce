@@ -33,3 +33,7 @@ pypdf
 
 #--------Testing
 pytest
+deepeval
+litellm
+
+requests

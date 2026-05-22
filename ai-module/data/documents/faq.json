@@ -1,0 +1,416 @@
+{
+  "document": {
+    "title": "Sanquo Frequently Asked Questions (FAQs)",
+    "effective_date": "2026-04-30",
+    "version": "1.0",
+    "contact": {
+      "general_support": "support@Sanquo.vn",
+      "payment_support": "payments@Sanquo.vn",
+      "privacy": "privacy@Sanquo.vn",
+      "partnerships": "partners@Sanquo.vn",
+      "hotline": "+84 1234 1423",
+      "hours": "Monday to Saturday, 08:00-20:00 ICT"
+    }
+  },
+  "sections": [
+    {
+      "id": 1,
+      "title": "Account Management",
+      "faqs": [
+        {
+          "id": "1.1",
+          "question": "How do I create a Sanquo account?",
+          "answer": "Download the Sanquo app or visit our website, tap Sign Up, and enter your name, email address, phone number, and a password. You will receive a verification email -- click the link inside to activate your account."
+        },
+        {
+          "id": "1.2",
+          "question": "I forgot my password. How do I reset it?",
+          "answer": "On the login page, tap Forgot Password and enter your registered email address. We will send you a password reset link. Click the link, create a new password, and you are back in."
+        },
+        {
+          "id": "1.3",
+          "question": "How do I change my email address or phone number?",
+          "answer": "Log into your account, go to My Account, and update the relevant field. You may be asked to verify the new contact detail before the change takes effect."
+        },
+        {
+          "id": "1.4",
+          "question": "Can I have more than one Sanquo account?",
+          "answer": "No. Each person or business may only hold one registered account. Operating multiple accounts is a violation of our Terms and may result in all accounts being suspended."
+        },
+        {
+          "id": "1.5",
+          "question": "How do I update my delivery address?",
+          "answer": "Go to My Account > Saved Addresses. You can add a new address, edit an existing one, or set a default delivery address for future orders."
+        },
+        {
+          "id": "1.6",
+          "question": "How do I delete my Sanquo account?",
+          "answer": "Contact our support team at support@Sanquo.vn and request account deletion. We will process your request in accordance with our Privacy Policy. Note that some data may be retained for legal compliance purposes."
+        },
+        {
+          "id": "1.7",
+          "question": "My account has been suspended. What do I do?",
+          "answer": "You will have received an email from us explaining the reason. If you believe the suspension is an error, contact support@Sanquo.vn within 30 days to appeal. We will review and respond as quickly as possible."
+        },
+        {
+          "id": "1.8",
+          "question": "Is there a minimum age to register?",
+          "answer": "Yes. You must be at least 18 years old. Users aged 16-17 may register only with a parent or guardian's verified consent, with the adult taking full responsibility for the account."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Orders & Payments",
+      "faqs": [
+        {
+          "id": "2.1",
+          "question": "What payment methods does Sanquo accept?",
+          "answer": "We accept e-wallets ZaloPay; Cash on Delivery (COD); and Sanquo platform credits and gift vouchers."
+        },
+        {
+          "id": "2.2",
+          "question": "Is it safe to pay on Sanquo?",
+          "answer": "Yes. All transactions are protected by SSL/TLS encryption and our payment system is PCI DSS compliant. We never store your full card number or CVV. For card payments, 3D Secure authentication adds an extra layer of verification."
+        },
+        {
+          "id": "2.3",
+          "question": "Why was my payment declined?",
+          "answer": "Common reasons include: insufficient funds, the card not being enabled for online transactions, or a failed 3D Secure verification. Check your card details, confirm with your bank that online payments are enabled, and try again. If the problem continues, contact payments@Sanquo.vn with the error code shown."
+        },
+        {
+          "id": "2.4",
+          "question": "How long does it take for my order to be confirmed?",
+          "answer": "For card and e-wallet payments, confirmation is almost instant -- you will receive a confirmation email within 5 minutes. For bank transfers, confirmation takes 1-2 business days after we verify receipt of your payment."
+        },
+        {
+          "id": "2.5",
+          "question": "Why was my order cancelled?",
+          "answer": "Orders may be cancelled if payment was not completed within 24 hours (for bank transfers), if the item became out of stock before dispatch, or if there was a suspected fraud flag on the transaction. You will always receive an email explaining the reason, and any payment taken will be fully refunded."
+        },
+        {
+          "id": "2.6",
+          "question": "How do I apply a discount code or voucher?",
+          "answer": "At checkout, look for the Discount Code or Voucher field, enter your code, and tap Apply. The discount will be reflected in your order total before you confirm payment."
+        },
+        {
+          "id": "2.7",
+          "question": "Can I change or cancel my order after placing it?",
+          "answer": "Orders can only be changed or cancelled before they are dispatched. Contact support@Sanquo.vn as soon as possible with your order number. Once an order has been handed to the carrier, it cannot be modified."
+        },
+        {
+          "id": "2.8",
+          "question": "I was charged but my order never appeared. What should I do?",
+          "answer": "Wait 5 minutes and refresh My Orders. Also check your email inbox (including spam) for a confirmation. If neither appears after 30 minutes and your payment was deducted, contact payments@Sanquo.vn immediately with your transaction reference number."
+        },
+        {
+          "id": "2.9",
+          "question": "Are all prices in Vietnamese Dong (VND)?",
+          "answer": "Yes. All prices on Sanquo are displayed and charged in VND. If you pay with an international card, your bank will convert the amount to your home currency at their exchange rate. Sanquo does not add any currency conversion fees."
+        },
+        {
+          "id": "2.10",
+          "question": "Do I get a receipt for my order?",
+          "answer": "Yes. An order confirmation email is sent to your registered email address within 5 minutes of a successful payment. It includes your order number, itemised summary, total charged, and estimated dispatch timeframe."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Shipping & Delivery",
+      "faqs": [
+        {
+          "id": "3.1",
+          "question": "What shipping options are available?",
+          "answer": "Sanquo offers: Express (Hoa Toc) -- same/next-day for eligible urban areas; Standard (Tieu Chuan). Fees are shown at checkout."
+        },
+        {
+          "id": "3.2",
+          "question": "How long will my order take to arrive?",
+          "answer": "From dispatch: HCM City / Hanoi inner areas -- Express 2-4 hours, Standard 1-2 business days. Provincial cities -- Standard 2-3 days. Rural areas -- Standard 4-7 days. Add 1 business day for order processing.",
+          "delivery_estimates": {
+            "hcm_hanoi_inner": {
+              "express_hours": "2-4",
+              "standard_business_days": "1-2"
+            },
+            "provincial_cities": {
+              "standard_business_days": "2-3"
+            },
+            "rural_areas": {
+              "standard_business_days": "4-7"
+            },
+            "processing_buffer_days": 1
+          }
+        },
+        {
+          "id": "3.3",
+          "question": "Do you deliver outside Vietnam?",
+          "answer": "Not at this time. Sanquo currently delivers within Vietnam only."
+        },
+        {
+          "id": "3.4",
+          "question": "How do I track my order?",
+          "answer": "Once your order is dispatched, you will receive an email with a tracking number and direct link. You can also track via My Orders in your Sanquo account, or directly on the carrier's website using the tracking number."
+        },
+        {
+          "id": "3.5",
+          "question": "My tracking hasn't updated in 24 hours. What should I do?",
+          "answer": "Contact our support team at support@Sanquo.vn. We will liaise with the carrier on your behalf and get you an update as quickly as possible."
+        },
+        {
+          "id": "3.6",
+          "question": "My package arrived damaged. What do I do?",
+          "answer": "If possible, refuse the delivery. If already accepted, photograph the damaged packaging and item immediately. Report to support@Sanquo.vn within 48 hours with your photos and order number. We will offer a replacement or full refund within 2 business days of assessing your claim."
+        },
+        {
+          "id": "3.7",
+          "question": "My package hasn't arrived and is past the estimated window. What should I do?",
+          "answer": "If your order is more than 3 business days overdue, contact us at support@Sanquo.vn. We will open a trace investigation with the carrier within 1 business day. If the package is confirmed lost, we will send a replacement or issue a full refund."
+        },
+        {
+          "id": "3.8",
+          "question": "Is there free shipping?",
+          "answer": "Yes, orders that meet the minimum order value qualify for free Standard Delivery. The threshold is displayed at checkout and may vary depending on active promotions."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Returns & Refunds",
+      "faqs": [
+        {
+          "id": "4.1",
+          "question": "Can I return an item?",
+          "answer": "Yes, if the item is unused, unworn, in original condition with all tags and packaging intact, and you have proof of purchase. Returns must be requested within 7 days of delivery (14 days for defective or incorrect items).",
+          "return_window_days": {
+            "standard": 7,
+            "defective_or_incorrect": 14
+          }
+        },
+        {
+          "id": "4.2",
+          "question": "Which items cannot be returned?",
+          "answer": "Underwear, lingerie, swimwear, pierced earrings, items marked Final Sale or Non-Returnable, and customised or tailored items -- unless the defect is our fault.",
+          "non_returnable_categories": [
+            "Underwear",
+            "Lingerie",
+            "Swimwear",
+            "Pierced earrings",
+            "Final Sale items",
+            "Non-Returnable marked items",
+            "Customised or tailored items (unless defective)"
+          ]
+        },
+        {
+          "id": "4.3",
+          "question": "How do I start a return?",
+          "answer": "Contact support@Sanquo.vn or use the return request function in My Orders. Do not send items back without first receiving a Return Merchandise Authorisation (RMA) number from us -- unauthorised returns will not be accepted."
+        },
+        {
+          "id": "4.4",
+          "question": "How long does it take to get my money back?",
+          "answer": "Once we receive and inspect your return (3-5 business days), we process the refund within 2 business days. Card refunds then take 5-10 business days to appear, depending on your bank. E-wallet refunds typically appear within 2-3 business days.",
+          "refund_timeline": {
+            "inspection_business_days": "3-5",
+            "processing_business_days": 2,
+            "card_appearance_business_days": "5-10",
+            "ewallet_appearance_business_days": "2-3"
+          }
+        },
+        {
+          "id": "4.5",
+          "question": "Can I get store credit instead of a refund?",
+          "answer": "Yes. You can choose store credit (Sanquo platform vouchers) equal to 100% of the item's value, valid for 12 months. Store credit comes with an extra 5% bonus -- so a 500,000 VND return gives you 525,000 VND in vouchers.",
+          "store_credit_bonus_percent": 5,
+          "store_credit_validity_months": 12
+        },
+        {
+          "id": "4.6",
+          "question": "Who pays for return shipping?",
+          "answer": "If the item is defective, damaged, or not what you ordered -- Sanquo pays and will send a prepaid return label. If you are returning for personal reasons (size exchange, change of mind) -- you pay for return shipping.",
+          "return_shipping_responsibility": {
+            "defective_damaged_wrong_item": "Sanquo",
+            "personal_reasons": "Customer"
+          }
+        },
+        {
+          "id": "4.7",
+          "question": "My return was rejected. What can I do?",
+          "answer": "You will receive an email explaining the reason. If you disagree, you can escalate to our customer resolution team within 7 calendar days of the rejection notice. We will conduct a secondary review and respond within 5 business days."
+        },
+        {
+          "id": "4.8",
+          "question": "I paid with COD. How do I get my refund?",
+          "answer": "Refunds for COD orders are issued via bank transfer. Provide your bank account details to our support team when initiating the return and we will transfer the amount once the inspection is approved."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Privacy & Data",
+      "faqs": [
+        {
+          "id": "5.1",
+          "question": "What personal data does Sanquo collect?",
+          "answer": "We collect what is needed to run your account and fulfil your orders: your name, contact details, delivery address, payment method, order history, and device/usage data for security and platform improvement.",
+          "data_collected": [
+            "Name",
+            "Contact details",
+            "Delivery address",
+            "Payment method",
+            "Order history",
+            "Device and usage data"
+          ]
+        },
+        {
+          "id": "5.2",
+          "question": "Does Sanquo sell my personal data?",
+          "answer": "Never. We do not sell, rent, or trade your personal data to any third party for commercial purposes. Data is shared only with partners needed to fulfil your order -- such as delivery and payment providers -- and they are contractually prohibited from using it for anything else."
+        },
+        {
+          "id": "5.3",
+          "question": "Does Sanquo use my data for advertising?",
+          "answer": "If you have opted in to marketing, we may use anonymised or hashed data with platforms like Google Ads and Meta to show you relevant ads. We do not share your full name or phone number with these platforms. You can opt out at any time in your Privacy Settings."
+        },
+        {
+          "id": "5.4",
+          "question": "How do I request a copy of my data?",
+          "answer": "Email privacy@Sanquo.vn. We will acknowledge within 2 business days and send you a full copy of your data within 30 calendar days."
+        },
+        {
+          "id": "5.5",
+          "question": "How do I request that my data be deleted?",
+          "answer": "Email privacy@Sanquo.vn with your deletion request. We will delete your data to the fullest extent permitted by law. Some data -- such as transaction records -- must be retained for legal compliance, and we will explain what is kept and why."
+        },
+        {
+          "id": "5.6",
+          "question": "Can I opt out of marketing emails?",
+          "answer": "Yes. Click Unsubscribe at the bottom of any marketing email, or update your preferences in Account Settings > Notifications. You will continue to receive transactional emails (order confirmations, shipping updates) regardless of your marketing preference."
+        },
+        {
+          "id": "5.7",
+          "question": "Does Sanquo use cookies?",
+          "answer": "Yes. We use strictly necessary cookies (essential for the Platform to work), functional cookies (to save your preferences), analytics cookies (anonymised usage data), and marketing cookies (for personalised recommendations and retargeting). You can manage your cookie preferences at any time in Privacy Settings.",
+          "cookie_types": [
+            "Strictly necessary",
+            "Functional",
+            "Analytics",
+            "Marketing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Technical Issues",
+      "faqs": [
+        {
+          "id": "6.1",
+          "question": "The app keeps crashing. What should I do?",
+          "answer": "Close the app fully, check for updates in the App Store or Google Play, then relaunch. If it still crashes, restart your device. If the problem persists, uninstall and reinstall the app. Still not working? Contact support@Sanquo.vn with your device model and OS version."
+        },
+        {
+          "id": "6.2",
+          "question": "I can't log in. What should I do?",
+          "answer": "Double-check your email and password. Use Forgot Password if needed. If you still cannot get in, try a different browser or clear your browser cache. Contact support@Sanquo.vn if none of these work."
+        },
+        {
+          "id": "6.3",
+          "question": "My payment keeps failing at checkout. What should I do?",
+          "answer": "Check that your card details are correct and that online payments are enabled with your bank. Try a different payment method. Clear your browser cache and retry. If still failing, note the error code and email payments@Sanquo.vn."
+        },
+        {
+          "id": "6.4",
+          "question": "The website is loading very slowly. What can I do?",
+          "answer": "Check your internet connection. Refresh the page or clear your browser cache. Try a different browser. Check Sanquo's social media for any announced outages. If the issue persists across all your devices, contact support@Sanquo.vn."
+        },
+        {
+          "id": "6.5",
+          "question": "What browsers and devices work best with Sanquo?",
+          "answer": "Chrome (v90+), Firefox (v88+), Edge (v90+), and Safari (v14+) on Windows 10+ or macOS 11+. On mobile, iOS 14+ and Android 9.0+ are supported.",
+          "supported_browsers": [
+            {
+              "name": "Chrome",
+              "min_version": 90
+            },
+            {
+              "name": "Firefox",
+              "min_version": 88
+            },
+            {
+              "name": "Edge",
+              "min_version": 90
+            },
+            {
+              "name": "Safari",
+              "min_version": 14
+            }
+          ],
+          "supported_os": {
+            "desktop": [
+              "Windows 10+",
+              "macOS 11+"
+            ],
+            "mobile": [
+              "iOS 14+",
+              "Android 9.0+"
+            ]
+          }
+        },
+        {
+          "id": "6.6",
+          "question": "Will Sanquo ever go offline for maintenance?",
+          "answer": "Yes, occasionally. Scheduled maintenance usually happens between 1:00-5:00 AM (ICT) on weekdays. We give at least 24 hours advance notice via the Platform, email, and in-app notification. Emergency maintenance may happen without notice if there is a critical security issue.",
+          "scheduled_maintenance_window": "01:00-05:00 ICT (weekdays)",
+          "notice_hours": 24
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "General Inquiries",
+      "faqs": [
+        {
+          "id": "7.1",
+          "question": "What is Sanquo?",
+          "answer": "Sanquo is a Vietnam-based B2C fashion e-commerce platform connecting customers with verified brands and sellers. Our mission is to provide a seamless, secure, and transparent shopping experience so you can discover and buy the fashion you love with total confidence."
+        },
+        {
+          "id": "7.2",
+          "question": "How do I contact Sanquo?",
+          "answer": "Live Chat on the Platform or app (fastest), Hotline: +84 1234 1423, Email: support@Sanquo.vn. For payment issues: payments@Sanquo.vn. For privacy matters: privacy@Sanquo.vn. Available Monday to Saturday, 8:00 AM - 8:00 PM (ICT)."
+        },
+        {
+          "id": "7.3",
+          "question": "How do I know if a seller on Sanquo is trustworthy?",
+          "answer": "All sellers on Sanquo go through a verification and onboarding process before listing products. Sanquo takes active responsibility for the integrity of the marketplace. If you ever receive an item that is not as described, our return policy protects you in full."
+        },
+        {
+          "id": "7.4",
+          "question": "Does Sanquo have a loyalty or rewards programme?",
+          "answer": "Yes -- Sanquo platform credits can be earned and applied as full or partial payment at checkout. Details of the current loyalty programme are available in the Rewards section of the app. Store credit from returns also comes with a 5% bonus."
+        },
+        {
+          "id": "7.5",
+          "question": "I want to become a seller on Sanquo. How do I apply?",
+          "answer": "Reach out to us at partners@Sanquo.vn with details about your brand and product range. Our partnerships team will review your application and get back to you with the next steps."
+        },
+        {
+          "id": "7.6",
+          "question": "The Terms of Service are very long. Where can I find a summary?",
+          "answer": "You are reading it -- this FAQ is designed to give you quick answers to the most important questions. For complete legal details on any topic, refer to the corresponding numbered section of our full Terms of Service and Business Policies document."
+        },
+        {
+          "id": "7.7",
+          "question": "What language are Sanquo's Terms and policies in?",
+          "answer": "Our Terms of Service and Business Policies are published in English. If you need assistance understanding any part of the document, our support team is happy to help -- contact support@Sanquo.vn."
+        },
+        {
+          "id": "7.8",
+          "question": "How do I give feedback about my experience on Sanquo?",
+          "answer": "We welcome all feedback at support@Sanquo.vn. You can also leave a product review directly on the item page after purchase. Your input helps us improve the platform for everyone."
+        }
+      ]
+    }
+  ]
+}

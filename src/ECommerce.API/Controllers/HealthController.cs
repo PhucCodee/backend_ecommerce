@@ -65,9 +65,9 @@ namespace ECommerce.API.Controllers
             string mqVersion = "unknown";
             try
             {
-                var mqHost = _config["RabbitMQ:Host"] ?? "message_broker";
-                var mqUser = _config["RabbitMQ:User"] ?? "guest";
-                var mqPass = _config["RabbitMQ:Pass"] ?? "guest";
+                var mqHost = string.IsNullOrWhiteSpace(_config["RabbitMQ:Host"]) ? "message_broker" : _config["RabbitMQ:Host"]!;
+                var mqUser = string.IsNullOrWhiteSpace(_config["RabbitMQ:User"]) ? "guest" : _config["RabbitMQ:User"]!;
+                var mqPass = string.IsNullOrWhiteSpace(_config["RabbitMQ:Password"]) ? "guest" : _config["RabbitMQ:Password"]!;
                 var client = _httpClientFactory.CreateClient();
                 client.Timeout = TimeSpan.FromSeconds(5);
                 var byteArray = System.Text.Encoding.ASCII.GetBytes($"{mqUser}:{mqPass}");
@@ -152,9 +152,9 @@ namespace ECommerce.API.Controllers
         {
             try
             {
-                var mqHost = _config["RabbitMQ:Host"] ?? "message_broker";
-                var mqUser = _config["RabbitMQ:User"] ?? "guest";
-                var mqPass = _config["RabbitMQ:Pass"] ?? "guest";
+                var mqHost = string.IsNullOrWhiteSpace(_config["RabbitMQ:Host"]) ? "message_broker" : _config["RabbitMQ:Host"]!;
+                var mqUser = string.IsNullOrWhiteSpace(_config["RabbitMQ:User"]) ? "guest" : _config["RabbitMQ:User"]!;
+                var mqPass = string.IsNullOrWhiteSpace(_config["RabbitMQ:Password"]) ? "guest" : _config["RabbitMQ:Password"]!;
                 var client = _httpClientFactory.CreateClient();
                 client.Timeout = TimeSpan.FromSeconds(5);
                 var byteArray = System.Text.Encoding.ASCII.GetBytes($"{mqUser}:{mqPass}");

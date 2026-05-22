@@ -354,6 +354,24 @@ namespace ECommerce.Application.Mappings
                         )
                 )
                 .ForMember(
+                    dest => dest.CategoryIds,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.ProductCategories.OrderByDescending(pc => pc.IsPrimary)
+                                .Select(pc => pc.CategoryId)
+                                .ToList()
+                        )
+                )
+                .ForMember(
+                    dest => dest.CategoryNames,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.ProductCategories.OrderByDescending(pc => pc.IsPrimary)
+                                .Select(pc => pc.Category.CategoryName)
+                                .ToList()
+                        )
+                )
+                .ForMember(
                     dest => dest.SellerName,
                     opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null)
                 )
@@ -522,14 +540,33 @@ namespace ECommerce.Application.Mappings
             // Order mappings
             CreateMap<Order, OrderDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-                // Source navigation is `OrderItems`, target property is `Items` —
-                // names differ so AutoMapper won't auto-resolve. Map explicitly.
+                .ForMember(
+                    dest => dest.PaymentStatus,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.OrderPayments.OrderByDescending(p => p.CreatedAt)
+                                .Select(p => p.Status.ToString())
+                                .FirstOrDefault()
+                            ?? "pending"
+                        )
+                )
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems));
 
             CreateMap<OrderItem, OrderItemDto>()
                 .ForMember(
                     dest => dest.Subtotal,
                     opt => opt.MapFrom(src => src.UnitPrice * src.Quantity)
+                )
+                .ForMember(
+                    dest => dest.ProductId,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.SkuNavigation != null ? src.SkuNavigation.ProductId : 0
+                        )
+                )
+                .ForMember(
+                    dest => dest.SellerName,
+                    opt => opt.MapFrom(src => src.Seller != null ? src.Seller.Username : null)
                 );
 
             CreateMap<Order, OrderSummaryDto>()
@@ -537,6 +574,16 @@ namespace ECommerce.Application.Mappings
                 .ForMember(
                     dest => dest.Currency,
                     opt => opt.MapFrom(src => src.PreferredCurrency.ToString())
+                )
+                .ForMember(
+                    dest => dest.PaymentStatus,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.OrderPayments.OrderByDescending(p => p.CreatedAt)
+                                .Select(p => p.Status.ToString())
+                                .FirstOrDefault()
+                            ?? "pending"
+                        )
                 )
                 .ForMember(
                     dest => dest.TotalItems,

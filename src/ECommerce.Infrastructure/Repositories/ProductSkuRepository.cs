@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,19 @@ namespace ECommerce.Infrastructure.Repositories
         public async Task<IEnumerable<ProductSku>> GetByProductIdAsync(int productId)
         {
             return await GetActiveSkus().Where(ps => ps.ProductId == productId).ToListAsync();
+        }
+
+        public async Task<bool> HasActiveOrdersAsync(int skuId)
+        {
+            return await _context.OrderItems.AnyAsync(oi =>
+                oi.SkuId == skuId
+                && (
+                    oi.Order.Status == OrderStatus.created
+                    || oi.Order.Status == OrderStatus.confirmed
+                    || oi.Order.Status == OrderStatus.processing
+                    || oi.Order.Status == OrderStatus.shipped
+                )
+            );
         }
 
         public async Task<IEnumerable<ProductSku>> GetByProductIdWithDetailsAsync(int productId)

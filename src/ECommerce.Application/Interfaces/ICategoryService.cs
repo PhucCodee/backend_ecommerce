@@ -9,7 +9,7 @@ namespace ECommerce.Application.Interfaces
     {
         Task<CategoryDto> GetByIdAsync(int categoryId);
         Task<CategoryDto> GetBySlugAsync(string slug);
-        Task<PagedResult<CategoryDto>> GetAllPagedAsync(PaginationParams paginationParams);
+        Task<PagedResult<CategoryDto>> GetAllPagedAsync(PaginationParams paginationParams, bool includeInactive = false);
         Task<PagedResult<CategoryDto>> GetCoreCategoriesPagedAsync(PaginationParams paginationParams);
         Task<IEnumerable<CategoryDto>> GetChildCategoriesAsync(int parentId);
         Task<CategoryDto> CreateAsync(CategoryCreateDto createDto);

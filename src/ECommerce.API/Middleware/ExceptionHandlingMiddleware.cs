@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
@@ -10,7 +12,8 @@ namespace ECommerce.API.Middleware
 {
     public sealed class ExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
+        ILogger<ExceptionHandlingMiddleware> logger,
+        IHostEnvironment env)
     {
         public async Task InvokeAsync(HttpContext context)
         {
@@ -38,10 +41,17 @@ namespace ECommerce.API.Middleware
                     context.TraceIdentifier
                 );
 
+                var message = env.IsDevelopment()
+                    ? $"{ex.GetType().Name}: {ex.Message}"
+                          + (ex.InnerException != null
+                              ? $" | {ex.InnerException.GetType().Name}: {ex.InnerException.Message}"
+                              : string.Empty)
+                    : "An unexpected error occurred";
+
                 await WriteError(
                     context,
                     StatusCodes.Status500InternalServerError,
-                    "An unexpected error occurred"
+                    message
                 );
             }
         }

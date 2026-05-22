@@ -11,6 +11,8 @@ using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace ECommerce.Application.Services
 {
@@ -69,7 +71,7 @@ namespace ECommerce.Application.Services
                 user,
                 createDto.FirstName,
                 createDto.LastName,
-                createDto.Phone
+                createDto.Phone ?? string.Empty
             );
 
             // Assign roles from DTO
@@ -137,10 +139,34 @@ namespace ECommerce.Application.Services
             if (user.IsDeleted())
                 throw new NotFoundException("User not found");
 
-            user.SoftDelete();
-            await unitOfWork.SaveChangesAsync();
+            // Hard delete: actually remove the row from the database. Related
+            // rows (credentials, profile, addresses, sessions, roles, carts,
+            // reviews, item interactions, the seller's products, ...) are
+            // wiped via ON DELETE CASCADE that's already declared in the
+            // schema. Orders and order items keep ON DELETE RESTRICT so users
+            // who have transacted as buyer or seller can't be erased — that
+            // case is converted to a 409 below.
+            await userRepository.DeleteAsync(userId);
+
+            try
+            {
+                await unitOfWork.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsForeignKeyViolation(ex))
+            {
+                throw new ConflictException(
+                    "Cannot delete this user because they have existing orders or sales records. "
+                        + "Deactivate the account instead."
+                );
+            }
 
             return true;
+        }
+
+        private static bool IsForeignKeyViolation(DbUpdateException ex)
+        {
+            return ex.InnerException is PostgresException pg
+                && pg.SqlState == PostgresErrorCodes.ForeignKeyViolation;
         }
 
         private static void UpdateProfile(User user, UserUpdateDto updateDto)
