@@ -70,7 +70,10 @@ def product_search(state: MasterState) -> MasterState:
         → name: "Minimal Logo Tee", des: ["Minimal Logo"],          
 
         "Nike running shoes above $120"
-        → name: "shoes",            des: ["Nike", "running"],        
+        → name: "shoes",            des: ["Nike", "running"], 
+
+        "Running shoes above $120"
+        → name: "shoes",            des: ["running"],
 
         "something casual for summer under $40"
         → name: "clothing",         des: ["casual", "summer"],     
@@ -91,7 +94,9 @@ def product_search(state: MasterState) -> MasterState:
         - Never include adjectives in `name`.              "blue jacket" → name: "jacket", des: ["blue"]
         - Vague queries like "something cheap": name: "unknown", des: "cheap"
         - All of the product name is lowercased except for proper nouns or specific model names. "minimal logo tee" → name: "Minimal Logo Tee"
-
+        - You must try to extract many descriptive attributes as possible but appropriate to maximize search performance. 
+        
+        
         ---------------History----------------
         {history_text}
         """
@@ -320,11 +325,10 @@ YOUR TASK:
     Focus on relevance and helpfulness, not exhaustiveness. 
     If the results are not relevant, it's better to say "I couldn't find any products matching your request" than to list irrelevant items.
     For example if the user asked for "red shirts" but the results are mostly blue pants, it's better to say you found nothing than to list irrelevant products.
-3. The 'answer' field should be a string in the format:
-"I found some products matching your request.\\n- **Product A** — 100,000 VND, available in [color/size].\\n  [Short description].\\n- **Product B** — 200,000 VND, available in [color/size].\\n  [Short description].\\nWould you like to see more details about any of these?"
-
-IMPORTANT: Each bullet point MUST start on a new line using \\n. Never put everything on one line.
-4. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
+3. You must answer in English, regardless of the user's language.
+4. You must answer in a polite, helpful and professional tone
+5. You must focus on Answer Relevancy which match the user's dẻived intent, not just literal keyword matching. For example, if the user asked for "something cheap", you should look for price-related attributes in the data and determine if any products are actually cheap, rather than just listing all products.
+6. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
     """
     
     response_model = ui_llm.invoke([

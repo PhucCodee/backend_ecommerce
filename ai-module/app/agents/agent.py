@@ -102,7 +102,11 @@ STEP TO FOLLOW —
   Example:
     History:  User asked about summer jeans → AI listed dress options and say "Do you want to see more? Would you like to see more details about any of these products?"
     Message:  "Yes"
-    Intent:   product_search  ✓  
+    Intent:   product_search  ✓ 
+  Example:
+    History:  User asked about summer jeans → AI listed dress options and say "Do you want to see more? Would you like to see more details about any of these products?"
+    Message:  "What can you do"
+    Intent:   policy_question ✓  
 2. IF THE LATEST USER MESSAGE REFERENCES AN ORDER NUMBER OR SPECIFIC ORDER DETAILS, CLASSIFY AS [order_tracking]
 3. IF THE LATEST USER MESSAGE ASKS TO BROWSE, FILTER, COMPARE, OR GET RECOMMENDATIONS ABOUT PRODUCTS, CLASSIFY AS [product_search]
 4. IF THE LATEST USER MESSAGE ASKS ABOUT STORE POLICIES, PROCEDURES, OR SUPPORT, CONTACT, CLASSIFY AS [policy_question]
