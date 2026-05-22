@@ -20,16 +20,15 @@ DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (180 giây = 3 phút)
 # --- 1. Danh sách Test Cases ---
 FULL_TEST_SUITE = [
     # ("What is your return policy?", [   "faithfulness" ], "policy"),
-    # ("How long does shipping take?", [   "faithfulness" ], "shipping"),
+    # ("How long does shipping take?", [   "faithfulness" ], "policy"),
     # ("How can I get help with technical issue", [   "faithfulness" ], "policy"),
     # ("Can I get a refund for a broken item?", [   "faithfulness" ], "policy"),
-    # ("Is my personal information privately protected", [   "faithfulness" ], "policy"),
+    #("Is my personal information privately protected", [   "faithfulness" ], "policy"),
     # ("Do I have to pay for return shipping?", [   "faithfulness" ], "policy"),
-    # ("How many days do I have to exchange a shirt if it doesn't fit?", [   "faithfulness" ], "policy"),
+    #("How many days do I have to exchange a shirt if it doesn't fit?", [   "faithfulness" ], "policy"),
     # ("Do you ship internationally to Ho Chi Minh City, Vietnam?", [   "faithfulness" ], "policy"),
-    # ("Can I use Apple Pay or Momo for checkout?", [ "faithfulness" ], "policy"),
-    # ("What is your warranty policy for leather bags?", [   "faithfulness" ], "policy"),
-    # ("Are custom-made items refundable?", [   "faithfulness" ], "policy"),
+    #("Can I use Apple Pay or Momo for checkout?", [ "faithfulness" ], "policy"),
+    #("What is your warranty policy for leather bags?", [   "faithfulness" ], "policy"),
     # ("How do I contact customer support for help with my order?", [   "faithfulness" ], "policy"),
     # ("How do I apply a discount code to my purchase?", [   "faithfulness" ], "policy"),
     # ("How do I reset my password?", [   "faithfulness" ], "policy"),
@@ -42,9 +41,9 @@ FULL_TEST_SUITE = [
     # ("What shipping options are available?", [   "faithfulness" ], "policy"),
     # ("Is there free shipping?", [   "faithfulness" ], "policy"),
     # ("What personal data does Sanquo collect?", [   "faithfulness" ], "policy"),
-    # ("Does Sanquo use my data for advertising?", [   "faithfulness" ], "policy"),
+    ("Does Sanquo use my data for advertising?", [   "faithfulness" ], "policy"),
     # ("The app keeps crashing. What should I do?", [   "faithfulness" ], "policy"),
-    # ("What is Sanquo?", [   "faithfulness" ], "policy"),
+    ("What is Sanquo?", [   "faithfulness" ], "policy"),
 ]
 # --- 2. Cấu hình Model Đánh giá (DeepEval) ---
 class GroqEvalModel(DeepEvalBaseLLM):
@@ -172,6 +171,7 @@ def run_evaluation():
         # --- F. Ghi kết quả vào file TXT tức thời ---
         with open(RESULT_FILE, "a", encoding="utf-8") as f:
             f.write(f"QUERY     : {user_input}\n")
+            f.write(f"CONTEXT    : {' '.join(str(c) for c in retrieval_context)}\n")
             f.write(f"ANSWER    : {actual_output}\n")
             f.write("METRICS   :\n")
             for m_name, m_data in metrics_results.items():
@@ -187,9 +187,9 @@ def run_evaluation():
         print("✅ Đã lưu kết quả thành công vào file.")
 
         # --- G. Cơ chế Sleep chuẩn xác giữa các câu hỏi ---
-        if current_index < total_tests - 1:
-            print(f"⏱️ Sẽ nghỉ đúng {DELAY_BETWEEN_TESTS} giây (3 phút) trước câu tiếp theo để tránh dính Rate Limit...")
-            time.sleep(DELAY_BETWEEN_TESTS)
+        # if current_index < total_tests - 1:
+        #     print(f"⏱️ Sẽ nghỉ đúng {DELAY_BETWEEN_TESTS} giây (3 phút) trước câu tiếp theo để tránh dính Rate Limit...")
+        #     time.sleep(DELAY_BETWEEN_TESTS)
             
     print("\n🎉 Hoàn thành đánh giá toàn bộ danh sách test cases!")
 
