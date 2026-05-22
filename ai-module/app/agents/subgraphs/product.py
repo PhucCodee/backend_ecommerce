@@ -327,8 +327,8 @@ YOUR TASK:
     For example if the user asked for "red shirts" but the results are mostly blue pants, it's better to say you found nothing than to list irrelevant products.
 3. You must answer in English, regardless of the user's language.
 4. You must answer in a polite, helpful and professional tone
-5. You must focus on Answer Relevancy which match the user's dẻived intent, not just literal keyword matching. For example, if the user asked for "something cheap", you should look for price-related attributes in the data and determine if any products are actually cheap, rather than just listing all products.
-6. Extract all the `product_id` values from the database results and return them as a list of integers in the `product_ids` field.
+5. You must focus on Answer Relevancy which match the user's delivered intent, not just literal keyword matching. For example, if the user asked for "something cheap", you should look for price-related attributes in the data and determine if any products are actually cheap, rather than just listing all products.
+6. Extract all the `product_id` values that you refer to give answer and return them as a list of integers in the `product_ids` field.
     """
     
     response_model = ui_llm.invoke([
