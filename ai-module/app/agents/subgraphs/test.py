@@ -14,10 +14,11 @@ db_path = r"C:\Users\Admin\Documents\Study\Capstone project\backend_ecommerce\ai
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 print(db_path)
 vectorstore = Chroma(
-    persist_directory=db_path,
-    collection_name="rag_document", 
-    embedding_function=embeddings  
+    persist_directory=str(persist_directory),
+    collection_name="sanquo_policy_documents",
+    embedding_function=embeddings,
 )
+retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 5})
 
 count = vectorstore._collection.count()
 print(f"Tổng số documents đang có trong collection: {count}")

@@ -15,7 +15,8 @@ class Preprocessor:
         document_data = self.parser.parse(
             path=data['path'], 
             base_dir=data['base_dir'], 
-            document_title=data['document_title']
+            document_title=data['document_title'],
+            category=data['category']
         )
         
         # 3. Chunk the text with overlap
@@ -28,17 +29,19 @@ class Parser:
     def __init__(self):
         pass
 
-    def parse(self, path: str, base_dir: Path, document_title:str) -> dict:
+    def parse(self, path: str, base_dir: Path, document_title:str, category:str) -> dict:
         """
         Opens a single PDF, extracts text and metadata from each page.
         
         Args:
             document_title: The name of the document (e.g., "Introduction").
             base_dir: The parent directory containing the PDFs.
+            category: The category to which the document belongs.
             
         Returns:
-            A dictionary with the document name and a list of page data.
+            A dictionary with the document name, category, and a list of page data.
             _name : The name of the document (e.g., "Introduction").
+            _category : The category of the document (e.g., "Technical").   
             _doc : A list of dictionaries, each containing:
                 - page_number: The page number (starting from 0).
                 - page_char_count: The number of characters on the page.
@@ -46,7 +49,7 @@ class Parser:
                 - page_token_count: An estimated token count (using a heuristic).
                 - text: The cleaned text content of the page.
         """
-        document = self.open_and_read_pdf(path=path, base_dir=base_dir, document_title1=document_title)
+        document = self.open_and_read_pdf(path=path, base_dir=base_dir, document_title1=document_title, category=category)
         Parser.pre_chunk_text(document_data=document)
         return document
         
@@ -66,7 +69,7 @@ class Parser:
             document_data["doc"][i]['text'] = document_data["doc"][i]['text'].replace("\u200b", ":")
             document_data["doc"][i]['text'] = document_data["doc"][i]['text'].replace("|", "")
 
-    def open_and_read_pdf(self, path: str, base_dir: Path, document_title1:str) -> dict:
+    def open_and_read_pdf(self, path: str, base_dir: Path, document_title1:str, category: str) -> dict:
         # 1. FIX: Use robust path handling (Pathlib or forward slashes)
         pdf_path = base_dir / f"{path}.pdf"
         
@@ -98,7 +101,7 @@ class Parser:
             })
         
         doc.close() # Good practice to close the document
-        return {'name': document_title1, 'doc': pages_and_texts}
+        return {'name': document_title1, 'category': category , 'doc': pages_and_texts}
 
 
 class OverlapChunker:
@@ -120,6 +123,7 @@ class OverlapChunker:
         """This method takes the output from the Parser and creates overlapping chunks of text.
         Input: {
             'name': 'Document Title',
+            'category': 'Document Category',
             'doc': [
                 {
                     'page_number': 0,
@@ -132,13 +136,14 @@ class OverlapChunker:
         }
         
         Output: A list of Document objects, each containing a chunk of text and its metadata.
-        
+
         """
         # Implement the logic to chunk text with overlap
         # This will be our new, flat list for the vector store
         all_chunks_for_vectorstore = []
-
+        print("Document received for chunking:", document)
         doc_name = document['name']
+
         self.split_sentence(document['doc'])
         
         # Iterate through each page in the document
@@ -172,7 +177,8 @@ class OverlapChunker:
                 chunk_metadata = {
                     "source_document": doc_name,
                     "page": page_num,
-                    "chunk_start_sentence_index": i # Good for debugging
+                    "chunk_start_sentence_index": i,
+                    "category": document['category']
                 }
                 
                 # Create the final Document object
@@ -184,11 +190,3 @@ class OverlapChunker:
                 all_chunks_for_vectorstore.append(new_doc)
         return all_chunks_for_vectorstore
     
-
-preprocessor = Preprocessor()
-chunks_for_vectorstore = preprocessor.preprocess(data={
-    'path': 'Sanquo_Section1_Platform_Introduction.docx',
-    'base_dir': Path("../../data/documents"),
-    'document_title': 'Sanquo_Section1_Platform_Introduction'
-})
-print(chunks_for_vectorstore)

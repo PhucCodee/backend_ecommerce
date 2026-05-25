@@ -16,16 +16,18 @@ load_dotenv()
 
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
-default_path = Path(__file__).resolve().parents[3] / "data" / "vector" / "chroma_db_data1"
+# default_path = Path(__file__).resolve().parents[3] / "data" / "vector" / "chroma_db_data1"
+default_path = Path(__file__).resolve().parents[3] / "data" / "vector" / "chroma_db_data2"
 persist_directory = os.getenv("CHROMA_DB_PATH", str(default_path))
 
 # ── Policy vectorstore (giữ nguyên) ──────────────────────────────────────────
 vectorstore = Chroma(
     persist_directory=str(persist_directory),
-    collection_name="rag_document",
+    collection_name="sanquo_policy_documents",
     embedding_function=embeddings,
 )
 retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 5})
+
 
 # ── FAQ vectorstore (mới) ─────────────────────────────────────────────────────
 faq_vectorstore = Chroma(
@@ -72,13 +74,15 @@ def retriever_tool(query: str) -> str:
         source_doc = doc.metadata.get("source_document", "Unknown")
         page = doc.metadata.get("page", "N/A")
         content = doc.page_content
+        category = doc.metadata.get("category", "General")
         print(f"--> [DEBUG] Retrieved snippet: {content[:100]}...")
-        contexts.append({"content": content, "source": {"document": source_doc, "page": page}})
+        contexts.append({"content": content, "category": category, "source": {"document": source_doc, "page": page}})
 
     readable_parts = []
     for idx, ctx in enumerate(contexts, 1):
         readable_parts.append(
             f"[{idx}] Source: {ctx['source']['document']} (Page {ctx['source']['page']})\n"
+            f"Category: {ctx['category']}\n"
             f"Content: {ctx['content']}"
         )
 
