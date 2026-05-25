@@ -14,7 +14,7 @@ from groq import Groq
 load_dotenv()
 API_URL = "http://localhost:8000/api/ai/chat"  # Endpoint local của bạn
 MODEL_FOLDER = "llama-3.3-70b-versatile"
-RESULT_FILE = f"{MODEL_FOLDER}/results_product_1.txt"  # Đã thêm lại biến RESULT_FILE
+RESULT_FILE = f"{MODEL_FOLDER}/product_answer_relevancy.txt"  # Đã thêm lại biến RESULT_FILE
 DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (180 giây = 3 phút)
 
 # --- 1. Danh sách Test Cases ---
@@ -66,17 +66,11 @@ def run_evaluation():
     total_tests = len(FULL_TEST_SUITE)
     print(f"🚀 Bắt đầu quá trình đánh giá hệ thống RAG ({total_tests} test cases)...")
     
-    # with open(RESULT_FILE, "a", encoding="utf-8") as f:
-    #     f.write(f"{'='*60}\n")
-    #     f.write(f"STARTING NEW EVALUATION SESSION - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-    #     f.write(f"{'='*60}\n\n")
-    #     f.write(f"Evaluation model: {eval_model.get_model_name()}\n")
 
     for current_index, (user_input, metrics_to_run, category) in enumerate(FULL_TEST_SUITE):
         print(f"\n{'='*50}")
         print(f"CHẠY TEST CASE [{current_index + 1}/{total_tests}]")
         print(f"INPUT    : {user_input}")
-        print(f"CATEGORY : {category}")
         print(f"{'='*50}")
 
         # --- A. Gọi API Localhost ---
@@ -145,7 +139,6 @@ def run_evaluation():
 
         # --- F. Ghi kết quả vào file TXT tức thời ---
         with open(RESULT_FILE, "a", encoding="utf-8") as f:
-            f.write(f"TIMESTAMP : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"CATEGORY  : {category}\n")
             f.write(f"QUERY     : {user_input}\n")
             f.write(f"ANSWER    : {actual_output}\n")

@@ -14,7 +14,7 @@ from groq import Groq
 load_dotenv()
 API_URL = "http://localhost:8000/api/ai/chat"  # Endpoint local của bạn
 MODEL_FOLDER = "llama-3.3-70b-versatile"
-RESULT_FILE = f"{MODEL_FOLDER}/results_1.txt"  # Đã thêm lại biến RESULT_FILE
+RESULT_FILE = f"{MODEL_FOLDER}/rag_answer_relevancy.txt"  # Đã thêm lại biến RESULT_FILE
 DELAY_BETWEEN_TESTS = 180  # Thời gian chờ (180 giây = 3 phút)
 
 # --- 1. Danh sách Test Cases ---
@@ -41,10 +41,42 @@ FULL_TEST_SUITE = [
     # ("What shipping options are available?", [   "faithfulness" ], "policy"),
     # ("Is there free shipping?", [   "faithfulness" ], "policy"),
     # ("What personal data does Sanquo collect?", [   "faithfulness" ], "policy"),
-    ("Does Sanquo use my data for advertising?", [   "faithfulness" ], "policy"),
+    # ("Does Sanquo use my data for advertising?", [   "faithfulness" ], "policy"),
     # ("The app keeps crashing. What should I do?", [   "faithfulness" ], "policy"),
-    ("What is Sanquo?", [   "faithfulness" ], "policy"),
+    # ("What is Sanquo?", [   "faithfulness" ], "policy"),
 ]
+
+FULL_TEST_SUITE = [
+    # ("What is your return policy?", [   "relevancy" ], "policy"),
+    # ("How long does shipping take?", [   "relevancy" ], "policy"),
+    # ("How can I get help with technical issue", [   "relevancy" ], "policy"),
+    # ("Can I get a refund for a broken item?", [   "relevancy" ], "policy"),
+    # ("Is my personal information privately protected", [   "relevancy" ], "policy"),
+    # ("Do I have to pay for return shipping?", [   "relevancy" ], "policy"),
+    # ("How many days do I have to exchange a shirt if it doesn't fit?", [   "relevancy" ], "policy"),
+    # ("Do you ship internationally to Ho Chi Minh City, Vietnam?", [   "relevancy" ], "policy"),
+    # ("Can I use Apple Pay or Momo for checkout?", [ "relevancy" ], "policy"),
+    # ("What is your warranty policy for leather bags?", [   "relevancy" ], "policy"),
+    # ("How do I contact customer support for help with my order?", [   "relevancy" ], "policy"),
+    # ("How do I apply a discount code to my purchase?", [   "relevancy" ], "policy"),
+    # ("How do I reset my password?", [   "relevancy" ], "policy"),
+    # ("How do I create an account?", [   "relevancy" ], "policy"),
+    # ("Is my information secure?", [   "relevancy" ], "policy"),
+    # ("Do you accept ZaloPay?", [   "relevancy" ], "policy"),
+    ("How do I change my email address or phone number?", [   "relevancy" ], "policy"),
+    # ("How do I delete my Sanquo account?", [   "relevancy" ], "policy"),
+    # ("Is it safe to pay on Sanquo?", [   "relevancy" ], "policy"),
+    # ("What shipping options are available?", [   "relevancy" ], "policy"),
+    # ("Is there free shipping?", [   "relevancy" ], "policy"),
+    # ("What personal data does Sanquo collect?", [   "relevancy" ], "policy"),
+    # ("Does Sanquo use my data for advertising?", [   "relevancy" ], "policy"),
+    # ("The app keeps crashing. What should I do?", [   "relevancy" ], "policy"),
+    # ("What is Sanquo?", [   "relevancy" ], "policy"),
+
+    
+]
+
+
 # --- 2. Cấu hình Model Đánh giá (DeepEval) ---
 class GroqEvalModel(DeepEvalBaseLLM):
     def __init__(self):
@@ -132,7 +164,7 @@ def run_evaluation():
         test_case_context = LLMTestCase(
             input=user_input,
             actual_output=actual_output,
-            retrieval_context=retrieval_context
+            # retrieval_context=retrieval_context
         )
 
         # --- D. Khởi tạo các Metrics ---
@@ -171,7 +203,7 @@ def run_evaluation():
         # --- F. Ghi kết quả vào file TXT tức thời ---
         with open(RESULT_FILE, "a", encoding="utf-8") as f:
             f.write(f"QUERY     : {user_input}\n")
-            f.write(f"CONTEXT    : {' '.join(str(c) for c in retrieval_context)}\n")
+            # f.write(f"CONTEXT    : {' '.join(str(c) for c in retrieval_context)}\n")
             f.write(f"ANSWER    : {actual_output}\n")
             f.write("METRICS   :\n")
             for m_name, m_data in metrics_results.items():

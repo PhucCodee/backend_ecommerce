@@ -1,0 +1,285 @@
+QUERY     : What is your return policy?
+ANSWER    : The return policy allows for returns within 7 calendar days from the date of confirmed delivery. Returns are accepted for defective, damaged, or materially different items from the product listing description, as well as for size or color exchanges. The customer can choose between a monetary refund to the original payment method or store credit issued as Sanquo platform vouchers. The cost of return shipping is borne by the customer for preference-based returns, but Sanquo may offer a partial or full return shipping subsidy in some cases. A mandatory quality inspection is conducted on all returned items to ensure they are in their original condition and meet the eligibility criteria.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the response perfectly addresses the input question about the return policy, and there are no irrelevant statements to detract from its relevance.
+------------------------------------------------------------
+
+QUERY     : How long does shipping take?
+ANSWER    : The shipping times for Sanquo are as follows:
+- Express Delivery (Hỏa Tốc): Same-day or next-day delivery for orders placed before 12:00 PM, available within eligible inner-urban districts of Ho Chi Minh City and Hanoi.
+- Standard Delivery (Tiêu Chuẩn): Estimated delivery times are 1-2 business days for HCM City & Hanoi (inner urban districts), 2-3 business days for provincial cities, 4-7 business days for rural & remote areas, and 5-10 business days for remote island territories.
+Note that delivery timelines may be affected by peak trading periods, adverse weather conditions, or force majeure circumstances beyond Sanquo's control.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the question about shipping time, providing a direct and relevant response without any unnecessary information.
+------------------------------------------------------------
+
+QUERY     : How can I get help with technical issue
+ANSWER    : For technical issues, you can contact Sanquo's support team at support@Sanquo.vn or via live chat on the Platform. When reporting a technical issue, please include your device type, operating system version, browser name and version, and a brief description of the issue — including any error messages displayed. This information enables the support team to investigate and resolve the matter as efficiently as possible.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the input, providing a clear and relevant solution to the technical issue, with no irrelevant statements to detract from its effectiveness.
+------------------------------------------------------------
+
+QUERY     : Can I get a refund for a broken item?
+ANSWER    : If you receive a broken item, you can report the damage to Sanquo's support team within 48 hours of delivery, along with photographic evidence. Sanquo will assess the claim and offer either a replacement item or a full refund to the original payment method.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the user's question about getting a refund for a broken item, with no irrelevant statements to detract from the response.
+------------------------------------------------------------
+
+QUERY     : Is my personal information privately protected
+ANSWER    : Sanquo collects and uses personal data for purposes such as order fulfillment, marketing, and improving the platform experience. The company uses cookies and tracking technologies to recognize users' devices and deliver a personalized experience. Sanquo also shares data with third-party service providers, such as payment gateways and logistics providers, to facilitate order fulfillment and other services. Users have the right to opt-out of non-essential cookies and can update their cookie preferences at any time. Sanquo is committed to upholding users' data rights and protecting their personal information.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the input question about personal information protection, and there are no irrelevant statements to detract from its relevance.
+------------------------------------------------------------
+
+QUERY     : Do I have to pay for return shipping?
+ANSWER    : You have to pay for return shipping if you're returning an item for personal preference, but Sanquo will cover the cost if the item is defective, damaged, or different from its product listing description.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the response perfectly addresses the question about return shipping costs, providing a clear and relevant answer without any unnecessary information.
+------------------------------------------------------------
+
+QUERY     : How many days do I have to exchange a shirt if it doesn't fit?
+ANSWER    : You have 7 calendar days from the date of confirmed delivery to exchange a shirt if it doesn't fit.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the question about the exchange policy for a shirt that doesn't fit, with no irrelevant statements to detract from the answer.
+------------------------------------------------------------
+
+QUERY     : Do you ship internationally to Ho Chi Minh City, Vietnam?
+ANSWER    : Yes, Sanquo ships to Ho Chi Minh City, Vietnam, with estimated delivery times of 1-2 business days for standard delivery and 2-4 hours for express delivery within inner-urban districts.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the question about international shipping to Ho Chi Minh City, Vietnam, with no irrelevant statements, making it a highly relevant and accurate response.
+------------------------------------------------------------
+
+QUERY     : Can I use Apple Pay or Momo for checkout?
+ANSWER    : You can use digital wallets like ZaloPay, cash on delivery (COD), Sanquo platform credits, and gift vouchers for checkout. However, Apple Pay and Momo are not mentioned as available payment methods.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 0.3333
+    Passed : NO
+    Reason : The score is 0.33 because the actual output contains several irrelevant statements, including mentions of ZaloPay, cash on delivery, Sanquo platform credits, and gift vouchers, which are not related to the payment methods in question, Apple Pay or Momo, but it still attempts to address the topic of digital payment methods.
+------------------------------------------------------------
+
+QUERY     : What is your warranty policy for leather bags?
+ANSWER    : The warranty policy for leather bags is not explicitly stated in the provided information. However, it is mentioned that returns are accepted for defective, damaged, or materially different items, and that a quality inspection is conducted for all returned items. It is recommended to contact Sanquo's support team for more information on the warranty policy for leather bags.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 0.5000
+    Passed : NO
+    Reason : The score is 0.50 because the actual output contains some irrelevant statements about returns and quality inspection, which are not directly related to the warranty policy for leather bags, but it still attempts to address the topic, preventing the score from being lower.
+------------------------------------------------------------
+
+QUERY     : How do I contact customer support for help with my order?
+ANSWER    : You can contact customer support through various channels, including:
+
+* Hotline: +84 1234 1423 (for urgent matters)
+* General Support Email: support@Sanquo.vn (for order status, account issues, and product questions)
+* Payment Support Email: payments@Sanquo.vn (for payment-related issues)
+* Facebook: facebook.com/Sanquo.vn (for general enquiries and platform announcements)
+
+Operating hours for each channel are as follows:
+
+* General & Payment Email: Mon-Sat, 8:00 AM - 8:00 PM (ICT)
+* Social Media (FB): Mon-Sat, 9:00 AM - 6:00 PM (ICT)
+* Sunday & Public Holidays: Reduced availability (urgent matters only)
+
+Response time commitments are:
+
+* Email: within 2 business hours (during operating hours)
+* Facebook: within 4 business hours (during social media operating hours)
+
+You can also use the live chat interface on the Sanquo website, which is available 24/7, but responses may be delayed outside of operating hours.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the user's question about contacting customer support for help with their order, providing a clear and relevant solution.
+------------------------------------------------------------
+
+QUERY     : How do I apply a discount code to my purchase?
+ANSWER    : To apply a discount code to your purchase, you can follow these steps:
+
+1. Ensure you have a valid discount code.
+2. Proceed to checkout with the items you wish to purchase.
+3. Look for the "Discount Code" or "Promotional Code" field on the checkout page.
+4. Enter your discount code in the field provided.
+5. Click "Apply" to apply the discount code to your purchase.
+6. Verify that the discount has been successfully applied to your order total.
+
+Note: Discount codes are subject to terms and conditions, and may have expiration dates or restrictions on usage. If you encounter any issues with applying a discount code, you can contact Sanquo's customer support for assistance.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the question about applying a discount code, with no irrelevant statements to detract from its relevance, making it a highly effective and accurate response.
+------------------------------------------------------------
+
+QUERY     : How do I contact customer support for help with my order?
+ANSWER    : To contact customer support for help with your order, you can reach out to Sanquo through the following official channels: 
+- Hotline: +84 1234 1423 for urgent matters requiring real-time voice assistance
+- General Support Email: support@Sanquo.vn for order status, account issues, and product questions
+- Payment Support Email: payments@Sanquo.vn for failed payments, refunds, and duplicate charges
+- Facebook: facebook.com/Sanquo.vn for general enquiries and platform announcements. 
+Operating hours vary by channel, with general and payment email support available Monday to Saturday, 8:00 AM – 8:00 PM (Vietnamese Time, UTC+7).
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the user's question about contacting customer support for help with their order, providing a clear and relevant solution without any unnecessary information.
+------------------------------------------------------------
+
+QUERY     : How do I reset my password?
+ANSWER    : To reset your password, use the "Forgot Password" function on the login page to initiate a password reset. A reset link will be sent to the registered email address.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the input question about resetting a password, with no irrelevant statements to detract from its relevance.
+------------------------------------------------------------
+
+QUERY     : How do I create an account?
+ANSWER    : To create an account, you must provide accurate, current, and complete information, including your full name, date of birth, gender, email address, phone number, and delivery address. You must also create a unique and complex password and agree to the terms of use. Users between the ages of 16 and 17 may register with the verifiable consent of a parent or legal guardian.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the input question, providing a clear and relevant response to creating an account, with no irrelevant statements to detract from its effectiveness.
+------------------------------------------------------------
+
+QUERY     : Is my information secure?
+ANSWER    : Sanquo has implemented multiple layers of industry-standard security technology to protect customer payment data, including SSL/TLS encryption, PCI DSS compliance, and tokenization of payment credentials. The platform also employs real-time fraud detection systems and supports 3D Secure authentication for added security. Sanquo does not store full card numbers or sensitive authentication data on its servers, and all data sharing is limited to operational contexts and legal obligations.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the input question about information security, and there are no irrelevant statements to detract from its relevance.
+------------------------------------------------------------
+
+QUERY     : Do you accept ZaloPay?
+ANSWER    : Yes, Sanquo accepts ZaloPay as a payment method. Customers must ensure their ZaloPay wallet account is active and sufficiently funded prior to checkout.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the input question without any irrelevant statements, demonstrating a clear and concise understanding of the topic.
+------------------------------------------------------------
+
+QUERY     : How do I delete my Sanquo account?
+ANSWER    : To delete your Sanquo account, you can submit a request to Sanquo's customer support team, and they will review it in good faith and take appropriate action in accordance with applicable law. You can also exercise your right to erasure by requesting the deletion of your personal data, and Sanquo will comply to the fullest extent permitted by law. Additionally, you can withdraw your consent for data processing at any time, and Sanquo will inform you of the specific data retained, the legal basis for its retention, and the applicable retention period.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the user's question about deleting their Sanquo account, with no irrelevant statements to detract from the response.
+------------------------------------------------------------
+
+QUERY     : Is it safe to pay on Sanquo?
+ANSWER    : Yes, it is safe to pay on Sanquo. Sanquo has implemented multiple layers of industry-standard security technology to protect customer payment data, including SSL/TLS encryption, PCI DSS compliance, and tokenization of payment credentials. Additionally, Sanquo supports 3D Secure authentication and employs real-time fraud detection systems to monitor transactions for anomalous patterns or indicators of fraudulent activity.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the question about Sanquo's payment safety without any irrelevant information, demonstrating a clear and focused response.
+------------------------------------------------------------
+
+QUERY     : What shipping options are available?
+ANSWER    : Sanquo offers three shipping options: Express Delivery (Hỏa Tốc) for same-day or next-day delivery, Standard Delivery (Tiêu Chuẩn) for nationwide delivery, and a third option that is not specified. Express Delivery is available for orders placed before 12:00 PM within eligible inner-urban districts of Ho Chi Minh City and Hanoi, while Standard Delivery is the default option for most orders across Vietnam. Orders that meet or exceed the minimum order value qualify for complimentary Standard Delivery.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 0.8571
+    Passed : YES
+    Reason : The score is 0.86 because the actual output partially addresses the question about shipping options, but does not fully meet the requirements, as it lacks information about available shipping options, preventing a perfect score.
+------------------------------------------------------------
+
+QUERY     : Is there free shipping?
+ANSWER    : Yes, Sanquo offers free shipping on orders that meet or exceed the applicable minimum order value. This free shipping promotion is applied to the Standard Delivery option, which is available nationwide.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the response perfectly addressed the question about free shipping without any irrelevant information, making it a highly relevant and accurate answer.
+------------------------------------------------------------
+
+QUERY     : What personal data does Sanquo collect?
+ANSWER    : Sanquo collects the following personal data:
+
+* Identity Data: Full name, date of birth, and gender
+* Contact Data: Email address, phone number, and delivery address or addresses
+* Account Credentials: Encrypted password and associated account security settings
+* Transaction Data: Order history, items purchased, payment method used, order values, and transaction timestamps
+* Marketing Preference Data: Records of the user's opt-in or opt-out status for promotional communications, together with engagement data such as email open rates and click-through rates
+* Device and Technical Data: IP address, browser type, device type, operating system, and other technical information
+* Location Data: Precise GPS location data (only where the user explicitly grants permission)
+* Behavioural and Usage Data: Data on how the user interacts with the platform, including browsing history and search queries.
+
+This data is used for various purposes, including order fulfilment, customer support, platform personalization, marketing and promotional communications, platform improvement and analytics, fraud prevention and security, and legal compliance.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the question about Sanquo's personal data collection, providing a clear and relevant response without any unnecessary information.
+------------------------------------------------------------
+
+QUERY     : Does Sanquo use my data for advertising?
+ANSWER    : Sanquo uses data for advertising, but only when users have opted in to marketing communications. The company shares hashed email addresses and pseudonymised browsing identifiers with advertising platforms like Google Ads and Meta, but does not share personally identifiable information. Users can opt out of retargeting at any time through the Platform's cookie and privacy settings or directly through the ad platform's opt-out mechanisms.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the response perfectly addresses the question about Sanquo's data usage for advertising, with no irrelevant statements to detract from its relevance.
+------------------------------------------------------------
+
+QUERY     : The app keeps crashing. What should I do?
+ANSWER    : To resolve the app crashing issue, try the following steps: 
+1. Close the Sanquo application completely and relaunch it. 
+2. Check for available application updates in the Apple App Store or Google Play Store and install the latest version of the Sanquo app. 
+3. Restart the device and reopen the application. 
+4. If the issue persists, uninstall the Sanquo application and perform a clean reinstall from the relevant app store. 
+If the problem continues, contact Sanquo's support team with details of your device model and operating system version.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the response perfectly addresses the issue at hand, providing a direct solution to the user's problem, and there are no irrelevant statements to detract from its effectiveness.
+------------------------------------------------------------
+
+QUERY     : What is Sanquo?
+ANSWER    : Sanquo is Vietnam's dedicated fashion destination, built for customers who believe that style is personal, and shopping should be effortless. It provides a seamless, secure, and transparent shopping experience that empowers users to discover and acquire the fashion products they love with total confidence and ease. Sanquo is committed to earning users' trust through honest communication, a carefully curated selection of products, and a platform experience designed entirely around their needs.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 0.8889
+    Passed : YES
+    Reason : The score is 0.89 because the output provides some relevant information about Sanquo, but it is not higher due to the inclusion of a general statement that lacks specific details about Sanquo.
+------------------------------------------------------------
+
+QUERY     : How do I change my email address or phone number?
+ANSWER    : To change your email address or phone number on Sanquo, you must ensure that the contact information associated with your account remains accurate and up to date at all times. You can update your account information by contacting Sanquo's support team through their official customer support channel. They will verify your identity and assist you in updating your email address or phone number. Additionally, you can check the Sanquo website for any specific instructions or guidelines on how to update your account information.
+METRICS   :
+  - AnswerRelevancyMetric:
+    Score  : 1.0000
+    Passed : YES
+    Reason : The score is 1.00 because the output perfectly addresses the input question, providing a clear and relevant response to the user's inquiry about changing their email address or phone number, with no irrelevant statements to detract from its effectiveness.
+------------------------------------------------------------
+
