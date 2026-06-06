@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 import json
 
 load_dotenv()
-
+ 
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
 default_path = Path(__file__).resolve().parents[3] / "data" / "vector" / "chroma_db_data1"
