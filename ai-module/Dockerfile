@@ -37,7 +37,7 @@ COPY --from=builder /install /usr/local
 
 # Copy source code
 COPY app ./app
-
+COPY data ./data
 EXPOSE 8000
 
 CMD ["uvicorn", "app.api:api", "--host", "0.0.0.0", "--port", "8000","--reload"]
