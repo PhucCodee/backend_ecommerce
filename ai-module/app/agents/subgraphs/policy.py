@@ -224,10 +224,25 @@ def find_context(state: MasterState):
     return {"messages": results, "ui_data": updated_ui_data}
 
 
+MAX_TOOL_CALLS = 5
+
 def should_continue(state: MasterState):
     last_message = state["messages"][-1]
-    if hasattr(last_message, "tool_calls") and len(last_message.tool_calls) > 0:
+    
+    # Đếm số lần tool đã được gọi trong conversation
+    tool_call_count = sum(
+        1 for m in state["messages"]
+        if hasattr(m, "tool_calls") and m.tool_calls
+    )
+    
+    has_tool_calls = (
+        hasattr(last_message, "tool_calls") 
+        and len(last_message.tool_calls) > 0
+    )
+    
+    if has_tool_calls and tool_call_count < MAX_TOOL_CALLS:
         return "find_context"
+    
     return "faq_synthesize"
 
 
