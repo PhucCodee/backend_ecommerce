@@ -51,7 +51,7 @@ namespace ECommerce.Infrastructure.Data.Configurations
             builder.HasOne(pi => pi.Sku)
                 .WithMany(ps => ps.ProductImages)
                 .HasForeignKey(pi => pi.SkuId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Indexes
             builder.HasIndex(pi => pi.SkuId);

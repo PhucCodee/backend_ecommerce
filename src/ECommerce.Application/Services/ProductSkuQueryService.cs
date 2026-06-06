@@ -66,7 +66,8 @@ namespace ECommerce.Application.Services
 
         public async Task<PagedResult<ProductSkuDto>> GetByProductIdPagedAsync(
             int productId,
-            PaginationParams paginationParams
+            PaginationParams paginationParams,
+            bool includeInactive = false
         )
         {
             var exists = await _context.Products.AnyAsync(p =>
@@ -75,7 +76,7 @@ namespace ECommerce.Application.Services
             if (!exists)
                 throw new NotFoundException("Product not found");
 
-            var query = ActiveSkus().Where(s => s.ProductId == productId);
+            var query = ProductSkus(includeInactive).Where(s => s.ProductId == productId);
             return await ProjectPagedAsync(query, paginationParams);
         }
 
@@ -90,10 +91,12 @@ namespace ECommerce.Application.Services
 
         #region Private Helpers
 
-        private IQueryable<Domain.Entities.ProductSku> ActiveSkus() =>
+        private IQueryable<Domain.Entities.ProductSku> ProductSkus(bool includeInactive = false) =>
             _context
                 .ProductSkus.AsNoTracking()
-                .Where(s => s.IsActive && s.Product.RemovedAt == null);
+                .Where(s => s.Product.RemovedAt == null && (includeInactive || s.IsActive));
+
+        private IQueryable<Domain.Entities.ProductSku> ActiveSkus() => ProductSkus(includeInactive: false);
 
         private static async Task<PagedResult<ProductSkuDto>> ProjectPagedAsync(
             IQueryable<Domain.Entities.ProductSku> query,
