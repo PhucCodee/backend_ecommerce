@@ -59,6 +59,7 @@ def retriever_tool(query: str) -> str:
     _ Contact information (how to reach customer support for policy-related questions)
     _ Technical issues (troubleshooting common problems related to policies or store features)
     """
+    print(f"Default path for ChromaDB: {default_path}")
     print(f"Calling retriever_tool with query: {query}")
     docs = retriever.invoke(query)
 
