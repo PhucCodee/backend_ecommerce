@@ -19,6 +19,7 @@ public sealed class NotificationConsumer(
         IConsumer<PaymentFailedEvent>,
         IConsumer<OrderConfirmedEvent>,
         IConsumer<OrderShippedEvent>,
+        IConsumer<OrderCancelledEvent>,
         IConsumer<UserRegisteredEvent>
 {
     private readonly ILogger<NotificationConsumer> _logger = logger;
@@ -332,6 +333,63 @@ public sealed class NotificationConsumer(
   </tr>
 </table>
 """;
+
+        await _emailService.SendEmailAsync(user.Email, subject, body);
+    }
+
+    public async Task Consume(ConsumeContext<OrderCancelledEvent> context)
+    {
+        var message = context.Message;
+        var user = await _dbContext
+            .Users.Include(u => u.UserProfile)
+            .FirstOrDefaultAsync(u => u.UserId == message.UserId);
+
+        if (user is null)
+            return;
+
+        var subject = $"Order Cancelled #{message.OrderId}";
+        var noteText = string.IsNullOrWhiteSpace(message.Notes)
+            ? "No additional details provided."
+            : message.Notes;
+
+        var body = $"""
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5; font-family:Arial, sans-serif;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;">
+                    <tr>
+                      <td>
+                        <img 
+                          src="https://pub-ce2153b8154b4936949a13f6f9ef8cb9.r2.dev/banner.JPG"
+                          width="600"
+                          height="60"
+                          alt="Banner"
+                          style="display:block; width:100%; height:60px; object-fit:cover; border:0;"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:24px;">
+                        <h2 style="margin:0 0 16px 0; font-size:20px;">Order Cancelled</h2>
+                        <p style="margin:0 0 12px 0;">
+                          Dear {user.UserProfile?.FirstName} {user.UserProfile?.LastName},
+                        </p>
+                        <p style="margin:0 0 12px 0;">
+                          Your order <strong>#{message.OrderId}</strong> has been cancelled.
+                        </p>
+                        <p style="margin:0 0 8px 0;"><strong>Cancellation note:</strong></p>
+                        <p style="margin:0 0 16px 0;">{noteText}</p>
+                        <p style="margin:16px 0 0 0;">
+                          Best regards,<br/>
+                          <strong>Sanquo Shop</strong>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            """;
 
         await _emailService.SendEmailAsync(user.Email, subject, body);
     }

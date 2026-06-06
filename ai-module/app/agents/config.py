@@ -11,7 +11,7 @@ load_dotenv()
 
 # --- 1. LLM ---
 # llm = init_chat_model("llama-3.3-70b-versatile", model_provider="groq", temperature=0.1)
-llm = init_chat_model("llama-3.1-8b-instant", model_provider="groq", temperature=0.1, max_tokens=512)
+llm = init_chat_model("llama-3.3-70b-versatile", model_provider="groq", temperature=0.1, max_tokens=256)
 
 # --- 2. DATABASE ---
 DB_HOST = os.getenv("DB_HOST", "localhost") 

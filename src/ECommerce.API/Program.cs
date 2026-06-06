@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using ECommerce.API.Logging;
 using ECommerce.API.Middleware;
+using ECommerce.Application.Abstractions.Events;
 using ECommerce.Application.Common.Authorization;
 using ECommerce.Application.Helpers;
 using ECommerce.Application.Interfaces;
@@ -229,6 +230,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IOrderEventService, OrderEventService>();
 
 builder.Services.AddHttpClient();
 

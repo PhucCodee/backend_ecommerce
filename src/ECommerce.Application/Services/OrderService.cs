@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using ECommerce.Application.Abstractions.Events;
 using ECommerce.Application.Common.Pagination;
 using ECommerce.Application.DTOs.order;
 using ECommerce.Application.Exceptions;
@@ -17,20 +18,23 @@ namespace ECommerce.Application.Services;
 
 public class OrderService(
     IOrderRepository orderRepository,
+    IOrderPaymentRepository orderPaymentRepository,
     ICartRepository cartRepository,
     ICouponRepository couponRepository,
     IInventoryService inventoryService,
     IUnitOfWork unitOfWork,
-    IEventPublisher eventPublisher,
+    IOrderEventService orderEventService,
     IMapper mapper
 ) : IOrderService
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
+    private readonly IOrderPaymentRepository _orderPaymentRepository = orderPaymentRepository;
+
     private readonly ICartRepository _cartRepository = cartRepository;
     private readonly ICouponRepository _couponRepository = couponRepository;
     private readonly IInventoryService _inventoryService = inventoryService;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly IEventPublisher _eventPublisher = eventPublisher;
+    private readonly IOrderEventService _orderEventService = orderEventService;
     private readonly IMapper _mapper = mapper;
 
     private async Task ReleaseInventoryForOrderAsync(Order order)
@@ -171,35 +175,9 @@ public class OrderService(
             await _unitOfWork.SaveChangesAsync();
 
             // Publish order.created event
-            var orderCreatedEvent = new OrderCreatedEvent
-            {
-                OrderId = order.OrderId,
-                OrderNumber = order.OrderNumber,
-                UserId = order.UserId,
-                TotalAmount = order.TotalAmount,
-                Subtotal = order.Subtotal,
-                ShippingFee = order.ShippingFee,
-                TaxAmount = order.TaxAmount,
-                CouponCode = order.CouponCode,
-                CouponDiscount = order.CouponDiscount,
-                Items = order
-                    .OrderItems.Select(i => new OrderItemEvent
-                    {
-                        SkuId = i.SkuId,
-                        ProductName = i.ProductName,
-                        Sku = i.Sku,
-                        SellerId = i.SellerId,
-                        Quantity = i.Quantity,
-                        UnitPrice = i.UnitPrice,
-                        Subtotal = i.Subtotal,
-                    })
-                    .ToList(),
-            };
-
-            await _eventPublisher.PublishAsync(orderCreatedEvent);
+            await _orderEventService.PublishOrderCreatedAsync(order);
 
             await _unitOfWork.SaveChangesAsync();
-            // Return the created order
             return _mapper.Map<OrderDto>(order);
         });
     }
@@ -303,7 +281,6 @@ public class OrderService(
         if (order == null || order.UserId != userId)
             return null;
 
-        // Buyer can only cancel before the seller has confirmed/processed the order.
         if (order.Status != OrderStatus.created)
             throw new BadRequestException(
                 "Order can no longer be cancelled by buyer — please contact the seller"
@@ -313,8 +290,22 @@ public class OrderService(
         order.CancelledAt = DateTime.UtcNow;
         order.UpdatedAt = DateTime.UtcNow;
 
-        // Release reserved inventory back to "available"
         await ReleaseInventoryForOrderAsync(order);
+
+        order.OrderStatusHistories.Add(
+            new OrderStatusHistory
+            {
+                OrderId = order.OrderId,
+                OldStatus = OrderStatus.created,
+                NewStatus = OrderStatus.cancelled,
+                Notes = "Cancelled by buyer",
+                ChangedBy = userId,
+                ChangedByNavigation = null!,
+                Order = order,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            }
+        );
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -341,17 +332,26 @@ public class OrderService(
         if (!Enum.TryParse<OrderStatus>(request.Status, true, out var newStatus))
             throw new BadRequestException("Invalid order status");
 
-        if (
-            newStatus
-            is not (OrderStatus.confirmed or OrderStatus.delivered or OrderStatus.cancelled)
-        )
+        if (newStatus is OrderStatus.confirmed or OrderStatus.shipped)
         {
-            throw new BadRequestException(
-                "Seller can only set status to confirmed, delivered, or cancelled"
+            var hasCompletedPayment = await _orderPaymentRepository.HasCompletedPaymentAsync(
+                order.OrderId
             );
+            if (!hasCompletedPayment)
+                throw new BadRequestException(
+                    "Order must be paid before it can be confirmed or shipped"
+                );
         }
 
+        if (
+            newStatus is not (OrderStatus.confirmed or OrderStatus.shipped or OrderStatus.cancelled)
+        )
+            throw new BadRequestException(
+                "Seller can only set status to confirmed, shipped, or cancelled"
+            );
+
         var oldStatus = order.Status;
+
         if (oldStatus == newStatus)
             return _mapper.Map<OrderDto>(order);
 
@@ -360,10 +360,17 @@ public class OrderService(
 
         order.Status = newStatus;
         order.UpdatedAt = DateTime.UtcNow;
+
+        if (newStatus == OrderStatus.cancelled && string.IsNullOrWhiteSpace(request.Notes))
+        {
+            throw new BadRequestException(
+                "Cancellation note is required when seller cancels an order"
+            );
+        }
+
         if (newStatus == OrderStatus.cancelled)
         {
             order.CancelledAt = DateTime.UtcNow;
-            // Seller-initiated cancel must also release reserved stock back to available.
             await ReleaseInventoryForOrderAsync(order);
         }
 
@@ -384,31 +391,21 @@ public class OrderService(
 
         await _unitOfWork.SaveChangesAsync();
 
-        if (newStatus == OrderStatus.confirmed)
+        if (newStatus == OrderStatus.cancelled)
         {
-            await _eventPublisher.PublishAsync(
-                new OrderConfirmedEvent
-                {
-                    OrderId = order.OrderId,
-                    OrderNumber = order.OrderNumber,
-                    UserId = order.UserId,
-                }
-            );
+            await _orderEventService.PublishOrderCancelledAsync(order, request.Notes);
         }
-
-        if (newStatus == OrderStatus.shipped)
+        else if (newStatus == OrderStatus.confirmed)
         {
-            await _eventPublisher.PublishAsync(
-                new OrderShippedEvent
-                {
-                    OrderId = order.OrderId,
-                    OrderNumber = order.OrderNumber,
-                    UserId = order.UserId,
-                }
-            );
+            await _orderEventService.PublishOrderConfirmedAsync(order);
+        }
+        else if (newStatus == OrderStatus.shipped)
+        {
+            await _orderEventService.PublishOrderShippedAsync(order);
         }
 
         await _unitOfWork.SaveChangesAsync();
+
         return _mapper.Map<OrderDto>(order);
     }
 
@@ -480,7 +477,6 @@ public class OrderService(
             isDefaultBilling: false
         );
 
-        // Persist only when requested. Otherwise use one-time address for this order only.
         if (request.SaveNewShippingAddress)
         {
             await _unitOfWork.UserAddresses.AddAsync(addressEntity);
