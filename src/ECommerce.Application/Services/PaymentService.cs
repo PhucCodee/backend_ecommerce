@@ -26,6 +26,7 @@ namespace ECommerce.Application.Services;
 public class PaymentService(
     IOrderRepository orderRepository,
     IOrderPaymentRepository orderPaymentRepository,
+    IInventoryRepository inventoryRepository,
     IUnitOfWork unitOfWork,
     IPaymentGatewayClient paymentGatewayClient,
     IOrderEventService orderEventService,
@@ -37,6 +38,7 @@ public class PaymentService(
     private const string GatewayName = "zalopay";
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly IOrderPaymentRepository _orderPaymentRepository = orderPaymentRepository;
+    private readonly IInventoryRepository _inventoryRepository = inventoryRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IPaymentGatewayClient _paymentGatewayClient = paymentGatewayClient;
     private readonly IOrderEventService _orderEventService = orderEventService;
@@ -112,22 +114,27 @@ public class PaymentService(
 
         if (!gatewayResult.IsSuccess)
         {
-            payment.Status = PaymentStatus.failed;
-            payment.FailureReason = gatewayResult.ErrorMessage ?? "ZaloPay create payment failed";
-            payment.GatewayResponse = JsonSerializer.Serialize(
+            var orderWithDetails =
+                await _orderRepository.GetOrderWithDetailsAsync(order.OrderId) ?? order;
+
+            var failureReason = gatewayResult.ErrorMessage ?? "ZaloPay create payment failed";
+
+            await MarkPaymentFailedAndReleaseReservationAsync(
+                orderWithDetails,
+                payment,
+                failureReason,
+                gatewayResult.ErrorCode,
                 new { raw = gatewayResult.RawResponse }
             );
-            payment.UpdatedAt = DateTime.UtcNow;
 
             await _orderEventService.PublishPaymentFailedAsync(
-                order,
+                orderWithDetails,
                 payment,
-                payment.FailureReason,
+                failureReason,
                 gatewayResult.ErrorCode
             );
 
-            await _unitOfWork.SaveChangesAsync();
-            throw new BadRequestException(payment.FailureReason);
+            throw new BadRequestException(failureReason);
         }
 
         payment.Status = PaymentStatus.pending;
@@ -222,7 +229,7 @@ public class PaymentService(
             };
         }
 
-        var order = await _orderRepository.GetByIdAsync(payment.OrderId);
+        var order = await _orderRepository.GetOrderWithDetailsAsync(payment.OrderId);
         if (order is null)
         {
             _logger.LogWarning(
@@ -248,27 +255,29 @@ public class PaymentService(
         var expectedAmount = decimal.ToInt64(order.TotalAmount);
         if (data.Amount > 0 && data.Amount != expectedAmount)
         {
-            payment.Status = PaymentStatus.failed;
-            payment.FailureReason = "Amount mismatch";
-            payment.GatewayResponse = JsonSerializer.Serialize(
+            await MarkPaymentFailedAndReleaseReservationAsync(
+                order,
+                payment,
+                "Amount mismatch",
+                "amount_mismatch",
                 new
                 {
                     data = request.Data,
                     mac = request.Mac,
                     type = request.Type,
                     zpTransId = data.ZpTransId,
+                    returnCode = data.ReturnCode,
+                    returnMessage = data.ReturnMessage,
                 }
             );
-            payment.UpdatedAt = DateTime.UtcNow;
 
             await _orderEventService.PublishPaymentFailedAsync(
                 order,
                 payment,
-                payment.FailureReason,
+                "Amount Mismatch",
                 "amount_mismatch"
             );
 
-            await _unitOfWork.SaveChangesAsync();
             return new ZaloPayCallbackResultDto
             {
                 ReturnCode = 1,
@@ -276,43 +285,61 @@ public class PaymentService(
             };
         }
 
-        payment.GatewayResponse = JsonSerializer.Serialize(
-            new
-            {
-                data = request.Data,
-                mac = request.Mac,
-                type = request.Type,
-                zpTransId = data.ZpTransId,
-            }
-        );
-        payment.UpdatedAt = DateTime.UtcNow;
+        var gatewayResponse = new
+        {
+            data = request.Data,
+            mac = request.Mac,
+            type = request.Type,
+            zpTransId = data.ZpTransId,
+            returnCode = data.ReturnCode,
+            returnMessage = data.ReturnMessage,
+        };
 
-        var isPaymentSuccess = data.ZpTransId.HasValue && data.ZpTransId.Value > 0;
+        var isPaymentSuccess =
+            data.ReturnCode == 1 && data.ZpTransId.HasValue && data.ZpTransId.Value > 0;
+
         if (isPaymentSuccess)
         {
-            payment.Status = PaymentStatus.completed;
-            payment.PaidAt = DateTime.UtcNow;
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                payment.Status = PaymentStatus.completed;
+                payment.PaidAt = DateTime.UtcNow;
+                payment.GatewayResponse = JsonSerializer.Serialize(gatewayResponse);
+                payment.UpdatedAt = DateTime.UtcNow;
+
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            });
 
             await _orderEventService.PublishPaymentSucceededAsync(
                 order,
                 payment,
                 data.ZpTransId?.ToString() ?? ""
             );
-        }
-        else
-        {
-            payment.Status = PaymentStatus.failed;
-            payment.FailureReason = "ZaloPay callback missing zp_trans_id";
 
-            await _orderEventService.PublishPaymentFailedAsync(
-                order,
-                payment,
-                payment.FailureReason,
-                "missing_zp_trans_id"
-            );
+            return new ZaloPayCallbackResultDto { ReturnCode = 1, ReturnMessage = "success" };
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        var failureCode =
+            data.ReturnCode != 1 ? $"zalopay_return_code_{data.ReturnCode}" : "missing_zp_trans_id";
+        var failureReason = !string.IsNullOrWhiteSpace(data.ReturnMessage)
+            ? data.ReturnMessage
+            : "ZaloPay payment failed or expired";
+
+        await MarkPaymentFailedAndReleaseReservationAsync(
+            order,
+            payment,
+            failureReason,
+            failureCode,
+            gatewayResponse
+        );
+
+        await _orderEventService.PublishPaymentFailedAsync(
+            order,
+            payment,
+            failureReason,
+            failureCode
+        );
 
         return new ZaloPayCallbackResultDto { ReturnCode = 1, ReturnMessage = "success" };
     }
@@ -346,6 +373,56 @@ public class PaymentService(
         };
 
         return await HandleZaloPayCallbackAsync(callbackPayload, ct);
+    }
+
+    private async Task MarkPaymentFailedAndReleaseReservationAsync(
+        Order order,
+        OrderPayment payment,
+        string failureReason,
+        string? failureCode,
+        object? gatewayResponse
+    )
+    {
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            payment.Status = PaymentStatus.failed;
+            payment.FailureReason = failureReason;
+            payment.GatewayResponse = JsonSerializer.Serialize(gatewayResponse);
+            payment.UpdatedAt = DateTime.UtcNow;
+
+            if (
+                order.Status
+                is not (OrderStatus.cancelled or OrderStatus.failed or OrderStatus.delivered)
+            )
+            {
+                order.Status = OrderStatus.failed;
+                order.CancelledAt = DateTime.UtcNow;
+                order.UpdatedAt = DateTime.UtcNow;
+
+                await ReleaseInventoryForOrderAsync(order);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        });
+    }
+
+    private async Task ReleaseInventoryForOrderAsync(Order order)
+    {
+        foreach (var item in order.OrderItems)
+        {
+            var released = await _inventoryRepository.TryReleaseReservedStockAsync(
+                item.SkuId,
+                item.Quantity
+            );
+
+            if (!released)
+            {
+                throw new BadRequestException(
+                    $"Unable to release reserved inventory for SKU {item.SkuId}."
+                );
+            }
+        }
     }
 
     private static string ResolveAppTransId(
