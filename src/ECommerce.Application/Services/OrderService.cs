@@ -21,7 +21,7 @@ public class OrderService(
     IOrderPaymentRepository orderPaymentRepository,
     ICartRepository cartRepository,
     ICouponRepository couponRepository,
-    IInventoryService inventoryService,
+    IInventoryRepository inventoryRepository,
     IUnitOfWork unitOfWork,
     IOrderEventService orderEventService,
     IMapper mapper
@@ -32,34 +32,19 @@ public class OrderService(
 
     private readonly ICartRepository _cartRepository = cartRepository;
     private readonly ICouponRepository _couponRepository = couponRepository;
-    private readonly IInventoryService _inventoryService = inventoryService;
+    private readonly IInventoryRepository _inventoryRepository = inventoryRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IOrderEventService _orderEventService = orderEventService;
     private readonly IMapper _mapper = mapper;
 
-    private async Task ReleaseInventoryForOrderAsync(Order order)
-    {
-        var reservations = order
-            .OrderItems.Where(oi => oi.SkuId > 0 && oi.Quantity > 0)
-            .Select(oi => (oi.SkuId, oi.Quantity))
-            .ToList();
-
-        if (reservations.Count == 0)
-            return;
-
-        await _inventoryService.ReleaseReservationAsync(
-            order.OrderId,
-            order.OrderNumber,
-            reservations
-        );
-    }
-
     public async Task<OrderDto> CreateAsync(int userId, CreateOrderRequest request)
     {
-        // Get user's cart with details
         var cart =
             await _cartRepository.GetByUserIdWithDetailsAsync(userId)
             ?? throw new NotFoundException("Cart not found");
+
+        if (cart.CartItems.Count == 0)
+            throw new BadRequestException("Cart is empty");
 
         var sellerIds = cart
             .CartItems.Select(i => i.Sku?.Product?.SellerId)
@@ -73,26 +58,27 @@ public class OrderService(
                 "Cart must contain items from a single seller to checkout"
             );
 
-        if (cart.CartItems.Count == 0)
-            throw new BadRequestException("Cart is empty");
-
-        // Validate all items are still available
+        // UX-only pre-check. The real concurrency-safe reservation is done inside the transaction.
         foreach (var item in cart.CartItems)
         {
-            var availableStock = item.Sku?.Inventory?.QuantityAvailable ?? 0;
+            if (item.Sku == null || item.Sku.Inventory == null)
+                throw new BadRequestException(
+                    $"Product '{item.Sku?.Product?.ProductName}' is not available."
+                );
+
+            var availableStock = item.Sku.Inventory.QuantityAvailable;
             if (availableStock < item.Quantity)
             {
                 throw new BadRequestException(
-                    $"Insufficient stock for {item.Sku?.Product?.ProductName ?? "item"}. "
-                        + $"Available: {availableStock}, Requested: {item.Quantity}"
+                    $"Insufficient stock for '{item.Sku?.Product?.ProductName}'. Requested: {item.Quantity}, Available: {availableStock}"
                 );
             }
         }
 
-        // Calculate order totals
         var subtotal = cart.CartItems.Sum(i => i.PriceSnapshot * i.Quantity);
         var shippingFee = CalculateShippingFee(subtotal);
         var taxAmount = CalculateTax(subtotal);
+
         var (couponId, couponCode, couponDiscount) = await ResolveCouponAsync(
             request.CouponCode,
             subtotal,
@@ -100,14 +86,14 @@ public class OrderService(
             taxAmount
         );
 
-        var totalBeforeDiscount = subtotal + shippingFee + taxAmount;
-        var totalAmount = totalBeforeDiscount - couponDiscount;
+        var totalAmount = subtotal + shippingFee + taxAmount - couponDiscount;
         if (totalAmount < 0)
             totalAmount = 0;
 
-        return await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        var order = await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            // Create order
+            var shippingAddress = await ResolveShippingAddressAsync(userId, request);
+
             var order = Order.CreateDefault(
                 orderNumber: GenerateOrderNumber(),
                 userId: userId,
@@ -116,17 +102,12 @@ public class OrderService(
                 taxAmount: taxAmount,
                 totalAmount: totalAmount,
                 preferredCurrency: Currency.vnd,
+                couponId: couponId,
                 couponCode: couponCode,
                 couponDiscount: couponDiscount,
                 customerNotes: request.CustomerNotes
             );
 
-            order.CouponId = couponId;
-
-            await _orderRepository.AddAsync(order);
-            await _unitOfWork.SaveChangesAsync();
-
-            // Create order items
             foreach (var cartItem in cart.CartItems)
             {
                 var orderItem = OrderItem.CreateDefault(
@@ -147,9 +128,7 @@ public class OrderService(
                 order.OrderItems.Add(orderItem);
             }
 
-            var shippingAddress = await ResolveShippingAddressAsync(userId, request);
-            // Create order shipping
-            var orderShipping = OrderShipping.CreateDefault(
+            order.OrderShipping = OrderShipping.CreateDefault(
                 order: order,
                 recipientName: shippingAddress.RecipientName,
                 phone: shippingAddress.Phone,
@@ -161,25 +140,40 @@ public class OrderService(
                 method: ShippingMethod.standard,
                 addressLine2: shippingAddress.AddressLine2
             );
-            order.OrderShipping = orderShipping;
 
-            await _unitOfWork.SaveChangesAsync();
+            // Reserve before committing the order. If any SKU fails, the whole transaction rolls back.
+            foreach (var item in cart.CartItems)
+            {
+                var reserved = await _inventoryRepository.TryReserveStockAsync(
+                    item.SkuId,
+                    item.Quantity
+                );
 
-            // Clear the cart after successful order
+                if (!reserved)
+                {
+                    throw new BadRequestException(
+                        $"Insufficient stock for '{item.Sku?.Product?.ProductName}'. Please try again."
+                    );
+                }
+            }
+
+            await _orderRepository.AddAsync(order);
+
             foreach (var item in cart.CartItems.ToList())
             {
                 await _cartRepository.RemoveCartItemAsync(item);
             }
             cart.CartItems.Clear();
-            cart.RecalculateTotals();
-            await _unitOfWork.SaveChangesAsync();
-
-            // Publish order.created event
-            await _orderEventService.PublishOrderCreatedAsync(order);
 
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<OrderDto>(order);
+
+            return order;
         });
+
+        // Publish only after the database transaction commits.
+        await _orderEventService.PublishOrderCreatedAsync(order);
+
+        return _mapper.Map<OrderDto>(order);
     }
 
     public async Task<OrderDto?> GetByIdAsync(int userId, int orderId)
@@ -286,28 +280,36 @@ public class OrderService(
                 "Order can no longer be cancelled by buyer — please contact the seller"
             );
 
-        order.Status = OrderStatus.cancelled;
-        order.CancelledAt = DateTime.UtcNow;
-        order.UpdatedAt = DateTime.UtcNow;
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            var oldStatus = order.Status;
 
-        await ReleaseInventoryForOrderAsync(order);
+            order.Status = OrderStatus.cancelled;
+            order.CancelledAt = DateTime.UtcNow;
+            order.UpdatedAt = DateTime.UtcNow;
 
-        order.OrderStatusHistories.Add(
-            new OrderStatusHistory
-            {
-                OrderId = order.OrderId,
-                OldStatus = OrderStatus.created,
-                NewStatus = OrderStatus.cancelled,
-                Notes = "Cancelled by buyer",
-                ChangedBy = userId,
-                ChangedByNavigation = null!,
-                Order = order,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            }
-        );
+            await ReleaseInventoryForOrderAsync(order);
 
-        await _unitOfWork.SaveChangesAsync();
+            order.OrderStatusHistories.Add(
+                new OrderStatusHistory
+                {
+                    OrderId = order.OrderId,
+                    OldStatus = oldStatus,
+                    NewStatus = OrderStatus.cancelled,
+                    Notes = "Cancelled by buyer",
+                    ChangedBy = userId,
+                    ChangedByNavigation = null!,
+                    Order = order,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                }
+            );
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        });
+
+        await _orderEventService.PublishOrderCancelledAsync(order, "Cancelled by buyer");
 
         return _mapper.Map<OrderDto>(order);
     }
@@ -332,6 +334,20 @@ public class OrderService(
         if (!Enum.TryParse<OrderStatus>(request.Status, true, out var newStatus))
             throw new BadRequestException("Invalid order status");
 
+        if (
+            newStatus is not (OrderStatus.confirmed or OrderStatus.shipped or OrderStatus.cancelled)
+        )
+            throw new BadRequestException(
+                "Seller can only set status to confirmed, shipped, or cancelled"
+            );
+
+        if (newStatus == OrderStatus.cancelled && string.IsNullOrWhiteSpace(request.Notes))
+        {
+            throw new BadRequestException(
+                "Cancellation note is required when seller cancels an order"
+            );
+        }
+
         if (newStatus is OrderStatus.confirmed or OrderStatus.shipped)
         {
             var hasCompletedPayment = await _orderPaymentRepository.HasCompletedPaymentAsync(
@@ -343,13 +359,6 @@ public class OrderService(
                 );
         }
 
-        if (
-            newStatus is not (OrderStatus.confirmed or OrderStatus.shipped or OrderStatus.cancelled)
-        )
-            throw new BadRequestException(
-                "Seller can only set status to confirmed, shipped, or cancelled"
-            );
-
         var oldStatus = order.Status;
 
         if (oldStatus == newStatus)
@@ -358,39 +367,37 @@ public class OrderService(
         if (oldStatus is OrderStatus.delivered or OrderStatus.cancelled)
             throw new BadRequestException("Order is already finalized and cannot change status");
 
-        order.Status = newStatus;
-        order.UpdatedAt = DateTime.UtcNow;
-
-        if (newStatus == OrderStatus.cancelled && string.IsNullOrWhiteSpace(request.Notes))
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            throw new BadRequestException(
-                "Cancellation note is required when seller cancels an order"
-            );
-        }
+            order.Status = newStatus;
+            order.UpdatedAt = DateTime.UtcNow;
 
-        if (newStatus == OrderStatus.cancelled)
-        {
-            order.CancelledAt = DateTime.UtcNow;
-            await ReleaseInventoryForOrderAsync(order);
-        }
-
-        order.OrderStatusHistories.Add(
-            new OrderStatusHistory
+            if (newStatus == OrderStatus.cancelled)
             {
-                OrderId = order.OrderId,
-                OldStatus = oldStatus,
-                NewStatus = newStatus,
-                Notes = request.Notes,
-                ChangedBy = sellerId,
-                ChangedByNavigation = null!,
-                Order = order,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                order.CancelledAt = DateTime.UtcNow;
+                await ReleaseInventoryForOrderAsync(order);
             }
-        );
 
-        await _unitOfWork.SaveChangesAsync();
+            order.OrderStatusHistories.Add(
+                new OrderStatusHistory
+                {
+                    OrderId = order.OrderId,
+                    OldStatus = oldStatus,
+                    NewStatus = newStatus,
+                    Notes = request.Notes,
+                    ChangedBy = sellerId,
+                    ChangedByNavigation = null!,
+                    Order = order,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                }
+            );
 
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        });
+
+        // Publish after commit only. Never publish an event for a DB transaction that may still roll back.
         if (newStatus == OrderStatus.cancelled)
         {
             await _orderEventService.PublishOrderCancelledAsync(order, request.Notes);
@@ -404,9 +411,25 @@ public class OrderService(
             await _orderEventService.PublishOrderShippedAsync(order);
         }
 
-        await _unitOfWork.SaveChangesAsync();
-
         return _mapper.Map<OrderDto>(order);
+    }
+
+    private async Task ReleaseInventoryForOrderAsync(Order order)
+    {
+        foreach (var item in order.OrderItems)
+        {
+            var released = await _inventoryRepository.TryReleaseReservedStockAsync(
+                item.SkuId,
+                item.Quantity
+            );
+
+            if (!released)
+            {
+                throw new BadRequestException(
+                    $"Unable to release reserved inventory for SKU {item.SkuId}."
+                );
+            }
+        }
     }
 
     private static string GenerateOrderNumber()
