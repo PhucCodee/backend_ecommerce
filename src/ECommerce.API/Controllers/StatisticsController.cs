@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using ECommerce.Application.Common.Authorization;
 using ECommerce.Application.Common.Responses;
+using ECommerce.Application.Exceptions;
 using ECommerce.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,8 +22,8 @@ namespace ECommerce.API.Controllers
         [Authorize(Policy = Policies.SellerOnly)]
         public async Task<IActionResult> GetSellerDashboard([FromQuery] int trendDays = 30)
         {
-            var sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var result = await _statisticsService.GetSellerDashboardAsync(sellerId, trendDays);
+            var sellerUserId = GetCurrentUserId();
+            var result = await _statisticsService.GetSellerDashboardAsync(sellerUserId, trendDays);
             return Ok(ApiResponse<object>.Ok(result));
         }
 
@@ -35,6 +36,14 @@ namespace ECommerce.API.Controllers
         {
             var result = await _statisticsService.GetAdminDashboardAsync(trendDays);
             return Ok(ApiResponse<object>.Ok(result));
+        }
+
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+                throw new UnauthorizedException("Invalid user token");
+            return userId;
         }
     }
 }

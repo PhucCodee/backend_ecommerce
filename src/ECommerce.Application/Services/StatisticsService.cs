@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ECommerce.Application.DTOs.statistics;
 using ECommerce.Application.Interfaces;
+using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,29 @@ namespace ECommerce.Application.Services
 {
     public class StatisticsService(ApplicationDbContext db) : IStatisticsService
     {
+        // Product.SellerId and OrderItem.SellerId both reference users.user_id.
+        private static IQueryable<Order> SellerOrdersInPeriod(
+            IQueryable<Order> orders,
+            int sellerId,
+            DateTime periodStart
+        ) =>
+            orders.Where(o =>
+                o.CreatedAt >= periodStart
+                && o.OrderItems.Any(oi => oi.SellerId == sellerId)
+            );
+
+        private static IQueryable<OrderItem> SellerItemsInPeriod(
+            IQueryable<OrderItem> items,
+            int sellerId,
+            DateTime periodStart
+        ) =>
+            items.Where(oi =>
+                oi.SellerId == sellerId
+                && oi.Order.Status != OrderStatus.cancelled
+                && oi.Order.Status != OrderStatus.failed
+                && oi.Order.CreatedAt >= periodStart
+            );
+
         // ─────────────────────────────────────────────────────────────
         //  SELLER
         // ─────────────────────────────────────────────────────────────
@@ -23,46 +47,26 @@ namespace ECommerce.Application.Services
             var prevStart = periodStart.AddDays(-trendDays);
 
             // ── Revenue ──────────────────────────────────────────────
-            var currentRevenue = await db.OrderItems
-                .Where(oi => oi.SellerId == sellerId
-                    && oi.Order.Status != OrderStatus.cancelled
-                    && oi.Order.Status != OrderStatus.failed
-                    && oi.Order.CreatedAt >= periodStart)
+            var currentRevenue = await SellerItemsInPeriod(db.OrderItems, sellerId, periodStart)
                 .SumAsync(oi => (decimal?)oi.Subtotal) ?? 0m;
 
-            var prevRevenue = await db.OrderItems
-                .Where(oi => oi.SellerId == sellerId
-                    && oi.Order.Status != OrderStatus.cancelled
-                    && oi.Order.Status != OrderStatus.failed
-                    && oi.Order.CreatedAt >= prevStart
-                    && oi.Order.CreatedAt < periodStart)
+            var prevRevenue = await SellerItemsInPeriod(db.OrderItems, sellerId, prevStart)
+                .Where(oi => oi.Order.CreatedAt < periodStart)
                 .SumAsync(oi => (decimal?)oi.Subtotal) ?? 0m;
 
             double? growthPercent = prevRevenue == 0
                 ? null
                 : Math.Round((double)((currentRevenue - prevRevenue) / prevRevenue * 100), 2);
 
-            // avg order value based on distinct orders in period
-            var ordersInPeriod = await db.Orders
-                .Where(o => o.OrderItems.Any(oi => oi.SellerId == sellerId)
-                    && o.Status != OrderStatus.cancelled
-                    && o.Status != OrderStatus.failed
-                    && o.CreatedAt >= periodStart)
+            var ordersInPeriod = await SellerOrdersInPeriod(db.Orders, sellerId, periodStart)
                 .CountAsync();
 
             var avgOrderValue = ordersInPeriod > 0
                 ? Math.Round(currentRevenue / ordersInPeriod, 2)
                 : 0m;
 
-            // ── Orders ───────────────────────────────────────────────
-            var sellerOrderIds = await db.OrderItems
-                .Where(oi => oi.SellerId == sellerId)
-                .Select(oi => oi.OrderId)
-                .Distinct()
-                .ToListAsync();
-
-            var orderStatuses = await db.Orders
-                .Where(o => sellerOrderIds.Contains(o.OrderId))
+            // ── Orders (same window as revenue) ──────────────────────
+            var orderStatuses = await SellerOrdersInPeriod(db.Orders, sellerId, periodStart)
                 .GroupBy(o => o.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .ToListAsync();
@@ -77,16 +81,20 @@ namespace ECommerce.Application.Services
                 Cancelled = orderStatuses.Where(g => g.Status == OrderStatus.cancelled || g.Status == OrderStatus.failed).Sum(g => g.Count),
             };
 
-            // ── Products ─────────────────────────────────────────────
+            // ── Products (this seller's catalogue only) ──────────────
             var productStats = await db.Products
                 .Where(p => p.SellerId == sellerId && p.RemovedAt == null)
                 .Select(p => new
                 {
                     IsActive = p.Status == ProductStatus.active,
-                    IsOutOfStock = p.ProductSkus.Any(s => s.IsActive && s.IsDefault && (s.Inventory == null || s.Inventory.QuantityAvailable == 0)),
-                    IsLowStock = p.ProductSkus.Any(s => s.IsActive && s.IsDefault && s.Inventory != null
-                        && s.Inventory.QuantityAvailable > 0
-                        && s.Inventory.QuantityAvailable <= s.Inventory.ReorderPoint),
+                    ActiveSkus = p.ProductSkus
+                        .Where(s => s.IsActive)
+                        .Select(s => new
+                        {
+                            Available = s.Inventory != null ? s.Inventory.QuantityAvailable : 0,
+                            ReorderPoint = s.Inventory != null ? s.Inventory.ReorderPoint : 0,
+                        })
+                        .ToList(),
                 })
                 .ToListAsync();
 
@@ -94,16 +102,21 @@ namespace ECommerce.Application.Services
             {
                 Total = productStats.Count,
                 Active = productStats.Count(p => p.IsActive),
-                OutOfStock = productStats.Count(p => p.IsOutOfStock),
-                LowStock = productStats.Count(p => p.IsLowStock),
+                OutOfStock = productStats.Count(p =>
+                    p.IsActive
+                    && p.ActiveSkus.Count > 0
+                    && p.ActiveSkus.All(s => s.Available <= 0)
+                ),
+                LowStock = productStats.Count(p =>
+                    p.IsActive
+                    && p.ActiveSkus.Any(s =>
+                        s.Available > 0 && s.Available <= s.ReorderPoint
+                    )
+                ),
             };
 
             // ── Top Products ─────────────────────────────────────────
-            var topProducts = await db.OrderItems
-                .Where(oi => oi.SellerId == sellerId
-                    && oi.Order.Status != OrderStatus.cancelled
-                    && oi.Order.Status != OrderStatus.failed
-                    && oi.Order.CreatedAt >= periodStart)
+            var topProducts = await SellerItemsInPeriod(db.OrderItems, sellerId, periodStart)
                 .GroupBy(oi => new { oi.SkuId, oi.ProductName, oi.Sku })
                 .Select(g => new
                 {
@@ -114,7 +127,7 @@ namespace ECommerce.Application.Services
                     Revenue = g.Sum(x => x.Subtotal),
                 })
                 .OrderByDescending(x => x.Revenue)
-                .Take(5)
+                .Take(50)
                 .ToListAsync();
 
             // fetch thumbnails for top products
@@ -143,11 +156,7 @@ namespace ECommerce.Application.Services
             }).ToList();
 
             // ── Revenue Trend ────────────────────────────────────────
-            var rawTrend = await db.OrderItems
-                .Where(oi => oi.SellerId == sellerId
-                    && oi.Order.Status != OrderStatus.cancelled
-                    && oi.Order.Status != OrderStatus.failed
-                    && oi.Order.CreatedAt >= periodStart)
+            var rawTrend = await SellerItemsInPeriod(db.OrderItems, sellerId, periodStart)
                 .GroupBy(oi => oi.Order.CreatedAt.Date)
                 .Select(g => new
                 {
@@ -287,7 +296,7 @@ namespace ECommerce.Application.Services
                     TotalProductsSold = g.Sum(oi => oi.Quantity),
                 })
                 .OrderByDescending(s => s.TotalRevenue)
-                .Take(5)
+                .Take(50)
                 .ToListAsync();
 
             // ── Top Products (platform-wide) ─────────────────────────
@@ -305,7 +314,7 @@ namespace ECommerce.Application.Services
                     Revenue = g.Sum(x => x.Subtotal),
                 })
                 .OrderByDescending(x => x.Revenue)
-                .Take(5)
+                .Take(50)
                 .ToListAsync();
 
             var skuIds = topProductsRaw.Select(t => t.SkuId).ToList();
