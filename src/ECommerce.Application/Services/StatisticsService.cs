@@ -82,36 +82,37 @@ namespace ECommerce.Application.Services
             };
 
             // ── Products (this seller's catalogue only) ──────────────
-            var productStats = await db.Products
+            var productCounts = await db.Products
                 .Where(p => p.SellerId == sellerId && p.RemovedAt == null)
-                .Select(p => new
+                .GroupBy(p => 1)
+                .Select(g => new
                 {
-                    IsActive = p.Status == ProductStatus.active,
-                    ActiveSkus = p.ProductSkus
-                        .Where(s => s.IsActive)
-                        .Select(s => new
-                        {
-                            Available = s.Inventory != null ? s.Inventory.QuantityAvailable : 0,
-                            ReorderPoint = s.Inventory != null ? s.Inventory.ReorderPoint : 0,
-                        })
-                        .ToList(),
+                    Total = g.Count(),
+                    Active = g.Count(p => p.Status == ProductStatus.active),
+                })
+                .FirstOrDefaultAsync();
+
+            // Count SKUs (not products) — matches seller inventory page logic
+            var skuInventory = await db.ProductSkus
+                .Where(s =>
+                    s.IsActive
+                    && s.Product.SellerId == sellerId
+                    && s.Product.RemovedAt == null
+                )
+                .Select(s => new
+                {
+                    Available = s.Inventory != null ? s.Inventory.QuantityAvailable : 0,
+                    ReorderPoint = s.Inventory != null ? s.Inventory.ReorderPoint : 0,
                 })
                 .ToListAsync();
 
             var products = new SellerProductStatsDto
             {
-                Total = productStats.Count,
-                Active = productStats.Count(p => p.IsActive),
-                OutOfStock = productStats.Count(p =>
-                    p.IsActive
-                    && p.ActiveSkus.Count > 0
-                    && p.ActiveSkus.All(s => s.Available <= 0)
-                ),
-                LowStock = productStats.Count(p =>
-                    p.IsActive
-                    && p.ActiveSkus.Any(s =>
-                        s.Available > 0 && s.Available <= s.ReorderPoint
-                    )
+                Total = productCounts?.Total ?? 0,
+                Active = productCounts?.Active ?? 0,
+                OutOfStock = skuInventory.Count(s => s.Available <= 0),
+                LowStock = skuInventory.Count(s =>
+                    s.Available > 0 && s.Available <= s.ReorderPoint
                 ),
             };
 
