@@ -64,6 +64,7 @@ public partial class Order
         decimal taxAmount,
         decimal totalAmount,
         Currency preferredCurrency = Currency.vnd,
+        int? couponId = null,
         string? couponCode = null,
         decimal couponDiscount = 0,
         string? customerNotes = null
@@ -77,6 +78,7 @@ public partial class Order
             Subtotal = subtotal,
             ShippingFee = shippingFee,
             TaxAmount = taxAmount,
+            CouponId = couponId,
             CouponCode = couponCode,
             CouponDiscount = couponDiscount,
             TotalAmount = totalAmount,
