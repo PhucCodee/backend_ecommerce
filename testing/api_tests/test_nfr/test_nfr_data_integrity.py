@@ -233,9 +233,8 @@ def test_nfr_7_4_order_total_server_side_calculation(base_url, user_headers):
     details = f"Order creation - Status: {response.status_code}"
     
     if response.status_code in [200, 201]:
-        # Order was created - verify backend calculated correct price
         order_data = response.json().get("data", {})
-        calculated_total = order_data.get("totalPrice", order_data.get("total", 0))
+        calculated_total = order_data.get("totalAmount", order_data.get("total", 0))
         
         # The calculated total should NOT match the manipulated value
         if calculated_total != 0.02:
@@ -243,6 +242,7 @@ def test_nfr_7_4_order_total_server_side_calculation(base_url, user_headers):
             details += f" (Server calculated: {calculated_total}, rejected client price: 0.02)"
         else:
             details += f" (WARNING: Order total matches client input!)"
+
     elif response.status_code == 400:
         # Backend rejected - also valid
         is_validated = True

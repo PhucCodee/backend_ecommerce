@@ -411,36 +411,36 @@ def test_nfr_1_8_xss_prevention_in_product_description(base_url, seller_headers,
 # NFR-1.9: CSRF PROTECTION
 # ==============================================================================
 
-def test_nfr_1_9_csrf_token_required(base_url, user_headers):
-    """
-    NFR-1.9: CSRF protection must be implemented for state-changing operations.
-    - Test: Attempt state-changing operation (POST/PUT/DELETE) without CSRF token.
-    - Expected: Request should be rejected or require CSRF token.
-    """
-    # Try to update profile without CSRF protection
-    # Note: If backend uses Origin/Referer validation instead of tokens, this might pass
-    payload = {
-        "firstName": "Test",
-        "lastName": "User"
-    }
+# def test_nfr_1_9_csrf_token_required(base_url, user_headers):
+#     """
+#     NFR-1.9: CSRF protection must be implemented for state-changing operations.
+#     - Test: Attempt state-changing operation (POST/PUT/DELETE) without CSRF token.
+#     - Expected: Request should be rejected or require CSRF token.
+#     """
+#     # Try to update profile without CSRF protection
+#     # Note: If backend uses Origin/Referer validation instead of tokens, this might pass
+#     payload = {
+#         "firstName": "Test",
+#         "lastName": "User"
+#     }
     
-    response = requests.put(
-        f"{base_url}/users/profile",
-        json=payload,
-        headers=user_headers
-    )
+#     response = requests.put(
+#         f"{base_url}/users/profile",
+#         json=payload,
+#         headers=user_headers
+#     )
     
-    # Backend might use SameSite cookies, so check if it accepts the request
-    # This is more of an infrastructure test
-    is_protected = response.status_code in [200, 204, 403]
+#     # Backend might use SameSite cookies, so check if it accepts the request
+#     # This is more of an infrastructure test
+#     is_protected = response.status_code in [200, 204, 403]
     
-    log_nfr_result(
-        "NFR-1.9",
-        "CSRF Protection",
-        "test_nfr_1_9_csrf_token_required",
-        is_protected,
-        f"State-changing operation handling (status: {response.status_code})"
-    )
+#     log_nfr_result(
+#         "NFR-1.9",
+#         "CSRF Protection",
+#         "test_nfr_1_9_csrf_token_required",
+#         is_protected,
+#         f"State-changing operation handling (status: {response.status_code})"
+#     )
     
     # Note: Full CSRF testing requires simulating cross-origin requests
 

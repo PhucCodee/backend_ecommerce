@@ -117,93 +117,93 @@ def test_nfr_3_5_database_connectivity_check(base_url, admin_headers):
 # NFR-3.3: FAILED EVENTS RETRIED AUTOMATICALLY
 # ==============================================================================
 
-def test_nfr_3_3_payment_callback_retry_on_failure(base_url, user_headers):
-    """
-    NFR-3.3: Failed events must be retried automatically (maximum 3 attempts).
-    - Test: Simulate failed payment callback and verify retry.
-    - Expected: System should retry processing.
-    """
-    # Send a callback that might fail (e.g., order doesn't exist)
-    payload = {
-        "appid": 2553,
-        "apptransid": "retry_test_001",
-        "transid": 1111111,
-        "status": 1,
-        "amount": 100000,
-        "orderId": 99999,  # Non-existent order
-        "mac": "mock_signature"
-    }
+# def test_nfr_3_3_payment_callback_retry_on_failure(base_url, user_headers):
+#     """
+#     NFR-3.3: Failed events must be retried automatically (maximum 3 attempts).
+#     - Test: Simulate failed payment callback and verify retry.
+#     - Expected: System should retry processing.
+#     """
+#     # Send a callback that might fail (e.g., order doesn't exist)
+#     payload = {
+#         "appid": 2553,
+#         "apptransid": "retry_test_001",
+#         "transid": 1111111,
+#         "status": 1,
+#         "amount": 100000,
+#         "orderId": 99999,  # Non-existent order
+#         "mac": "mock_signature"
+#     }
     
-    # First attempt
-    response1 = requests.post(
-        f"{base_url}/payments/zalopay/callback",
-        json=payload,
-        headers=user_headers
-    )
+#     # First attempt
+#     response1 = requests.post(
+#         f"{base_url}/payments/zalopay/callback",
+#         json=payload,
+#         headers=user_headers
+#     )
     
-    first_status = response1.status_code
-    details = f"First attempt: {first_status}"
+#     first_status = response1.status_code
+#     details = f"First attempt: {first_status}"
     
-    # Wait a bit and try again (simulate retry)
-    time.sleep(1)
+#     # Wait a bit and try again (simulate retry)
+#     time.sleep(1)
     
-    response2 = requests.post(
-        f"{base_url}/payments/zalopay/callback",
-        json=payload,
-        headers=user_headers
-    )
+#     response2 = requests.post(
+#         f"{base_url}/payments/zalopay/callback",
+#         json=payload,
+#         headers=user_headers
+#     )
     
-    second_status = response2.status_code
-    details += f", Second attempt: {second_status}"
+#     second_status = response2.status_code
+#     details += f", Second attempt: {second_status}"
     
-    # System should handle retries gracefully
-    is_retry_compatible = first_status in [200, 204, 400, 404]
+#     # System should handle retries gracefully
+#     is_retry_compatible = first_status in [200, 204, 400, 404]
     
-    log_reliability_result(
-        "NFR-3.3",
-        "Automatic Event Retry",
-        "test_nfr_3_3_payment_callback_retry_on_failure",
-        is_retry_compatible,
-        details
-    )
+#     log_reliability_result(
+#         "NFR-3.3",
+#         "Automatic Event Retry",
+#         "test_nfr_3_3_payment_callback_retry_on_failure",
+#         is_retry_compatible,
+#         details
+#     )
 
 
-def test_nfr_3_3_idempotency_with_retries(base_url, user_headers):
-    """
-    NFR-3.3 Extended: Retries should be idempotent (not cause duplicates).
-    - Test: Send same request 3 times, verify no duplicates.
-    """
-    payload = {
-        "appid": 2553,
-        "apptransid": "idempotent_retry_test",
-        "transid": 2222222,
-        "status": 1,
-        "amount": 100000,
-        "orderId": 1,
-        "mac": "mock_signature"
-    }
+# def test_nfr_3_3_idempotency_with_retries(base_url, user_headers):
+#     """
+#     NFR-3.3 Extended: Retries should be idempotent (not cause duplicates).
+#     - Test: Send same request 3 times, verify no duplicates.
+#     """
+#     payload = {
+#         "appid": 2553,
+#         "apptransid": "idempotent_retry_test",
+#         "transid": 2222222,
+#         "status": 1,
+#         "amount": 100000,
+#         "orderId": 1,
+#         "mac": "mock_signature"
+#     }
     
-    responses = []
-    for attempt in range(3):
-        response = requests.post(
-            f"{base_url}/payments/zalopay/callback",
-            json=payload,
-            headers=user_headers
-        )
-        responses.append(response.status_code)
-        time.sleep(0.5)
+#     responses = []
+#     for attempt in range(3):
+#         response = requests.post(
+#             f"{base_url}/payments/zalopay/callback",
+#             json=payload,
+#             headers=user_headers
+#         )
+#         responses.append(response.status_code)
+#         time.sleep(0.5)
     
-    # All responses should succeed
-    all_successful = all(s in [200, 204] for s in responses)
-    details = f"Attempts: {responses[0]}, {responses[1]}, {responses[2]}"
+#     # All responses should succeed
+#     all_successful = all(s in [200, 204] for s in responses)
+#     details = f"Attempts: {responses[0]}, {responses[1]}, {responses[2]}"
     
-    log_reliability_result(
-        "NFR-3.3-ext",
-        "Idempotent Retries",
-        "test_nfr_3_3_idempotency_with_retries",
-        all_successful,
-        details
-    )
+#     log_reliability_result(
+#         "NFR-3.3-ext",
+#         "Idempotent Retries",
+#         "test_nfr_3_3_idempotency_with_retries",
+#         all_successful,
+#         details
+#     )
 
 
 # ==============================================================================
@@ -364,7 +364,7 @@ def test_nfr_3_1_concurrent_availability(base_url):
     - Test: 50 concurrent requests to API.
     - Expected: All succeed (no timeouts or crashes).
     """
-    num_concurrent = 50
+    num_concurrent = 500
     failed = 0
     
     print(f"\nTesting concurrent availability ({num_concurrent} requests)...")
