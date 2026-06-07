@@ -15,5 +15,7 @@ namespace ECommerce.Application.DTOs.product
         public string? AltText { get; set; }
 
         public int? DisplayOrder { get; set; }
+
+        public bool? IsPrimary { get; set; }
     }
 }

@@ -15,20 +15,38 @@ public static class ImageHelper
     {
         if (images == null || images.Count == 0) return;
 
+        var added = new List<ProductImage>();
+        ProductImage? primary = null;
+
         for (int i = 0; i < images.Count; i++)
         {
             var img = images[i];
-            sku.ProductImages.Add(new ProductImage
+            var entity = new ProductImage
             {
                 Sku = sku,
                 ImageUrl = img.ImageUrl,
                 ThumbnailUrl = img.ThumbnailUrl ?? img.ImageUrl,
                 AltText = img.AltText ?? altText,
                 DisplayOrder = img.DisplayOrder ?? i + 1,
-                IsPrimary = (i == 0), // make first image primary
+                IsPrimary = img.IsPrimary ?? false,
                 IsDeleted = false,
                 UpdatedAt = DateTime.UtcNow
-            });
+            };
+            sku.ProductImages.Add(entity);
+            added.Add(entity);
+
+            if (img.IsPrimary == true)
+                primary = entity;
+        }
+
+        if (primary == null && added.Count > 0)
+            primary = added[0];
+
+        if (primary != null)
+        {
+            primary.IsPrimary = true;
+            foreach (var img in added.Where(i => i != primary))
+                img.IsPrimary = false;
         }
     }
 
@@ -95,6 +113,15 @@ public static class ImageHelper
             foreach (var img in sku.ProductImages.Where(i => !i.IsDeleted && i != newPrimary))
             {
                 img.IsPrimary = false;
+            }
+            newPrimary.IsPrimary = true;
+        }
+        else
+        {
+            var active = sku.ProductImages.Where(i => !i.IsDeleted).ToList();
+            if (active.Count > 0 && active.All(i => !i.IsPrimary))
+            {
+                active[0].IsPrimary = true;
             }
         }
     }
