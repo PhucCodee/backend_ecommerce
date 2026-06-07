@@ -332,22 +332,28 @@ public class OrderService(
         if (!Enum.TryParse<OrderStatus>(request.Status, true, out var newStatus))
             throw new BadRequestException("Invalid order status");
 
-        if (newStatus is OrderStatus.confirmed or OrderStatus.shipped)
+        if (newStatus is OrderStatus.confirmed or OrderStatus.shipped or OrderStatus.delivered)
         {
             var hasCompletedPayment = await _orderPaymentRepository.HasCompletedPaymentAsync(
                 order.OrderId
             );
             if (!hasCompletedPayment)
                 throw new BadRequestException(
-                    "Order must be paid before it can be confirmed or shipped"
+                    "Order must be paid before it can be confirmed, shipped, or completed"
                 );
         }
 
         if (
-            newStatus is not (OrderStatus.confirmed or OrderStatus.shipped or OrderStatus.cancelled)
+            newStatus
+            is not (
+                OrderStatus.confirmed
+                or OrderStatus.shipped
+                or OrderStatus.delivered
+                or OrderStatus.cancelled
+            )
         )
             throw new BadRequestException(
-                "Seller can only set status to confirmed, shipped, or cancelled"
+                "Seller can only set status to confirmed, shipped, completed, or cancelled"
             );
 
         var oldStatus = order.Status;
