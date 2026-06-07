@@ -17,11 +17,13 @@ namespace ECommerce.API.Controllers
     [Route("api/[controller]")]
     public class ProductsController(
         IProductQueryService productQueryService,
-        IProductService productService
+        IProductService productService,
+        IProductSkuQueryService productSkuQueryService
     ) : ControllerBase
     {
         private readonly IProductQueryService _productQueryService = productQueryService;
         private readonly IProductService _productService = productService;
+        private readonly IProductSkuQueryService _productSkuQueryService = productSkuQueryService;
 
         #region Public Endpoints
 
@@ -74,6 +76,21 @@ namespace ECommerce.API.Controllers
             productQueryParams.IncludeSuspended = true;
             var products = await _productQueryService.GetFilteredAsync(productQueryParams);
             return Ok(ApiResponse<PagedResult<ProductSummaryDto>>.Ok(products));
+        }
+
+        [HttpGet("admin/{productId:int}/skus")]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> GetSkusForAdmin(
+            int productId,
+            [FromQuery] PaginationParams paginationParams
+        )
+        {
+            var skus = await _productSkuQueryService.GetByProductIdPagedAsync(
+                productId,
+                paginationParams,
+                includeInactive: true
+            );
+            return Ok(ApiResponse<PagedResult<ProductSkuDto>>.Ok(skus));
         }
 
         [HttpPut("{id:int}")]

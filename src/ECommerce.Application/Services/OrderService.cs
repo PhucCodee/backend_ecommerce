@@ -335,31 +335,43 @@ public class OrderService(
             throw new BadRequestException("Invalid order status");
 
         if (
-            newStatus is not (OrderStatus.confirmed or OrderStatus.shipped or OrderStatus.cancelled)
-        )
-            throw new BadRequestException(
-                "Seller can only set status to confirmed, shipped, or cancelled"
-            );
-
-        if (newStatus == OrderStatus.cancelled && string.IsNullOrWhiteSpace(request.Notes))
-        {
-            throw new BadRequestException(
-                "Cancellation note is required when seller cancels an order"
-            );
-        }
-
-        if (newStatus is OrderStatus.confirmed or OrderStatus.shipped)
-        {
-            var hasCompletedPayment = await _orderPaymentRepository.HasCompletedPaymentAsync(
-                order.OrderId
-            );
-            if (!hasCompletedPayment)
+            newStatus
+                is not (
+                    OrderStatus.confirmed
+                    or OrderStatus.shipped
+                    or OrderStatus.delivered
+                    or OrderStatus.cancelled
+                )
+            )
+            {
                 throw new BadRequestException(
-                    "Order must be paid before it can be confirmed or shipped"
+                    "Seller can only set status to confirmed, shipped, delivered, or cancelled"
                 );
-        }
+             }
+
+if (newStatus == OrderStatus.cancelled && string.IsNullOrWhiteSpace(request.Notes))
+{
+    throw new BadRequestException(
+        "Cancellation note is required when seller cancels an order"
+    );
+}
+
+if (newStatus is OrderStatus.confirmed or OrderStatus.shipped or OrderStatus.delivered)
+{
+    var hasCompletedPayment = await _orderPaymentRepository.HasCompletedPaymentAsync(
+        order.OrderId
+    );
+
+    if (!hasCompletedPayment)
+    {
+        throw new BadRequestException(
+            "Order must be paid before it can be confirmed, shipped, or delivered"
+        );
+    }
+}
 
         var oldStatus = order.Status;
+
 
         if (oldStatus == newStatus)
             return _mapper.Map<OrderDto>(order);

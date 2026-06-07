@@ -7,7 +7,11 @@ namespace ECommerce.Application.Interfaces
     public interface IProductSkuQueryService
     {
         Task<ProductSkuDto> GetByIdAsync(int skuId);
-        Task<PagedResult<ProductSkuDto>> GetByProductIdPagedAsync(int productId, PaginationParams paginationParams);
+        Task<PagedResult<ProductSkuDto>> GetByProductIdPagedAsync(
+            int productId,
+            PaginationParams paginationParams,
+            bool includeInactive = false
+        );
         Task<PagedResult<ProductSkuDto>> GetBySellerPagedAsync(int sellerId, PaginationParams paginationParams);
     }
 }

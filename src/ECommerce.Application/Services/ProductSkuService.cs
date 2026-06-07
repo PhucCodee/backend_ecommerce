@@ -65,7 +65,7 @@ namespace ECommerce.Application.Services
             int? sellerId = null
         )
         {
-            var sku = await GetActiveSkuAsync(skuId);
+            var sku = await GetMutableSkuAsync(skuId);
 
             if (sellerId.HasValue && sku.Product.SellerId != sellerId.Value)
                 throw new ForbiddenException("You do not have permission to update this SKU");
@@ -134,11 +134,21 @@ namespace ECommerce.Application.Services
 
         private async Task<ProductSku> GetActiveSkuAsync(int skuId)
         {
+            var sku = await GetMutableSkuAsync(skuId);
+
+            if (!sku.IsActive)
+                throw new NotFoundException("Product SKU not found");
+
+            return sku;
+        }
+
+        private async Task<ProductSku> GetMutableSkuAsync(int skuId)
+        {
             var sku =
                 await _productSkuRepository.GetByIdWithDetailsAsync(skuId)
                 ?? throw new NotFoundException("Product SKU not found");
 
-            if (!sku.IsActive || sku.Product.IsDeleted())
+            if (sku.Product.IsDeleted())
                 throw new NotFoundException("Product SKU not found");
 
             return sku;
