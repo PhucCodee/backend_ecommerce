@@ -317,6 +317,8 @@ public class PaymentService(
                 data.ZpTransId?.ToString() ?? ""
             );
 
+            await _unitOfWork.SaveChangesAsync();
+
             return new ZaloPayCallbackResultDto { ReturnCode = 1, ReturnMessage = "success" };
         }
 
@@ -340,6 +342,8 @@ public class PaymentService(
             failureReason,
             failureCode
         );
+
+        await _unitOfWork.SaveChangesAsync();
 
         return new ZaloPayCallbackResultDto { ReturnCode = 1, ReturnMessage = "success" };
     }
